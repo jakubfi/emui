@@ -68,7 +68,7 @@ struct emui_tile * emui_framecounter_new(struct emui_tile *parent, int x, int y)
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, &emui_framecounter_drv, T_WIDGET, x, y, 1, 20, 0, 0, 0, 0, NULL, P_NONE);
+	t = emui_tile_create(parent, &emui_framecounter_drv, T_WIDGET, x, y, 20, 1, 0, 0, 0, 0, NULL, P_NONE);
 
 	return t;
 }

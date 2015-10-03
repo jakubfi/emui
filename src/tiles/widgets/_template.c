@@ -66,7 +66,7 @@ struct emui_tile * emui_W_NAME_new(struct emui_tile *parent, int x, int y, int w
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, &emui_W_NAME_drv, T_WIDGET, x, y, h, w, 0, 0, 0, 0, NULL, P_NONE);
+	t = emui_tile_create(parent, &emui_W_NAME_drv, T_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
 
 	return t;
 }

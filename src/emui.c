@@ -16,6 +16,8 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <stdlib.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <sys/select.h>
 #include <ncurses.h>
 #include <sys/time.h>
@@ -36,6 +38,17 @@ static struct emui_tile *layout;
 static int emui_fps;
 static long emui_frame;
 long emui_ft;
+
+// -----------------------------------------------------------------------
+void edbg(char *format, ...)
+{
+	va_list vl;
+	va_start(vl, format);
+	FILE *f = fopen("/home/amo/emui.log", "a");
+	vfprintf(f, format, vl);
+	fclose(f);
+	va_end(vl);
+}
 
 // -----------------------------------------------------------------------
 struct emui_tile * emui_init(unsigned fps)
@@ -103,15 +116,20 @@ static void emui_evq_update(struct timeval *tv)
 // -----------------------------------------------------------------------
 static int emui_event_router(struct emui_event *ev)
 {
+	edbg("--- Got event: %i %i\n", ev->type, ev->data.key);
 	struct emui_tile *t = emui_tile_focus_get();
 	while (t) {
+		edbg("\"%s\" handling event: %i %i\n", t->name, ev->type, ev->data.key);
 		if (emui_tile_handle_event(t, ev) == 0) {
+			edbg("success\n");
 			// 0 means event has been handled by the tile
 			return 0;
 		}
+		edbg("switching to parent\n");
 		t = t->parent;
 	}
 
+	edbg("EVENT FALLS OF THE EDGE: %i %i\n", ev->type, ev->data.key);
 	// event has not been handled
 	return 1;
 }
@@ -227,6 +245,7 @@ void emui_loop()
 		// process the event, if any
 		if (ev) {
 			if (ev->type == EV_DIE) {
+				free(ev);
 				break;
 			} else {
 				emui_event_router(ev);
@@ -243,6 +262,8 @@ void emui_loop()
 			}
 		}
 	}
+
+	free(ft);
 }
 
 // -----------------------------------------------------------------------

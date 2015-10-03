@@ -25,6 +25,17 @@
 
 static int emui_tile_debug_mode = 0;
 
+enum focus_change_direction {
+	FC_BEG,
+	FC_END,
+	FC_NEXT,
+	FC_PREV,
+	FC_LEFT,
+	FC_RIGHT,
+	FC_UP,
+	FC_DOWN
+};
+
 static struct emui_tile *focus;
 
 // -----------------------------------------------------------------------
@@ -145,14 +156,130 @@ void emui_tile_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
+static int emui_tile_handle_user_focus_keys(struct emui_focus_key *fk, int key)
 {
-	if (!t->drv->event_handler(t, ev)) {
-		return 0;
-	} else if (t->user_ev_handler) {
-		t->user_ev_handler(t, ev);
+	while (fk) {
+		edbg("%i == %i ?\n", fk->key, key);
+		if (fk->key == key) {
+			edbg("match\n");
+			emui_tile_focus(fk->t);
+			return 0;
+		}
+		fk = fk->next;
 	}
 
+	// event has not been handled
+	return 1;
+}
+
+// -----------------------------------------------------------------------
+static int emui_tile_focus_next_widget(struct emui_tile *t, int dir)
+{
+	struct emui_tile *next;
+
+	// where do we start searching for next widget?
+	switch (dir) {
+		case FC_BEG:
+			// from the beginning of children list
+			next = t->parent->child_h;
+			while (next->child_h) {
+				next = next->child_h;
+			}
+			dir = FC_NEXT;
+			break;
+		case FC_END:
+			// from the end of children list
+			next = t->parent->child_t;
+			while (next->child_t) {
+				next = next->child_t;
+			}
+			dir = FC_PREV;
+			break;
+		case FC_NEXT:
+			// from the next tile in children list
+			next = t->next;
+			break;
+		case FC_PREV:
+			// from the previous tile in children list
+			next = t->prev;
+			break;
+		default:
+			//assert(!"Wrong focus change direction");
+			next = NULL;
+			break;
+	}
+
+	// we got next child...
+	if (next) {
+		// ...and it is a widget...
+		if (next->type == T_WIDGET) {
+			// ...so switch focus there
+			emui_tile_focus(next);
+		// ...but it isn't a widget...
+		} else {
+			// ...so keep searching
+			emui_tile_focus_next_widget(next, dir);
+		}
+	// there is no more children on this level...
+	} else {
+		// ...and we're on the focus group top...
+		if (t->parent->properties & P_FOCUS_GROUP) {
+			// ...so we can only start searching the group from the beggining
+			emui_tile_focus_next_widget(t, dir == FC_NEXT ? FC_BEG : FC_END);
+		// ...and we're not on the focus group top...
+		} else {
+			// ...so go up and start new search there
+			emui_tile_focus_next_widget(t->parent, dir);
+		}
+	}
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+static int emui_tile_handle_neighbour_focus(struct emui_tile *t, int key)
+{
+	switch (key) {
+		case 9: // TAB
+			emui_tile_focus_next_widget(t, FC_NEXT);
+			return 0;
+		case KEY_BTAB:
+			emui_tile_focus_next_widget(t, FC_PREV);
+			return 0;
+		default:
+			return 1;
+	}
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
+{
+	// if tile has a driver event handler, run it first
+	if (!t->drv->event_handler(t, ev)) {
+		edbg("\"%s\" driver handled event %i %i\n", t->name, ev->type, ev->data.key);
+		return 0;
+	}
+
+	// then run user event handler, so it may override default focus handling
+	if (t->user_ev_handler && !t->user_ev_handler(t, ev)) {
+		edbg("\"%s\" user event handler handled event %i %i\n", t->name, ev->type, ev->data.key);
+		return 0;
+	}
+
+	// if tile is a focus group, search for user-set focus keys handled by it
+	if (t->properties & P_FOCUS_GROUP) {
+		if ((ev->type == EV_KEY) && !emui_tile_handle_user_focus_keys(t->fk, ev->data.key)) {
+			edbg("\"%s\" focus event handler handled event %i %i\n", t->name, ev->type, ev->data.key);
+			return 0;
+		}
+	// if tile is a widget, handle neighbourhood focus change
+	} else if (t->type == T_WIDGET) {
+		if ((ev->type == EV_KEY) && !emui_tile_handle_neighbour_focus(t, ev->data.key)) {
+			return 0;
+		}
+	}
+
+	edbg("unhandled event %i %i\n", ev->type, ev->data.key);
 	// event has not been handled
 	return 1;
 }
@@ -163,7 +290,7 @@ static const int emui_tile_compatibile(struct emui_tile *parent, int child_type)
 	static const int tile_compat[T_NUMTYPES][T_NUMTYPES] = {
 	/*					child:								*/
 	/* parent:			T_CONTAINER	T_WINDOW	T_WIDGET	*/
-	/* T_CONTAINER */	{1,			1,			0 },
+	/* T_CONTAINER */	{1,			1,			1 },
 	/* T_WINDOW */		{1,			0,			1 },
 	/* T_WIDGET */		{0,			0,			0 },
 	};
@@ -172,7 +299,7 @@ static const int emui_tile_compatibile(struct emui_tile *parent, int child_type)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int type, int x, int y, int h, int w, int mt, int mb, int ml, int mr, char *name, int properties)
+struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int type, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
 {
 	if (!emui_tile_compatibile(parent, type)) {
 		return NULL;
@@ -257,6 +384,35 @@ int emui_tile_has_focus(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
+static int emui_tile_add_focus_key(struct emui_tile *fg, int key, struct emui_tile *t)
+{
+	struct emui_focus_key *fk = malloc(sizeof(struct emui_focus_key));
+	if (!fk) return 1;
+
+	fk->key = key;
+	fk->t = t;
+	fk->next = fg->fk;
+	fg->fk = fk;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_set_focus_key(struct emui_tile *t, int key)
+{
+	// find nearest focus group
+	struct emui_tile *fg = t->parent;
+	while (fg && !(fg->properties & P_FOCUS_GROUP)) {
+		fg = fg->parent;
+	}
+
+	// no focus group (which is strange)
+	if (!fg) return 1;
+
+	return emui_tile_add_focus_key(fg, key, t);
+}
+
+// -----------------------------------------------------------------------
 struct emui_tile * emui_tile_focus_get()
 {
 	return focus;
@@ -315,10 +471,22 @@ static void emui_tile_free(struct emui_tile *t)
 {
 	t->drv->destroy_priv_data(t);
 	free(t->name);
+
+	// free ncurses windows
 	delwin(t->ncwin);
 	if (t->ncdeco) {
 		delwin(t->ncdeco);
 	}
+
+	// destroy focus keys
+	struct emui_focus_key *fk = t->fk;
+	struct emui_focus_key *fk_next;
+	while (fk) {
+		fk_next = fk->next;
+		free(fk);
+		fk = fk_next;
+	}
+
 	free(t);
 }
 

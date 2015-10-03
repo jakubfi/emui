@@ -60,15 +60,12 @@ struct emui_tile_drv emui_splitter_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_splitter_new(struct emui_tile *parent, int min1, int max1, int min2)
+struct emui_tile * emui_splitter_new(struct emui_tile *parent, int x, int y, int h)
 {
 	struct emui_tile *t;
 
-	char name_buf[256];
-	name_buf[255] = '\0';
-	snprintf(name_buf, 255, "Splitter %i-%i:%i", min1, max1, min2);
-
-	t = emui_tile_create(parent, &emui_splitter_drv, T_CONTAINER, parent->x, parent->y, parent->h, parent->w, 0, 0, 0, 0, name_buf, P_MAXIMIZED | P_CHILD_CTRL);
+	//t = emui_tile_create(parent, &emui_splitter_drv, T_CONTAINER, parent->x, parent->y, parent->h, parent->w, 0, 0, 0, 0, name_buf, P_MAXIMIZED | P_CHILD_CTRL);
+	t = emui_tile_create(parent, &emui_splitter_drv, T_CONTAINER, parent->x+x+parent->ml, parent->y+y+parent->mt, parent->w-2, h, 0, 0, 0, 0, "Splitter", P_NONE);
 
 	return t;
 }

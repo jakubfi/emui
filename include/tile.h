@@ -57,6 +57,12 @@ typedef int (*emui_update_geometry_f)(struct emui_tile *t);
 typedef int (*emui_event_handler_f)(struct emui_tile *t, struct emui_event *ev);
 typedef void (*emui_destroy_priv_data_f)(struct emui_tile *t);
 
+struct emui_focus_key {
+	int key;
+	struct emui_tile *t;
+	struct emui_focus_key *next;
+};
+
 struct emui_tile_drv {
 	emui_draw_f draw;
 	emui_draw_f debug;
@@ -86,7 +92,8 @@ struct emui_tile {
 	struct emui_tile *child_t;	// child tiles list tail
 	struct emui_tile *next;		// next tile in child list
 	struct emui_tile *prev;		// previous tile in child list
-	struct emui_tile *focus;		// next tile in focus chain
+	struct emui_tile *focus;	// next tile in focus chain
+	struct emui_focus_key *fk;	// list of managed focus keys
 
 	// tile-specific data and methods
 	void *priv_data;
@@ -96,7 +103,7 @@ struct emui_tile {
 	emui_event_handler_f user_ev_handler;
 };
 
-struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int type, int x, int y, int h, int w, int mt, int mb, int ml, int mr, char *name, int properties);
+struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int type, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
 void emui_tile_destroy(struct emui_tile *t);
 void emui_tile_debug_set(int i);
 
@@ -105,6 +112,7 @@ void emui_tile_child_remove(struct emui_tile *parent, struct emui_tile *t);
 void emui_tile_focus(struct emui_tile *t);
 int emui_tile_has_focus(struct emui_tile *t);
 int emui_tile_is_focused(struct emui_tile *t);
+int emui_tile_set_focus_key(struct emui_tile *t, int key);
 
 struct emui_tile * emui_tile_focus_get();
 
@@ -122,6 +130,7 @@ struct emui_tile * emui_framecounter_new(struct emui_tile *parent, int x, int y)
 struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y);
 struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int w, int maxlen, int type, int properties);
 int emui_lineedit_settext(struct emui_tile *t, char *text);
+struct emui_tile * emui_splitter_new(struct emui_tile *parent, int min1, int max1, int min2);
 
 #endif
 

@@ -87,7 +87,7 @@ struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w
 		ml = 1; mr = 1;
 	}
 
-	t = emui_tile_create(parent, &emui_window_drv, T_WINDOW, x, y, h, w, mt, mb, ml, mr, name, properties);
+	t = emui_tile_create(parent, &emui_window_drv, T_WINDOW, x, y, w, h, mt, mb, ml, mr, name, properties | P_FOCUS_GROUP);
 
 	return t;
 }

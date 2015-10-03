@@ -94,6 +94,7 @@ struct emui_tile * emui_screen_new()
 	t->type = T_CONTAINER;
 	t->drv = &emui_screen_drv;
 	t->name = strdup("SCREEN");
+	t->properties = P_FOCUS_GROUP;
 
 	emui_screen_update_geometry(t);
 
