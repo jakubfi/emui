@@ -21,15 +21,17 @@
 
 #include "tile.h"
 #include "event.h"
+#include "style.h"
+#include "print.h"
 
 // -----------------------------------------------------------------------
 void emui_tabs_draw(struct emui_tile *t)
 {
 	struct emui_tile *ch = t->ch_first;
-	wmove(t->ncdeco, 0, 0);
+	emuixyd(t, 0, 0);
 	while (ch) {
 		// TODO: check if we have enough sapce
-		wprintw(t->ncdeco, " [%s] ", ch->name);
+		emuidprt(t, S_TAB_INACTIVE, " [%s] ", ch->name);
 		ch = ch->next;
 	}
 }
@@ -69,7 +71,7 @@ struct emui_tile_drv emui_tabs_drv = {
 // -----------------------------------------------------------------------
 struct emui_tile * emui_tabs_new(struct emui_tile *parent)
 {
-	struct emui_tile *t = emui_tile_create(parent, &emui_tabs_drv, T_CONTAINER, parent->x, parent->y, parent->w, parent->h, 1, 0, 0, 0, "Tabs", P_MAXIMIZED | P_FOCUS_GROUP);
+	struct emui_tile *t = emui_tile_create(parent, &emui_tabs_drv, T_CONTAINER, 0, 0, parent->w, parent->h, 1, 0, 0, 0, "Tabs", P_MAXIMIZED | P_FOCUS_GROUP);
 
 	return t;
 }

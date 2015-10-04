@@ -29,38 +29,72 @@ static int emui_tile_debug_mode = 0;
 // -----------------------------------------------------------------------
 void emui_tile_update_geometry(struct emui_tile *t)
 {
-	if (!t->parent) {
+	struct emui_tile *parent = t->parent;
+
+	if (!parent) {
 		// nothing to do for the root tile (screen)
 		return;
 	}
 
+	// set decoration window geometry
 	if (t->properties & P_GEOM_FORCED) {
-		// nothing to do if tile geometry is controlled by the parent
-		return;
-	}
-
-	if (t->properties & P_MAXIMIZED) {
-		t->x = t->parent->x + t->parent->ml;
-		t->y = t->parent->y + t->parent->mt;
-		t->w = t->parent->w - (t->parent->ml + t->parent->mr);
-		t->h = t->parent->h - (t->parent->mt + t->parent->mb);
+		// nothing to do
+	} else if (t->properties & P_MAXIMIZED) {
+		// tile is maximized - use all available parent's area
+		t->dx = parent->x;
+		t->dy = parent->y;
+		t->dw = parent->w;
+		t->dh = parent->h;
 	} else {
-		t->x = t->rx + t->parent->x;
-		t->y = t->ry + t->parent->y;
-		t->w = t->rw;
-		t->h = t->rh;
+		t->dx = parent->x + t->rx;
+		t->dy = parent->y + t->ry;
+		t->dw = t->rw;
+		t->dh = t->rh;
 	}
 
-	// draw decoration if it's there
-	if (t->ncdeco) {
-		wresize(t->ncdeco, t->h, t->w);
-		mvwin(t->ncdeco, t->y, t->x);
-		werase(t->ncdeco);
+	// hide tile if outside parent's area
+	if ((t->dx >= parent->x + parent->w) || (t->dy >= parent->y + parent->h)) {
+		t->properties |= P_HIDDEN;
+	// unhide and fit otherwise
+	} else {
+		t->properties &= ~P_HIDDEN;
 	}
 
-	wresize(t->ncwin, t->h-(t->mt+t->mb), t->w-(t->ml+t->mr));
-	mvwin(t->ncwin, t->y+t->mt, t->x+t->ml);
-	werase(t->ncwin);
+	// fit tile width to parent's width
+	if (t->dw + t->dx > parent->dw + parent->dx) {
+		t->dw = parent->w - (t->dx - parent->x);
+	}
+
+	// fit tile to parent's height
+	if (t->dh + t->dy > parent->dh + parent->dy) {
+		t->dh = parent->h - (t->dy - parent->y);
+	}
+
+	// set contents window geometry
+	t->x = t->dx + t->ml;
+	t->y = t->dy + t->mt;
+	t->w = t->dw - t->ml - t->mr;
+	t->h = t->dh - t->mt - t->mb;
+
+	// prepare decoration window
+	if (t->properties & P_DECORATED) {
+		if (!t->ncdeco) {
+	        t->ncdeco = newwin(t->dh, t->dw, t->dy, t->dx);
+		} else {
+			wresize(t->ncdeco, t->dh, t->dw);
+			mvwin(t->ncdeco, t->dy, t->dx);
+			werase(t->ncdeco);
+		}
+	}
+
+	// prepare contents widow
+	if (!t->ncwin) {
+		t->ncwin = newwin(t->h, t->w, t->y, t->x);
+	} else {
+		wresize(t->ncwin, t->h, t->w);
+		mvwin(t->ncwin, t->y, t->x);
+		werase(t->ncwin);
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -76,21 +110,24 @@ static void emui_tile_debug(struct emui_tile *t)
 
 	// format debug string
 	buf[255] = '\0';
-	snprintf(buf, 256, "%i,%i %ix%i (%i,%i %ix%i)%s%s%s%s%s%s",
+	snprintf(buf, 256, "d:%i,%i/%ix%i %i,%i/%ix%i%s%s%s%s%s%s%s%s%s",
+		t->dx,
+		t->dy,
+		t->dw,
+		t->dh,
 		t->x,
 		t->y,
 		t->w,
 		t->h,
-		t->rx,
-		t->ry,
-		t->rw,
-		t->rh,
-		emui_has_focus(t) ? (emui_is_focused(t) ? "*" : "+") : "",
-		t->properties & P_MAXIMIZED ? "MAX " : "",
-		t->properties & P_HIDDEN ? "HID "  : "",
-		t->properties & P_CHILD_CTRL ? "CTL " : "",
-		t->properties & P_GEOM_FORCED ? "FORC " : "",
-		t->properties & P_BORDERLESS ? "BLS " : ""
+		emui_has_focus(t) ? (emui_is_focused(t) ? "*" : "+") : " ",
+		t->properties & P_MAXIMIZED ? "M" : "",
+		t->properties & P_HIDDEN ? "H"  : "",
+		t->properties & P_CHILD_CTRL ? "C" : "",
+		t->properties & P_GEOM_FORCED ? "F" : "",
+		t->properties & P_BORDERLESS ? "B" : "",
+		t->properties & P_FOCUS_GROUP ? "G" : "",
+		t->properties & P_INTERACTIVE ? "I" : "",
+		t->properties & P_DECORATED ? "D" : ""
 	);
 
 	// find a possibly free space to print
@@ -102,7 +139,7 @@ static void emui_tile_debug(struct emui_tile *t)
 		win = t->ncwin;
 	// bottom decoration
 	} else if (t->mb) {
-		y = t->h - 1;
+		y = t->dh - 1;
 		win = t->ncdeco;
 	// top decoration
 	} else if (t->mt) {
@@ -258,8 +295,8 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_d
 	t->properties = properties;
 	t->drv = drv;
 
-	t->rx = x + parent->x + parent->ml;
-	t->ry = y + parent->y + parent->mt;
+	t->rx = x;
+	t->ry = y;
 	t->rh = h;
 	t->rw = w;
 
@@ -268,16 +305,12 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_d
 	t->ml = ml;
 	t->mr = mr;
 
-	// create ncurses windows as requested by the user
-	// emui_tile_update_geometry() will redo them anyway
-
-	// if space for decoration is needed
-	if ((t->mt) || (t->mb) || (t->ml) || (t->mr)) {
-		t->ncdeco = newwin(t->rh, t->rw, t->ry, t->rx);
+	if (mt || mb || ml || mr) {
+		t->properties |= P_DECORATED;
 	}
-	t->ncwin = newwin(t->rh-(t->mt+t->mb), t->rw-(t->ml+t->mr), t->ry+t->mt, t->rx+t->ml);
 
 	emui_tile_child_append(parent, t);
+	emui_tile_update_geometry(t);
 
 	return t;
 }

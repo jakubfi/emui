@@ -46,6 +46,7 @@ enum emui_tile_properties {
 	P_BORDERLESS	= 1 << 4,	// tile should be drawn without a border
 	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
 	P_INTERACTIVE	= 1 << 6,	// user can interact with the tile (thus it can be focused)
+	P_DECORATED		= 1 << 7,	// tile has decoration
 };
 
 #define P_USER_SETTABLE (P_MAXIMIZED | P_HIDDEN | P_BORDERLESS | P_FOCUS_GROUP )
@@ -74,9 +75,10 @@ struct emui_tile {
 	int key;					// shortcut key
 
 	// geometry
-	unsigned rx, ry, rw, rh;	// requested tile geometry
-	unsigned x, y, w, h;		// actual tile geometry
-	unsigned mt, mb, ml, mr;	// margins for decoration
+	unsigned rx, ry, rw, rh;	// user-requested tile geometry including decoration (relative to parent's work area)
+	unsigned mt, mb, ml, mr;	// user-requested margins for decoration
+	unsigned dx, dy, dw, dh;	// actual tile area including decoration
+	unsigned x, y, w, h;		// actual tile work area geometry (d* minus m*)
 
 	// ncurses data
 	WINDOW *ncdeco;				// decoration ncurses window
@@ -127,7 +129,7 @@ struct emui_tile * emui_framecounter_new(struct emui_tile *parent, int x, int y)
 struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y);
 struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int w, int maxlen, int type, int properties);
 int emui_lineedit_settext(struct emui_tile *t, char *text);
-struct emui_tile * emui_splitter_new(struct emui_tile *parent, int min1, int max1, int min2);
+struct emui_tile * emui_splitter_new(struct emui_tile *parent, int x, int y, int h);
 
 #endif
 

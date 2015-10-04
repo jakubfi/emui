@@ -64,8 +64,7 @@ struct emui_tile * emui_splitter_new(struct emui_tile *parent, int x, int y, int
 {
 	struct emui_tile *t;
 
-	//t = emui_tile_create(parent, &emui_splitter_drv, T_CONTAINER, parent->x, parent->y, parent->h, parent->w, 0, 0, 0, 0, name_buf, P_MAXIMIZED | P_CHILD_CTRL);
-	t = emui_tile_create(parent, &emui_splitter_drv, T_CONTAINER, parent->x+x+parent->ml, parent->y+y+parent->mt, parent->w-2, h, 0, 0, 0, 0, "Splitter", P_NONE);
+	t = emui_tile_create(parent, &emui_splitter_drv, T_CONTAINER, x, y, parent->w, h, 0, 0, 0, 0, "Splitter", P_NONE);
 
 	return t;
 }

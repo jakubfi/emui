@@ -38,11 +38,12 @@ int emui_screen_update_geometry(struct emui_tile *t)
 	// handle resize here, because if terminal is resized quickly enough,
 	// window size may change more during resize event, leaving UI
 	// not fully scaled to the terminal size
-	t->x = t->rx = 0;
-	t->y = t->ry = 0;
-	getmaxyx(stdscr, t->rh, t->rw);
-	t->h = t->rh;
-	t->w = t->rw;
+	t->x = t->rx = t->dx = 0;
+	t->y = t->ry = t->dy = 0;
+	t->mr = t->ml = t->mt = t->mb = 0;
+	getmaxyx(stdscr, t->dh, t->dw);
+	t->h = t->rh = t->dh;
+	t->w = t->rw = t->dw;
 
 	return 0;
 }

@@ -47,7 +47,7 @@ void emui_lineedit_draw(struct emui_tile *t)
 		style = S_TEXT_FOCUSED;
 	}
 
-	emuixyprt(t, 0, 0, style, le->buf);
+	emuixyprt(t, 0, 0, style, "%s", le->buf);
 	wmove(t->ncwin, 0, le->pos);
 }
 
