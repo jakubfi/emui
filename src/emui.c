@@ -144,8 +144,12 @@ static void emui_draw(struct emui_tile *t)
 
 	// update common tile geometry stuff
 	emui_tile_update_geometry(t);
+
 	// draw the tile
-	emui_tile_draw(t);
+	if (emui_tile_draw(t)) {
+		// nothing drawn, tile is hidden, give up on children too
+		return;
+	}
 
 	// draw children
 	struct emui_tile *child = t->ch_first;

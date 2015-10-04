@@ -38,7 +38,8 @@ void emui_tile_update_geometry(struct emui_tile *t)
 
 	// set decoration window geometry
 	if (t->properties & P_GEOM_FORCED) {
-		// nothing to do
+		// nothing to do here
+		// dx, dy, dw, dh should be set by the parent already
 	} else if (t->properties & P_MAXIMIZED) {
 		// tile is maximized - use all available parent's area
 		t->dx = parent->x;
@@ -52,9 +53,13 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		t->dh = t->rh;
 	}
 
+	// TODO: what from the following should we skip in case of P_GEOM_FORCED?
+
 	// hide tile if outside parent's area
 	if ((t->dx >= parent->x + parent->w) || (t->dy >= parent->y + parent->h)) {
 		t->properties |= P_HIDDEN;
+		// give up on hidden tile
+		return;
 	// unhide and fit otherwise
 	} else {
 		t->properties &= ~P_HIDDEN;
@@ -86,6 +91,9 @@ void emui_tile_update_geometry(struct emui_tile *t)
 			werase(t->ncdeco);
 		}
 	}
+
+	// do tile-specific geometry updates
+	t->drv->update_geometry(t);
 
 	// prepare contents widow
 	if (!t->ncwin) {
@@ -160,10 +168,13 @@ static void emui_tile_debug(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_draw(struct emui_tile *t)
+int emui_tile_draw(struct emui_tile *t)
 {
-	// do tile-specific geometry updates
-	t->drv->update_geometry(t);
+	// tile is hidden, nothing to do
+	if (t->properties & P_HIDDEN) {
+		return 1;
+	}
+
 	// draw the tile
 	t->drv->draw(t);
 
@@ -174,10 +185,12 @@ void emui_tile_draw(struct emui_tile *t)
 
 	// update ncurses windows, but don't refresh
 	// (we'll do the update in emui_loop())
-	if (t->ncdeco) {
+	if (t->properties & P_DECORATED) {
 		wnoutrefresh(t->ncdeco);
 	}
 	wnoutrefresh(t->ncwin);
+
+	return 0;
 }
 
 // -----------------------------------------------------------------------

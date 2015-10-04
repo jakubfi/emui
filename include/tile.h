@@ -115,7 +115,7 @@ void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t);
 void emui_tile_child_remove(struct emui_tile *parent, struct emui_tile *t);
 
 void emui_tile_update_geometry(struct emui_tile *t);
-void emui_tile_draw(struct emui_tile *t);
+int emui_tile_draw(struct emui_tile *t);
 int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev);
 int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler);
 int emui_tile_set_focus_key(struct emui_tile *t, int key);
