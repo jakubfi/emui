@@ -167,10 +167,22 @@ static int emui_tile_handle_neighbour_focus(struct emui_tile *t, int key)
 {
 	switch (key) {
 		case 9: // TAB
-			emui_focus_neighbour(t, FC_NEXT);
+			emui_focus_list_neighbour(t, FC_NEXT);
 			return 0;
 		case KEY_BTAB:
-			emui_focus_neighbour(t, FC_PREV);
+			emui_focus_list_neighbour(t, FC_PREV);
+			return 0;
+		case KEY_UP:
+			emui_focus_physical_neighbour(t, FC_UP);
+			return 0;
+		case KEY_DOWN:
+			emui_focus_physical_neighbour(t, FC_DOWN);
+			return 0;
+		case KEY_LEFT:
+			emui_focus_physical_neighbour(t, FC_LEFT);
+			return 0;
+		case KEY_RIGHT:
+			emui_focus_physical_neighbour(t, FC_RIGHT);
 			return 0;
 		default:
 			return 1;

@@ -55,10 +55,10 @@ struct emui_tile * create_win2(struct emui_tile *parent)
 	wid2 = emui_lineedit_new(cont1, 0, 1, 20, 30, TT_TEXT, P_NONE);
 	emui_lineedit_settext(wid2, "Joasia");
 
-	wid3 = emui_lineedit_new(cont1, 0, 2, 20, 30, TT_TEXT, P_NONE);
+	wid3 = emui_lineedit_new(cont1, 10, 0, 20, 30, TT_TEXT, P_NONE);
 	emui_lineedit_settext(wid3, "Pasternasia");
 
-	wid4 = emui_lineedit_new(cont2, 0, 0, 20, 30, TT_TEXT, P_NONE);
+	wid4 = emui_lineedit_new(cont2, 10, 1, 20, 30, TT_TEXT, P_NONE);
 	emui_lineedit_settext(wid4, "Dupasia");
 
 	return win;

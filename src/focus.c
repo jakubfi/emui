@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
+#include <limits.h>
 
 #include "tile.h"
 #include "focus.h"
@@ -25,7 +26,54 @@
 static struct emui_tile *focus;
 
 // -----------------------------------------------------------------------
-int emui_focus_neighbour(struct emui_tile *t, int dir)
+static int distance(int x1, int y1, int x2, int y2)
+{
+	int distance = (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2);
+	edbg("Distance (%i,%i)->(%i,%i) = %i\n", x1, y1, x2, y2, distance);
+	return distance;
+}
+
+// -----------------------------------------------------------------------
+int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
+{
+	struct emui_tile *f = t->fg->fg_h;
+	struct emui_tile *match = t;
+	int min_dist = INT_MAX;
+
+	while (f) {
+		if (f->properties & P_INTERACTIVE) {
+			int dist = distance(t->x, t->y, f->x, f->y);
+			int cl, cg;
+
+			// TODO: find more ergonomic policy for switching up/down/left/right
+
+			switch (dir) {
+				case FC_UP: cl = f->y; cg = t->y; break;
+				case FC_DOWN: cl = t->y; cg = f->y; break;
+				case FC_LEFT: cl = f->x; cg = t->x; break;
+				case FC_RIGHT: cl = t->x; cg = f->x; break;
+				default: return 0; // unknown or incompatibile direction
+			}
+
+			edbg("%i < %i && %i < %i ?\n", cl, cg, dist, min_dist);
+			if (cl < cg) {
+				if (dist < min_dist) {
+					edbg("yes\n");
+					min_dist = dist;
+					match = f;
+				}
+			}
+		}
+		f = f->fg_next;
+	}
+
+	if (match != t) emui_focus(match);
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 {
 	struct emui_tile *next = t;
 
