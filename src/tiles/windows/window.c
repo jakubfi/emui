@@ -22,6 +22,7 @@
 #include "event.h"
 #include "style.h"
 #include "print.h"
+#include "focus.h"
 
 // -----------------------------------------------------------------------
 void emui_window_draw(struct emui_tile *t)
@@ -29,7 +30,7 @@ void emui_window_draw(struct emui_tile *t)
 	int title_style = S_WINDOW_TITLE;
 	int frame_style = S_WINDOW_FRAME;
 
-	if (emui_tile_has_focus(t)) {
+	if (emui_has_focus(t)) {
 		title_style = S_WINDOW_TITLE_F;
 		frame_style = S_WINDOW_FRAME_F;
 	}
@@ -79,6 +80,9 @@ struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w
 	struct emui_tile *t;
 	int mt, mb, ml, mr;
 
+	properties &= P_USER_SETTABLE;
+	properties |= P_FOCUS_GROUP;
+
 	if (properties & P_BORDERLESS) {
 		mt = 0; mb = 0;
 		ml = 0; mr = 0;
@@ -87,7 +91,7 @@ struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w
 		ml = 1; mr = 1;
 	}
 
-	t = emui_tile_create(parent, &emui_window_drv, T_WINDOW, x, y, w, h, mt, mb, ml, mr, name, properties | P_FOCUS_GROUP);
+	t = emui_tile_create(parent, &emui_window_drv, T_WINDOW, x, y, w, h, mt, mb, ml, mr, name, properties);
 
 	return t;
 }

@@ -39,12 +39,13 @@ enum emui_tile_types {
 
 enum emui_tile_properties {
 	P_NONE			= 0,
-	P_MAXIMIZED		= 1 << 0,
-	P_HIDDEN		= 1 << 1,
-	P_CHILD_CTRL	= 1 << 2,
-	P_GEOM_FORCED	= 1 << 3,
-	P_BORDERLESS	= 1 << 4,
-	P_FOCUS_GROUP	= 1 << 5,
+	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
+	P_HIDDEN		= 1 << 1,	// tile is hidden due to geometry constraints
+	P_CHILD_CTRL	= 1 << 2,	// tile forces geometry of its children
+	P_GEOM_FORCED	= 1 << 3,	// tile geometry is forced by the parent
+	P_BORDERLESS	= 1 << 4,	// tile should be drawn without a border
+	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
+	P_INTERACTIVE	= 1 << 6,	// user can interact with the tile (thus it can be focused)
 };
 
 #define P_USER_SETTABLE (P_MAXIMIZED | P_HIDDEN | P_BORDERLESS | P_FOCUS_GROUP )
@@ -56,12 +57,6 @@ typedef void (*emui_draw_f)(struct emui_tile *t);
 typedef int (*emui_update_geometry_f)(struct emui_tile *t);
 typedef int (*emui_event_handler_f)(struct emui_tile *t, struct emui_event *ev);
 typedef void (*emui_destroy_priv_data_f)(struct emui_tile *t);
-
-struct emui_focus_key {
-	int key;
-	struct emui_tile *t;
-	struct emui_focus_key *next;
-};
 
 struct emui_tile_drv {
 	emui_draw_f draw;
@@ -76,6 +71,7 @@ struct emui_tile {
 	unsigned type;				// tile type
 	char *name;					// tile name
 	unsigned properties;		// tile properties
+	int key;					// shortcut key
 
 	// geometry
 	unsigned rx, ry, rw, rh;	// requested tile geometry
@@ -88,12 +84,18 @@ struct emui_tile {
 
 	// UI hierarchical structure
 	struct emui_tile *parent;	// parent tile
-	struct emui_tile *child_h;	// child tiles list head
-	struct emui_tile *child_t;	// child tiles list tail
+	struct emui_tile *child_h;	// child tiles list head (start)
+	struct emui_tile *child_t;	// child tiles list tail (end)
 	struct emui_tile *next;		// next tile in child list
 	struct emui_tile *prev;		// previous tile in child list
 	struct emui_tile *focus;	// next tile in focus chain
-	struct emui_focus_key *fk;	// list of managed focus keys
+
+	// focus group structure
+	struct emui_tile *fg;		// tile's focus group
+	struct emui_tile *fg_h;		// focus group head (start)
+	struct emui_tile *fg_t;		// focus group tail (end)
+	struct emui_tile *fg_next;	// next tile in focus group list
+	struct emui_tile *fg_prev;	// previous tile in focus group list
 
 	// tile-specific data and methods
 	void *priv_data;
@@ -109,17 +111,12 @@ void emui_tile_debug_set(int i);
 
 void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t);
 void emui_tile_child_remove(struct emui_tile *parent, struct emui_tile *t);
-void emui_tile_focus(struct emui_tile *t);
-int emui_tile_has_focus(struct emui_tile *t);
-int emui_tile_is_focused(struct emui_tile *t);
-int emui_tile_set_focus_key(struct emui_tile *t, int key);
-
-struct emui_tile * emui_tile_focus_get();
 
 void emui_tile_update_geometry(struct emui_tile *t);
 void emui_tile_draw(struct emui_tile *t);
 int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev);
 int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler);
+int emui_tile_set_focus_key(struct emui_tile *t, int key);
 
 // tiles
 

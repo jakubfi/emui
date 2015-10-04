@@ -5,6 +5,7 @@ add_library(emui-lib SHARED
 	event.c
 	style.c
 	print.c
+	focus.c
 )
 
 target_link_libraries(emui-lib

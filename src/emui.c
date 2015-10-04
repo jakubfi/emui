@@ -25,6 +25,7 @@
 #include "event.h"
 #include "tile.h"
 #include "style.h"
+#include "focus.h"
 
 #define EMUI_FPS_DEFAULT 30
 #define EMUI_FPS_CAP 1000
@@ -117,7 +118,7 @@ static void emui_evq_update(struct timeval *tv)
 static int emui_event_router(struct emui_event *ev)
 {
 	edbg("--- Got event: %i %i\n", ev->type, ev->data.key);
-	struct emui_tile *t = emui_tile_focus_get();
+	struct emui_tile *t = emui_focus_get();
 	while (t) {
 		edbg("\"%s\" handling event: %i %i\n", t->name, ev->type, ev->data.key);
 		if (emui_tile_handle_event(t, ev) == 0) {
@@ -150,7 +151,7 @@ static void emui_draw(struct emui_tile *t)
 	struct emui_tile *child = t->child_h;
 	while (child) {
 		// draw non-focused tiles first, store focused
-		if (!emui_tile_has_focus(child)) {
+		if (!emui_has_focus(child)) {
 			emui_draw(child);
 		} else {
 			focused_child = child;
@@ -228,7 +229,7 @@ void emui_loop()
 	struct emui_event *ev;
 
 	// init focus
-	emui_tile_focus(layout);
+	emui_focus(layout);
 
 	// init frametime
 	if (emui_fps > 0) {

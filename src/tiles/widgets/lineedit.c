@@ -24,6 +24,7 @@
 #include "event.h"
 #include "style.h"
 #include "print.h"
+#include "focus.h"
 
 struct lineedit {
 	int type;
@@ -42,7 +43,7 @@ void emui_lineedit_draw(struct emui_tile *t)
 	int style = S_TEXT_NORMAL;
 	if (le->in_edit) {
 		style = S_TEXT_EDITED;
-	} else if (emui_tile_has_focus(t) ) {
+	} else if (emui_has_focus(t) ) {
 		style = S_TEXT_FOCUSED;
 	}
 
@@ -152,6 +153,9 @@ int emui_lineedit_event_handler(struct emui_tile *t, struct emui_event *ev)
 // -----------------------------------------------------------------------
 void emui_lineedit_destroy_priv_data(struct emui_tile *t)
 {
+	struct lineedit *le = t->priv_data;
+	free(le->buf);
+	free(le);
 }
 
 // -----------------------------------------------------------------------
@@ -167,6 +171,8 @@ struct emui_tile_drv emui_lineedit_drv = {
 struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int w, int maxlen, int type, int properties)
 {
 	struct emui_tile *t;
+	properties &= P_USER_SETTABLE;
+	properties |= P_INTERACTIVE;
 
 	t = emui_tile_create(parent, &emui_lineedit_drv, T_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, properties);
 	t->priv_data = calloc(1, sizeof(struct lineedit));
