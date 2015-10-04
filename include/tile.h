@@ -84,16 +84,16 @@ struct emui_tile {
 
 	// UI hierarchical structure
 	struct emui_tile *parent;	// parent tile
-	struct emui_tile *child_h;	// child tiles list head (start)
-	struct emui_tile *child_t;	// child tiles list tail (end)
+	struct emui_tile *ch_first;	// children list start
+	struct emui_tile *ch_last;	// children list end
 	struct emui_tile *next;		// next tile in child list
 	struct emui_tile *prev;		// previous tile in child list
 	struct emui_tile *focus;	// next tile in focus chain
 
 	// focus group structure
 	struct emui_tile *fg;		// tile's focus group
-	struct emui_tile *fg_h;		// focus group head (start)
-	struct emui_tile *fg_t;		// focus group tail (end)
+	struct emui_tile *fg_first;	// focus group start
+	struct emui_tile *fg_last;	// focus group end
 	struct emui_tile *fg_next;	// next tile in focus group list
 	struct emui_tile *fg_prev;	// previous tile in focus group list
 

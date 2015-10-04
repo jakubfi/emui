@@ -25,7 +25,7 @@
 // -----------------------------------------------------------------------
 void emui_tabs_draw(struct emui_tile *t)
 {
-	struct emui_tile *ch = t->child_h;
+	struct emui_tile *ch = t->ch_first;
 	wmove(t->ncdeco, 0, 0);
 	while (ch) {
 		// TODO: check if we have enough sapce

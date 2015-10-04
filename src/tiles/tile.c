@@ -146,7 +146,7 @@ void emui_tile_draw(struct emui_tile *t)
 // -----------------------------------------------------------------------
 static int emui_tile_handle_user_focus_keys(struct emui_tile *fg, int key)
 {
-	struct emui_tile *t = fg->fg_h;
+	struct emui_tile *t = fg->fg_first;
 
 	while (t) {
 		edbg("%i == %i ?\n", t->key, key);
@@ -301,13 +301,13 @@ void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t)
 {   
 	// lint into children list
 	t->parent = parent;
-	t->prev = parent->child_t;
-	if (parent->child_t) {
-		parent->child_t->next = t;
+	t->prev = parent->ch_last;
+	if (parent->ch_last) {
+		parent->ch_last->next = t;
 	} else {
-		parent->child_h = t;
+		parent->ch_first = t;
 	}
-	parent->child_t = t;
+	parent->ch_last = t;
 
 	// if parent controls child geometry, set geometry to forced
 	if (parent->properties & P_CHILD_CTRL) {
@@ -329,11 +329,11 @@ void emui_tile_child_unlink(struct emui_tile *t)
 	if (t->next) {
 		t->next->prev = t->prev;
 	}
-	if (t == t->parent->child_h) {
-		t->parent->child_h = t->next;
+	if (t == t->parent->ch_first) {
+		t->parent->ch_first = t->next;
 	}
-	if (t == t->parent->child_t) {
-		t->parent->child_t = t->prev;
+	if (t == t->parent->ch_last) {
+		t->parent->ch_last = t->prev;
 	}
 }
 
@@ -355,7 +355,7 @@ static void emui_tile_free(struct emui_tile *t)
 // -----------------------------------------------------------------------
 static void emui_tile_destroy_children(struct emui_tile *t)
 {
-	struct emui_tile *ch = t->child_h;
+	struct emui_tile *ch = t->ch_first;
 	while (ch) {
 		struct emui_tile *next_ch = ch->next;
 		emui_tile_destroy_children(ch);

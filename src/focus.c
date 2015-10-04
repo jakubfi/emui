@@ -36,7 +36,7 @@ static int distance(int x1, int y1, int x2, int y2)
 // -----------------------------------------------------------------------
 int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 {
-	struct emui_tile *f = t->fg->fg_h;
+	struct emui_tile *f = t->fg->fg_first;
 	struct emui_tile *match = t;
 	int min_dist = INT_MAX;
 
@@ -79,8 +79,8 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 
 	while (1) {
 		switch (dir) {
-			case FC_BEG: next = t->fg->fg_h; dir = FC_NEXT; break;
-			case FC_END: next = t->fg->fg_t; dir = FC_PREV; break;
+			case FC_BEG: next = t->fg->fg_first; dir = FC_NEXT; break;
+			case FC_END: next = t->fg->fg_last; dir = FC_PREV; break;
 			case FC_NEXT: next = next->fg_next; break;
 			case FC_PREV: next = next->fg_prev; break;
 			default: return 0; // unknown or incompatibile direction
@@ -108,11 +108,11 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 void emui_focus(struct emui_tile *t)
 {
 	// go down the tree if tile is not a leaf (focus needs to cover full tile path)
-	while (t->child_h) {
+	while (t->ch_first) {
 		if (t->focus) {
 			 t = t->focus;
 		} else {
-			t = t->child_h;
+			t = t->ch_first;
 		}
 	}
 
@@ -165,13 +165,13 @@ int emui_focus_group_add(struct emui_tile *parent, struct emui_tile *t)
 	// there is a focus group to be in
 	if (fg) { 
 		t->fg = fg;
-		t->fg_prev = fg->fg_t;
-		if (fg->fg_t) {
-			fg->fg_t->fg_next = t;
+		t->fg_prev = fg->fg_last;
+		if (fg->fg_last) {
+			fg->fg_last->fg_next = t;
 		} else {
-			fg->fg_h = t;
+			fg->fg_first = t;
 		}
-		fg->fg_t = t;
+		fg->fg_last = t;
 	}
 
 	return 0;
@@ -192,11 +192,11 @@ void emui_focus_group_unlink(struct emui_tile *t)
 	if (t->fg_next) {
 		t->fg_next->fg_prev = t->fg_prev;
 	}
-	if (t == fg->fg_h) {
-		fg->fg_h = t->fg_next;
+	if (t == fg->fg_first) {
+		fg->fg_first = t->fg_next;
 	}
-	if (t == fg->fg_t) {
-		fg->fg_t = t->fg_prev;
+	if (t == fg->fg_last) {
+		fg->fg_last = t->fg_prev;
 	}
 }
 

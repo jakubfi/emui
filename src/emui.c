@@ -148,7 +148,7 @@ static void emui_draw(struct emui_tile *t)
 	emui_tile_draw(t);
 
 	// draw children
-	struct emui_tile *child = t->child_h;
+	struct emui_tile *child = t->ch_first;
 	while (child) {
 		// draw non-focused tiles first, store focused
 		if (!emui_has_focus(child)) {
