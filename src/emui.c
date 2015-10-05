@@ -23,7 +23,7 @@
 #include <sys/time.h>
 
 #include "event.h"
-#include "tile.h"
+#include "tiles.h"
 #include "style.h"
 #include "focus.h"
 
@@ -255,13 +255,17 @@ void emui_loop()
 			} else {
 				emui_event_router(ev);
 			}
+			// if UI is exclusively event-driven, update screen here
+			if (emui_fps <= 0) {
+				emui_update_screen();
+			}
 			free(ev);
 		// or wait for another event
 		// TODO: we may starve screen updater here
 		} else {
 			emui_evq_update(ft);
-			// update screen if needed
-			if (emui_need_screen_update(ft)) {
+			// for periodic screen updates, update screen if needed
+			if ((emui_fps > 0) && emui_need_screen_update(ft)) {
 				emui_update_screen();
 				emui_adjust_frametime(ft, emui_fps);
 			}

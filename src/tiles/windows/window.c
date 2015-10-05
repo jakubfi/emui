@@ -27,12 +27,12 @@
 // -----------------------------------------------------------------------
 void emui_window_draw(struct emui_tile *t)
 {
-	int title_style = S_WINDOW_TITLE;
-	int frame_style = S_WINDOW_FRAME;
+	int title_style = S_TITLE;
+	int frame_style = S_FRAME;
 
 	if (emui_has_focus(t)) {
-		title_style = S_WINDOW_TITLE_F;
-		frame_style = S_WINDOW_FRAME_F;
+		title_style = S_TITLE_FOCUSED;
+		frame_style = S_FRAME_FOCUSED;
 	}
 
 	if (!(t->properties & P_BORDERLESS)) {

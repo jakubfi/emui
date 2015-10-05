@@ -40,7 +40,7 @@ void emui_lineedit_draw(struct emui_tile *t)
 {
 	struct lineedit *le = t->priv_data;
 
-	int style = S_TEXT_NORMAL;
+	int style = S_TEXT_BOLD;
 	if (le->in_edit) {
 		style = S_TEXT_EDITED;
 	} else if (emui_has_focus(t) ) {
@@ -187,7 +187,7 @@ struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int
 }
 
 // -----------------------------------------------------------------------
-int emui_lineedit_settext(struct emui_tile *t, char *text)
+int emui_lineedit_set_text(struct emui_tile *t, char *text)
 {
 	struct lineedit *le = t->priv_data;
 

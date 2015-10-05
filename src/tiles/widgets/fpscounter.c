@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <ncurses.h>
 #include <sys/time.h>
 
 #include "emui.h"
@@ -27,6 +26,7 @@
 #include "print.h"
 
 struct fpscounter {
+	int style;
 	struct timeval t;
 	double fps;
 	int modulo;
@@ -46,7 +46,7 @@ void emui_fpscounter_draw(struct emui_tile *t)
 		d->fps = d->modulo * 1000000.0 / frame_time;
 	}
 
-	emuixyprt(t, 0, 0, S_DEFAULT, "%.02f", d->fps);
+	emuixyprt(t, 0, 0, d->style, "%.02f", d->fps);
 }
 
 // -----------------------------------------------------------------------
@@ -83,7 +83,7 @@ struct emui_tile_drv emui_fpscounter_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y)
+struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y, int style)
 {
 	struct emui_tile *t;
 
@@ -92,8 +92,10 @@ struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y)
 	t->priv_data = calloc(1, sizeof(struct fpscounter));
 
 	struct fpscounter *d = t->priv_data;
-	unsigned fps = emui_get_fps();
 
+	d->style = style;
+
+	unsigned fps = emui_get_fps();
 	if (fps >= 4) {
 		d->modulo = fps / 4;
 	} else if (fps >= 2) {

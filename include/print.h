@@ -34,7 +34,7 @@ int emuixydprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *for
 int vemuidprt(struct emui_tile *t, int style, char *format, va_list vl);
 int vemuixydprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl);
 int emuidbox(struct emui_tile *t, int style);
-
+int emuifillbg(struct emui_tile *t, int style);
 
 #endif
 

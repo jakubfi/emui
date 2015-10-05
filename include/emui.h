@@ -18,8 +18,11 @@
 #ifndef EMUI_H
 #define EMUI_H
 
-#include "tile.h"
 #include "event.h"
+#include "focus.h"
+#include "print.h"
+#include "style.h"
+#include "tiles.h"
 
 void edbg(char *format, ...);
 

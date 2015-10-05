@@ -17,16 +17,20 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <ncurses.h>
 
 #include "tile.h"
 #include "event.h"
 #include "style.h"
 #include "print.h"
 
+struct W_NAME {
+
+};
+
 // -----------------------------------------------------------------------
 void emui_W_NAME_draw(struct emui_tile *t)
 {
+	struct label *d = t->priv_data;
 }
 
 // -----------------------------------------------------------------------
@@ -50,6 +54,7 @@ int emui_W_NAME_event_handler(struct emui_tile *t, struct emui_event *ev)
 // -----------------------------------------------------------------------
 void emui_W_NAME_destroy_priv_data(struct emui_tile *t)
 {
+	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
@@ -67,6 +72,9 @@ struct emui_tile * emui_W_NAME_new(struct emui_tile *parent, int x, int y, int w
 	struct emui_tile *t;
 
 	t = emui_tile_create(parent, &emui_W_NAME_drv, T_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
+
+	t->priv_data = calloc(1, sizeof(struct W_NAME));
+	struct W_NAME *d = t->priv_data;
 
 	return t;
 }

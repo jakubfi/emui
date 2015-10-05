@@ -17,10 +17,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <ncurses.h>
 
 #include "tile.h"
 #include "event.h"
+#include "focus.h"
 #include "style.h"
 #include "print.h"
 
@@ -30,8 +30,10 @@ void emui_tabs_draw(struct emui_tile *t)
 	struct emui_tile *ch = t->ch_first;
 	emuixyd(t, 0, 0);
 	while (ch) {
+		int style = S_TAB;
+		if (emui_has_focus(ch)) style = S_TAB_FOCUSED;
 		// TODO: check if we have enough sapce
-		emuidprt(t, S_TAB_INACTIVE, " [%s] ", ch->name);
+		emuidprt(t, style, " %s ", ch->name);
 		ch = ch->next;
 	}
 }

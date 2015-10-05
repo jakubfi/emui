@@ -127,4 +127,23 @@ int emuidbox(struct emui_tile *t, int style)
 	return ret;
 }
 
+// -----------------------------------------------------------------------
+int emuifillbg(struct emui_tile *t, int style)
+{
+	int ret;
+	attr_t attr_old;
+	short colorpair_old;
+
+	WINDOW *win = t->ncwin;
+
+	wattr_get(win, &attr_old, &colorpair_old, NULL);
+	wattrset(win, emui_style_get(style));
+	for (int y=0 ; y<t->h ; y++) {
+		ret = whline(win, ' ', t->w);
+	}
+	wattrset(win, colorpair_old | attr_old);
+
+	return ret;
+}
+
 // vim: tabstop=4 shiftwidth=4 autoindent

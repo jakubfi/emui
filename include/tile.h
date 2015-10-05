@@ -37,6 +37,12 @@ enum emui_tile_types {
 	T_NUMTYPES
 };
 
+enum emui_align_types {
+	AL_LEFT,
+	AL_RIGHT,
+	AL_CENTER,
+};
+
 enum emui_tile_properties {
 	P_NONE			= 0,
 	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
@@ -119,17 +125,6 @@ int emui_tile_draw(struct emui_tile *t);
 int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev);
 int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler);
 int emui_tile_set_focus_key(struct emui_tile *t, int key);
-
-// tiles
-
-struct emui_tile * emui_screen_new();
-struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties);
-struct emui_tile * emui_tabs_new(struct emui_tile *parent);
-struct emui_tile * emui_framecounter_new(struct emui_tile *parent, int x, int y);
-struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y);
-struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int w, int maxlen, int type, int properties);
-int emui_lineedit_settext(struct emui_tile *t, char *text);
-struct emui_tile * emui_splitter_new(struct emui_tile *parent, int x, int y, int h);
 
 #endif
 

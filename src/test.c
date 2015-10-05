@@ -26,14 +26,16 @@ struct emui_tile * create_win1(struct emui_tile *parent)
 {
 	struct emui_tile *win, *wid1, *wid2, *wid3;
 
-	win = emui_window_new(parent, 0, 0, 30, 20, "Counters", P_NONE);
+	win = emui_window_new(parent, 0, 1, 30, 20, "Counters", P_NONE);
 	emui_tile_set_focus_key(win, KEY_F(1));
 
 	wid1 = emui_lineedit_new(win, 0, 3, 20, 20, TT_TEXT, P_NONE);
-	emui_lineedit_settext(wid1, "Sooyoung");
+	emui_lineedit_set_text(wid1, "Sooyoung");
 
-	wid2 = emui_framecounter_new(win, 0, 0);
-	wid3 = emui_fpscounter_new(win, 0, 1);
+	wid2 = emui_label_new(win, 0, 0, 10, AL_LEFT, S_TEXT, "Frame:");
+	wid2 = emui_framecounter_new(win, 17, 0, S_TEXT_BOLD);
+	wid3 = emui_label_new(win, 0, 1, 10, AL_CENTER, S_DEBUG, "FPS:");
+	wid3 = emui_fpscounter_new(win, 17, 1, S_TEXT_BOLD);
 
 	return win;
 }
@@ -43,23 +45,23 @@ struct emui_tile * create_win2(struct emui_tile *parent)
 {
 	struct emui_tile *win, *wid1, *wid2, *wid3, *wid4, *cont1, *cont2;
 
-	win = emui_window_new(parent, 30, 0, 30, 20, "Edits", P_NONE);
+	win = emui_window_new(parent, 30, 1, 30, 20, "Edits", P_NONE);
 	emui_tile_set_focus_key(win, KEY_F(2));
 
 	cont1 = emui_splitter_new(win, 0, 0, 1);
 	cont2 = emui_splitter_new(win, 0, 1, 1);
 
-	wid1 = emui_lineedit_new(cont1, 0, 0, 20, 20, TT_TEXT, P_NONE);
-	emui_lineedit_settext(wid1, "Nasumi");
+	wid1 = emui_lineedit_new(cont1, 0, 0, 10, 10, TT_TEXT, P_NONE);
+	emui_lineedit_set_text(wid1, "EMUI");
 
-	wid2 = emui_lineedit_new(cont1, 15, 0, 20, 20, TT_TEXT, P_NONE);
-	emui_lineedit_settext(wid2, "Joasia");
+	wid2 = emui_lineedit_new(cont1, 15, 0, 10, 10, TT_TEXT, P_NONE);
+	emui_lineedit_set_text(wid2, "is");
 
-	wid3 = emui_lineedit_new(cont2, 0, 0, 20, 20, TT_TEXT, P_NONE);
-	emui_lineedit_settext(wid3, "Pasternasia");
+	wid3 = emui_lineedit_new(cont2, 0, 0, 10, 10, TT_TEXT, P_NONE);
+	emui_lineedit_set_text(wid3, "a lot");
 
-	wid4 = emui_lineedit_new(cont2, 15, 0, 20, 20, TT_TEXT, P_NONE);
-	emui_lineedit_settext(wid4, "Dupasia");
+	wid4 = emui_lineedit_new(cont2, 15, 0, 10, 10, TT_TEXT, P_NONE);
+	emui_lineedit_set_text(wid4, "of fun");
 
 	return win;
 }
@@ -69,10 +71,10 @@ struct emui_tile * create_win3(struct emui_tile *parent)
 {
 	struct emui_tile *win, *wid1;
 
-	win = emui_window_new(parent, 60, 0, 30, 20, "Other", P_NONE);
+	win = emui_window_new(parent, 60, 1, 30, 20, "Other", P_NONE);
 	emui_tile_set_focus_key(win, KEY_F(3));
 	wid1 = emui_lineedit_new(win, 0, 0, 20, 20, TT_TEXT, P_NONE);
-	emui_lineedit_settext(wid1, "Sample txt");
+	emui_lineedit_set_text(wid1, "Sample txt");
 
 	return win;
 }
@@ -84,7 +86,7 @@ int main(int argc, char **argv)
 
 	emui_tile_debug_set(1);
 
-	layout = emui_init(60);
+	layout = emui_init(0);
 	tabs = emui_tabs_new(layout);
 
 	win1 = create_win1(tabs);

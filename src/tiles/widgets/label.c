@@ -89,7 +89,7 @@ struct emui_tile_drv emui_label_drv = {
 };
 
 // -----------------------------------------------------------------------
-int emui_label_settext(struct emui_tile *t, char *txt)
+int emui_label_set_text(struct emui_tile *t, char *txt)
 {
 	struct label *d = t->priv_data;
 
@@ -110,7 +110,7 @@ struct emui_tile * emui_label_new(struct emui_tile *parent, int x, int y, int w,
 	struct label *d = t->priv_data;
 	d->style = style;
 	d->align = align;
-	emui_label_settext(t, txt);
+	emui_label_set_text(t, txt);
 
 	return t;
 }

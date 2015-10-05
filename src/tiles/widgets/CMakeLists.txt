@@ -2,6 +2,7 @@ add_library(widgets
 	framecounter.c
 	fpscounter.c
 	lineedit.c
+	label.c
 )
 
 set_target_properties(widgets
