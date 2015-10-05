@@ -1,4 +1,5 @@
-add_subdirectory(tiles)
+add_subdirectory(containers)
+add_subdirectory(widgets)
 
 add_library(emui-lib SHARED
 	emui.c
@@ -6,11 +7,10 @@ add_library(emui-lib SHARED
 	style.c
 	print.c
 	focus.c
+	tile.c
 )
 
-target_link_libraries(emui-lib
-	tiles
-)
+target_link_libraries(emui-lib ${CURSES_LIBRARIES} containers widgets)
 
 set_target_properties(emui-lib PROPERTIES
 	OUTPUT_NAME "emui"
@@ -35,7 +35,7 @@ add_executable(emui
 	test.c
 )
 
-target_link_libraries(emui emui-lib ${EMELF_LIBRARIES} ${EMAWP_LIBRARIES} ${CURSES_LIBRARIES})
+target_link_libraries(emui emui-lib ${CURSES_LIBRARIES})
 
 install(TARGETS emui RUNTIME DESTINATION bin)
 
