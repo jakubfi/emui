@@ -89,7 +89,7 @@ void emui_destroy()
 }
 
 // -----------------------------------------------------------------------
-static void emui_evq_update(struct timeval *tv)
+static int emui_evq_update(struct timeval *tv)
 {
 	static fd_set rfds;
 	int retval;
@@ -112,27 +112,26 @@ static void emui_evq_update(struct timeval *tv)
 		}
 		emui_evq_append(ev);
 	}
+
+	return retval;
 }
 
 // -----------------------------------------------------------------------
 static int emui_event_router(struct emui_event *ev)
 {
-	edbg("--- Got event: %i %i\n", ev->type, ev->data.key);
+	if (ev->type == EV_DIE) {
+		return 1;
+	}
+
 	struct emui_tile *t = emui_focus_get();
 	while (t) {
-		edbg("\"%s\" handling event: %i %i\n", t->name, ev->type, ev->data.key);
 		if (emui_tile_handle_event(t, ev) == 0) {
-			edbg("success\n");
-			// 0 means event has been handled by the tile
-			return 0;
+			break;
 		}
-		edbg("switching to parent\n");
 		t = t->parent;
 	}
 
-	edbg("EVENT FALLS OF THE EDGE: %i %i\n", ev->type, ev->data.key);
-	// event has not been handled
-	return 1;
+	return 0;
 }
 
 // -----------------------------------------------------------------------
@@ -231,6 +230,7 @@ void emui_loop()
 {
 	struct timeval *ft = NULL;
 	struct emui_event *ev;
+	int quit = 0;
 
 	// init focus
 	emui_focus(layout);
@@ -240,37 +240,36 @@ void emui_loop()
 		ft = calloc(1, sizeof(struct timeval));
 	}
 
-	// initial screen draw
-	emui_update_screen();
+	do {
+		// update the screen if:
+		//  * loop has just started
+		//  * FPS = 0 (so we update as soon as event is processed)
+		//  * frame timeout reached (so we don't update more than FPS)
+		if ((emui_fps == 0) || emui_need_screen_update(ft)) {
+			emui_update_screen();
+			emui_adjust_frametime(ft, emui_fps);
+		}
 
-	while (1) {
+process_event:
 		// get event from the queue
 		ev = emui_evq_get();
 
-		// process the event, if any
 		if (ev) {
-			if (ev->type == EV_DIE) {
-				free(ev);
-				break;
-			} else {
-				emui_event_router(ev);
-			}
-			// if UI is exclusively event-driven, update screen here
-			if (emui_fps <= 0) {
-				emui_update_screen();
-			}
+			// process the event
+			quit = emui_event_router(ev);
 			free(ev);
-		// or wait for another event
-		// TODO: we may starve screen updater here
 		} else {
-			emui_evq_update(ft);
-			// for periodic screen updates, update screen if needed
-			if ((emui_fps > 0) && emui_need_screen_update(ft)) {
-				emui_update_screen();
-				emui_adjust_frametime(ft, emui_fps);
+			// get another event (or wait ft.tv_usec)
+			if (emui_evq_update(ft)) {
+				// if there is an event waiting:
+				//  * we want to process it as soon as possible
+				//  * we want to process it before screen update in case of FPS=0
+				//  * there is no need for screen update (timeout not reached,
+				//    emui_need_screen_update() would skip the update anyway)
+				goto process_event;
 			}
 		}
-	}
+	} while (!quit);
 
 	free(ft);
 }

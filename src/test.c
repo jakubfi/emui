@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
 	emui_tile_debug_set(1);
 
-	layout = emui_init(0);
+	layout = emui_init(60);
 	tabs = emui_tabs_new(layout);
 
 	win1 = create_win1(tabs);
