@@ -48,8 +48,8 @@ struct emui_tile * create_win2(struct emui_tile *parent)
 	win = emui_window_new(parent, 30, 1, 30, 20, "Edits", P_NONE);
 	emui_tile_set_focus_key(win, KEY_F(2));
 
-	cont1 = emui_splitter_new(win, 0, 0, 1);
-	cont2 = emui_splitter_new(win, 0, 1, 1);
+	cont1 = emui_dummy_cont_new(win, 0, 0, win->w, 1);
+	cont2 = emui_dummy_cont_new(win, 0, 1, win->w, 1);
 
 	wid1 = emui_lineedit_new(cont1, 0, 0, 10, 10, TT_TEXT, P_NONE);
 	emui_lineedit_set_text(wid1, "EMUI");
