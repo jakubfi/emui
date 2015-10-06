@@ -88,7 +88,6 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		} else {
 			wresize(t->ncdeco, t->dh, t->dw);
 			mvwin(t->ncdeco, t->dy, t->dx);
-			werase(t->ncdeco);
 		}
 	}
 
@@ -101,7 +100,6 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	} else {
 		wresize(t->ncwin, t->h, t->w);
 		mvwin(t->ncwin, t->y, t->x);
-		werase(t->ncwin);
 	}
 }
 
@@ -173,6 +171,13 @@ int emui_tile_draw(struct emui_tile *t)
 	// tile is hidden, nothing to do
 	if (t->properties & P_HIDDEN) {
 		return 1;
+	}
+
+	if (t->ncdeco) {
+		werase(t->ncdeco);
+	}
+	if (t->ncwin) {
+		werase(t->ncwin);
 	}
 
 	// draw the tile
