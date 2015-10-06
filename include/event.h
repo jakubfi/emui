@@ -18,7 +18,7 @@
 #ifndef EMUI_EVENT_H
 #define EMUI_EVENT_H
 
-enum event_types { EV_NONE, EV_RESIZE, EV_QUIT, EV_DIE, EV_KEY, EV_FD_DATA };
+enum event_types { EV_NONE, EV_RESIZE, EV_QUIT, EV_DIE, EV_KEY, EV_FD_DATA, EV_ERROR };
 
 struct emui_event {
 	int type;

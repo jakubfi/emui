@@ -21,6 +21,7 @@
 #include <sys/select.h>
 #include <ncurses.h>
 #include <sys/time.h>
+#include <errno.h>
 
 #include "event.h"
 #include "tiles.h"
@@ -101,19 +102,29 @@ static int emui_evq_update(struct timeval *tv)
 
 	retval = select(1, &rfds, NULL, NULL, tv);
 
-	if (retval != 0) {
-		ev = calloc(1, sizeof(struct emui_event));
-		ch = getch();
-		if (ch == KEY_RESIZE) {
-			ev->type = EV_RESIZE;
-		} else {
-			ev->type = EV_KEY;
-			ev->data.key = ch;
-		}
-		emui_evq_append(ev);
+	if (retval == 0) {
+		return 0;
 	}
 
-	return retval;
+	ev = calloc(1, sizeof(struct emui_event));
+
+	// we have a keypress
+	if (retval > 0) {
+		ch = getch();
+		ev->type = EV_KEY;
+		ev->data.key = ch;
+	// this may be a resize event
+	} else if ((errno == EINTR) && ((ch = getch() == KEY_RESIZE))) {
+		ev->type = EV_RESIZE;
+	// error
+	} else {
+		ev->type = EV_ERROR;
+		ev->data.key = errno;
+	}
+
+	emui_evq_append(ev);
+
+	return 1;
 }
 
 // -----------------------------------------------------------------------
