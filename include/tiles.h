@@ -22,7 +22,7 @@
 
 struct emui_tile * emui_screen_new();
 struct emui_tile * emui_dummy_cont_new(struct emui_tile *parent, int x, int y, int w, int h);
-struct emui_tile * emui_splitter_new(struct emui_tile *parent, int x, int y, int h);
+struct emui_tile * emui_splitter_new(struct emui_tile *parent, int edge, int min1, int max1, int min2);
 struct emui_tile * emui_tabs_new(struct emui_tile *parent);
 struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties);
 

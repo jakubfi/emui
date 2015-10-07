@@ -38,8 +38,13 @@ void emui_tile_update_geometry(struct emui_tile *t)
 
 	// set decoration window geometry
 	if (t->properties & P_GEOM_FORCED) {
-		// nothing to do here
-		// dx, dy, dw, dh should be set by the parent already
+		if (t->properties & P_HIDDEN) {
+			// just leave, don't even try to unhide it
+			return;
+		} else {
+			// nothing to do here
+			// dx, dy, dw, dh should be set by the parent already
+		}
 	} else if (t->properties & P_MAXIMIZED) {
 		// tile is maximized - use all available parent's area
 		t->dx = parent->x;
@@ -52,8 +57,6 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		t->dw = t->rw;
 		t->dh = t->rh;
 	}
-
-	// TODO: what from the following should we skip in case of P_GEOM_FORCED?
 
 	// hide tile if outside parent's area
 	if ((t->dx >= parent->x + parent->w) || (t->dy >= parent->y + parent->h)) {
@@ -91,9 +94,6 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		}
 	}
 
-	// do tile-specific geometry updates
-	t->drv->update_geometry(t);
-
 	// prepare contents widow
 	if (!t->ncwin) {
 		t->ncwin = newwin(t->h, t->w, t->y, t->x);
@@ -116,7 +116,7 @@ static void emui_tile_debug(struct emui_tile *t)
 
 	// format debug string
 	buf[255] = '\0';
-	snprintf(buf, 256, "d:%i,%i/%ix%i %i,%i/%ix%i%s%s%s%s%s%s%s%s%s",
+	snprintf(buf, 256, "d:%i,%i/%ix%i %i,%i/%ix%i%s%s%s%s%s%s%s%s",
 		t->dx,
 		t->dy,
 		t->dw,
@@ -128,7 +128,6 @@ static void emui_tile_debug(struct emui_tile *t)
 		emui_has_focus(t) ? (emui_is_focused(t) ? "*" : "+") : " ",
 		t->properties & P_MAXIMIZED ? "M" : "",
 		t->properties & P_HIDDEN ? "H"  : "",
-		t->properties & P_CHILD_CTRL ? "C" : "",
 		t->properties & P_GEOM_FORCED ? "F" : "",
 		t->properties & P_BORDERLESS ? "B" : "",
 		t->properties & P_FOCUS_GROUP ? "G" : "",
@@ -359,11 +358,6 @@ void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t)
 		parent->ch_first = t;
 	}
 	parent->ch_last = t;
-
-	// if parent controls child geometry, set geometry to forced
-	if (parent->properties & P_CHILD_CTRL) {
-		t->properties |= P_GEOM_FORCED;
-	}
 
 	// link into focus group list
 	emui_focus_group_add(parent, t);

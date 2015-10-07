@@ -86,12 +86,13 @@ int main(int argc, char **argv)
 
 	emui_tile_debug_set(1);
 
-	layout = emui_init(60);
-	tabs = emui_tabs_new(layout);
+	layout = emui_init(30);
+	//tabs = emui_tabs_new(layout);
+	tabs = emui_splitter_new(layout, AL_TOP, 20, 30, 20);
 
 	win1 = create_win1(tabs);
 	win2 = create_win2(tabs);
-	win3 = create_win3(tabs);
+	//win3 = create_win3(tabs);
 
 	emui_loop();
 	emui_destroy();

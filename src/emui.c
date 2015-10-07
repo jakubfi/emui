@@ -155,6 +155,9 @@ static void emui_draw(struct emui_tile *t)
 	// update common tile geometry stuff
 	emui_tile_update_geometry(t);
 
+	// do tile-specific geometry updates
+	t->drv->update_geometry(t);
+
 	// draw the tile
 	if (emui_tile_draw(t)) {
 		// nothing drawn, tile is hidden, give up on children too

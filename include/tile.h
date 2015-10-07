@@ -29,6 +29,14 @@ enum emui_text_types {
 	TT_FLOAT,
 };
 
+enum emui_fit_types {
+	FIT_DIV5 = -5,
+	FIT_DIV4 = -4,
+	FIT_DIV3 = -3,
+	FIT_DIV2 = -2,
+	FIT_FILL = -1,
+};
+
 enum emui_tile_types {
 	T_CONTAINER,
 	T_WINDOW,
@@ -40,14 +48,17 @@ enum emui_tile_types {
 enum emui_align_types {
 	AL_LEFT,
 	AL_RIGHT,
+	AL_TOP,
+	AL_BOTTOM,
 	AL_CENTER,
+	AL_MIDDLE,
 };
 
 enum emui_tile_properties {
 	P_NONE			= 0,
 	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
 	P_HIDDEN		= 1 << 1,	// tile is hidden due to geometry constraints
-	P_CHILD_CTRL	= 1 << 2,	// tile forces geometry of its children
+	P_unused_1		= 1 << 2,	// 
 	P_GEOM_FORCED	= 1 << 3,	// tile geometry is forced by the parent
 	P_BORDERLESS	= 1 << 4,	// tile should be drawn without a border
 	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
