@@ -30,12 +30,12 @@ void emui_window_draw(struct emui_tile *t)
 	int title_style = S_TITLE;
 	int frame_style = S_FRAME;
 
-	if (emui_has_focus(t)) {
-		title_style = S_TITLE_FOCUSED;
-		frame_style = S_FRAME_FOCUSED;
-	}
+	if (t->properties & P_DECORATED) {
+		if (emui_has_focus(t)) {
+			title_style = S_TITLE_FOCUSED;
+			frame_style = S_FRAME_FOCUSED;
+		}
 
-	if (!(t->properties & P_BORDERLESS)) {
 		emuidbox(t, frame_style);
 		emuixydprt(t, 2, 0, title_style, "[ %s ]", t->name);
 	}
@@ -75,23 +75,11 @@ struct emui_tile_drv emui_window_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties)
+struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name)
 {
 	struct emui_tile *t;
-	int mt, mb, ml, mr;
 
-	properties &= P_USER_SETTABLE;
-	properties |= P_FOCUS_GROUP;
-
-	if (properties & P_BORDERLESS) {
-		mt = 0; mb = 0;
-		ml = 0; mr = 0;
-	} else {
-		mt = 1; mb = 1;
-		ml = 1; mr = 1;
-	}
-
-	t = emui_tile_create(parent, &emui_window_drv, T_WINDOW, x, y, w, h, mt, mb, ml, mr, name, properties);
+	t = emui_tile_create(parent, &emui_window_drv, T_WINDOW, x, y, w, h, 1, 1, 1, 1, name, P_FOCUS_GROUP);
 
 	return t;
 }

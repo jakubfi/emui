@@ -84,6 +84,14 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	t->w = t->dw - t->ml - t->mr;
 	t->h = t->dh - t->mt - t->mb;
 
+	// hide if no space for contents
+	if ((t->dw <= t->ml+t->mr) || (t->dh <= t->mt+t->mb)) {
+		t->properties |= P_HIDDEN;
+		return;
+	} else {
+		t->properties &= ~P_HIDDEN;
+	}
+
 	// prepare decoration window
 	if (t->properties & P_DECORATED) {
 		if (!t->ncdeco) {
@@ -116,7 +124,7 @@ static void emui_tile_debug(struct emui_tile *t)
 
 	// format debug string
 	buf[255] = '\0';
-	snprintf(buf, 256, "d:%i,%i/%ix%i %i,%i/%ix%i%s%s%s%s%s%s%s%s",
+	snprintf(buf, 256, "d:%i,%i/%ix%i %i,%i/%ix%i%s%s%s%s%s%s%s",
 		t->dx,
 		t->dy,
 		t->dw,
@@ -129,7 +137,6 @@ static void emui_tile_debug(struct emui_tile *t)
 		t->properties & P_MAXIMIZED ? "M" : "",
 		t->properties & P_HIDDEN ? "H"  : "",
 		t->properties & P_GEOM_FORCED ? "F" : "",
-		t->properties & P_BORDERLESS ? "B" : "",
 		t->properties & P_FOCUS_GROUP ? "G" : "",
 		t->properties & P_INTERACTIVE ? "I" : "",
 		t->properties & P_DECORATED ? "D" : ""
@@ -343,6 +350,18 @@ int emui_tile_set_focus_key(struct emui_tile *t, int key)
 int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler)
 {
 	t->user_ev_handler = handler;
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_set_properties(struct emui_tile *t, unsigned properties)
+{
+	if (properties & ~P_USER_SETTABLE) {
+		return -1;
+	}
+
+	t->properties |= properties;
+
 	return 0;
 }
 

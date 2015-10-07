@@ -24,18 +24,21 @@ struct emui_tile * emui_screen_new();
 struct emui_tile * emui_dummy_cont_new(struct emui_tile *parent, int x, int y, int w, int h);
 struct emui_tile * emui_splitter_new(struct emui_tile *parent, int edge, int min1, int max1, int min2);
 struct emui_tile * emui_tabs_new(struct emui_tile *parent);
-struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties);
+struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name);
 
 // widgets
 
 struct emui_tile * emui_framecounter_new(struct emui_tile *parent, int x, int y, int style);
+void emui_framecounter_set_style(struct emui_tile *t, int style);
 struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y, int style);
+void emui_fpscounter_set_style(struct emui_tile *t, int style);
 
-struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int w, int maxlen, int type, int properties);
+struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int w, int maxlen, int type);
 int emui_lineedit_set_text(struct emui_tile *t, char *text);
 
 struct emui_tile * emui_label_new(struct emui_tile *parent, int x, int y, int w, int align, int style, char *txt);
 int emui_label_set_text(struct emui_tile *t, char *txt);
+void emui_label_set_style(struct emui_tile *t, int style);
 
 #endif
 

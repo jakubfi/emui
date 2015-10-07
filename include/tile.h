@@ -56,17 +56,19 @@ enum emui_align_types {
 
 enum emui_tile_properties {
 	P_NONE			= 0,
+	// user-settable
 	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
+	// internal
 	P_HIDDEN		= 1 << 1,	// tile is hidden due to geometry constraints
-	P_unused_1		= 1 << 2,	// 
+	P_DECORATED		= 1 << 2,	// tile has decoration
 	P_GEOM_FORCED	= 1 << 3,	// tile geometry is forced by the parent
-	P_BORDERLESS	= 1 << 4,	// tile should be drawn without a border
+	P_unused_3		= 1 << 4,
 	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
 	P_INTERACTIVE	= 1 << 6,	// user can interact with the tile (thus it can be focused)
-	P_DECORATED		= 1 << 7,	// tile has decoration
+	P_unused_2		= 1 << 7,
 };
 
-#define P_USER_SETTABLE (P_MAXIMIZED | P_HIDDEN | P_BORDERLESS | P_FOCUS_GROUP )
+#define P_USER_SETTABLE ( P_MAXIMIZED )
 
 struct emui_tile;
 struct emui_event;
@@ -136,6 +138,7 @@ int emui_tile_draw(struct emui_tile *t);
 int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev);
 int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler);
 int emui_tile_set_focus_key(struct emui_tile *t, int key);
+int emui_tile_set_properties(struct emui_tile *t, unsigned properties);
 
 #endif
 
