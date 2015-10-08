@@ -41,27 +41,36 @@ struct emui_tile * ui_create_status(struct emui_tile *parent)
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 {
-	struct emui_tile *top = emui_splitter_new(parent, AL_LEFT, 30, 30, FIT_FILL);
-	emui_tile_set_properties(top, P_FOCUS_GROUP);
-	emui_tile_set_name(top, "Debugger");
-	emui_tile_set_focus_key(top, KEY_F(12));
-
 	// ASM
-	struct emui_tile *dasm = emui_window_new(top, 0, 0, 30, 20, "ASM", P_NONE);
+	struct emui_tile *dasm_split = emui_splitter_new(parent, AL_LEFT, 30, 30, FIT_FILL);
+	emui_tile_set_properties(dasm_split, P_FOCUS_GROUP);
+	emui_tile_set_name(dasm_split, "Debugger");
+	emui_tile_set_focus_key(dasm_split, KEY_F(12));
+	struct emui_tile *dasm = emui_window_new(dasm_split, 0, 0, 30, 20, "ASM", P_NONE);
 	emui_tile_set_focus_key(dasm, 'a');
 
 	// registers
-	struct emui_tile *reg_split = emui_splitter_new(top, AL_TOP, 11, 11, FIT_FILL);
+	struct emui_tile *reg_split = emui_splitter_new(dasm_split, AL_TOP, 11, 11, FIT_FILL);
 	struct emui_tile *sreg_split = emui_splitter_new(reg_split, AL_LEFT, 55, FIT_DIV2, 55);
 	struct emui_tile *ureg = emui_window_new(sreg_split, 0, 0, 55, 11, "Registers", P_NONE);
 	emui_tile_set_focus_key(ureg, 'r');
 	struct emui_tile *sreg = emui_window_new(sreg_split, 0, 0, 55, 11, "Sys Registers", P_NONE);
+
 	emui_tile_set_focus_key(sreg, 's');
 	struct emui_tile *test = emui_label_new(sreg, 0, 0, 30, AL_CENTER, S_TEXT_CHANGED, "Test");
 
-	// middle
-	struct emui_tile *midbot_split = emui_splitter_new(reg_split, AL_TOP, 10, FIT_DIV2, 6);
-	struct emui_tile *stack_split = emui_splitter_new(midbot_split, AL_LEFT, 18, 18, 20);
+	// memory
+	struct emui_tile *mem_split = emui_splitter_new(reg_split, AL_TOP, 10, FIT_DIV2, 6);
+	struct emui_tile *mem = emui_window_new(mem_split, 0, 0, 80, 20, "Memory", P_NONE);
+	emui_tile_set_focus_key(mem, 'm');
+
+	// eval
+	struct emui_tile *eval_split = emui_splitter_new(mem_split, AL_BOTTOM, 3, 3, 10);
+	struct emui_tile *eval = emui_window_new(eval_split, 0, 0, 80, 3, "Evaluator", P_NONE);
+	emui_tile_set_focus_key(eval, 'e');
+
+	// stack, watch, brk
+	struct emui_tile *stack_split = emui_splitter_new(eval_split, AL_LEFT, 18, 18, 20);
 	struct emui_tile *stack = emui_window_new(stack_split, 0, 0, 18, 10, "Stack", P_NONE);
 	struct emui_tile *watch_split = emui_splitter_new(stack_split, AL_LEFT, 10, FIT_DIV2, 10);
 	struct emui_tile *brk = emui_window_new(watch_split, 0, 0, 30, 10, "Watches", P_NONE);
@@ -70,10 +79,8 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	emui_tile_set_focus_key(watch, 'b');
 
 	// memory
-	struct emui_tile *mem = emui_window_new(midbot_split, 0, 0, 80, 20, "Memory", P_NONE);
-	emui_tile_set_focus_key(mem, 'm');
 
-	return top;
+	return dasm_split;
 }
 
 // -----------------------------------------------------------------------

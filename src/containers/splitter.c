@@ -128,20 +128,20 @@ int emui_splitter_update_geometry(struct emui_tile *t)
 	// set children geometry
 	switch (d->edge) {
 		case AL_LEFT:
-			geom(ch1, t->x,       t->y, size1, t->h);
-			geom(ch2, t->x+size1, t->y, size2, t->h);
+			geom(ch1, t->x,         t->y, size1, t->h);
+			geom(ch2, t->x + size1, t->y, size2, t->h);
 			break;
 		case AL_RIGHT:
-			geom(ch1, t->w - size1, t->y, size1, t->h);
-			geom(ch2, t->x,         t->y, size2, t->h);
+			geom(ch1, t->x + t->w - size1, t->y, size1, t->h);
+			geom(ch2, t->x,                t->y, size2, t->h);
 			break;
 		case AL_TOP:
 			geom(ch1, t->x, t->y,         t->w, size1);
 			geom(ch2, t->x, t->y + size1, t->w, size2);
 			break;
 		case AL_BOTTOM:
-			geom(ch1, t->x, t->h - size1, t->w, size1);
-			geom(ch2, t->x, t->y,         t->w, size2);
+			geom(ch1, t->x, t->y + t->h - size1, t->w, size1);
+			geom(ch2, t->x, t->y,                t->w, size2);
 			break;
 	}
 
