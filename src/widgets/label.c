@@ -25,7 +25,6 @@
 
 struct label {
 	char *txt;
-	int style;
 	int align;
 };
 
@@ -36,8 +35,6 @@ void emui_label_draw(struct emui_tile *t)
 
 	int loc_offset = 0;
 	int txt_offset = 0;
-
-	emuifillbg(t, d->style);
 
 	if (d->align == AL_RIGHT) {
 		loc_offset = t->w - strlen(d->txt);
@@ -52,7 +49,7 @@ void emui_label_draw(struct emui_tile *t)
 		loc_offset = 0;
 	}
 
-	emuixyprt(t, 0 + loc_offset, 0, d->style, d->txt + txt_offset);
+	emuixyprt(t, 0 + loc_offset, 0, t->style, d->txt + txt_offset);
 }
 
 // -----------------------------------------------------------------------
@@ -100,22 +97,15 @@ int emui_label_set_text(struct emui_tile *t, char *txt)
 }
 
 // -----------------------------------------------------------------------
-void emui_label_set_style(struct emui_tile *t, int style)
-{
-	struct label *d = t->priv_data;
-	d->style = style;
-}
-
-// -----------------------------------------------------------------------
 struct emui_tile * emui_label_new(struct emui_tile *parent, int x, int y, int w, int align, int style, char *txt)
 {
 	struct emui_tile *t;
 
 	t = emui_tile_create(parent, &emui_label_drv, T_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, P_NONE);
 
+	t->style = style;
 	t->priv_data = calloc(1, sizeof(struct label));
 	struct label *d = t->priv_data;
-	d->style = style;
 	d->align = align;
 	emui_label_set_text(t, txt);
 

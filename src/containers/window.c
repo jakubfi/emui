@@ -30,7 +30,7 @@ void emui_window_draw(struct emui_tile *t)
 	int title_style = S_TITLE;
 	int frame_style = S_FRAME;
 
-	if (t->properties & P_DECORATED) {
+	if (ACTIVE_DECO(t)) {
 		if (emui_has_focus(t)) {
 			title_style = S_TITLE_FOCUSED;
 			frame_style = S_FRAME_FOCUSED;
@@ -75,11 +75,13 @@ struct emui_tile_drv emui_window_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name)
+struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties)
 {
 	struct emui_tile *t;
 
 	t = emui_tile_create(parent, &emui_window_drv, T_WINDOW, x, y, w, h, 1, 1, 1, 1, name, P_FOCUS_GROUP);
+
+	emui_tile_set_properties(t, properties);
 
 	return t;
 }

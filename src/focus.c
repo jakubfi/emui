@@ -29,7 +29,6 @@ static struct emui_tile *focus;
 static int distance(int x1, int y1, int x2, int y2)
 {
 	int distance = (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2);
-	edbg("Distance (%i,%i)->(%i,%i) = %i\n", x1, y1, x2, y2, distance);
 	return distance;
 }
 
@@ -55,10 +54,8 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 				default: return 0; // unknown or incompatibile direction
 			}
 
-			edbg("%i < %i && %i < %i ?\n", cl, cg, dist, min_dist);
 			if (cl < cg) {
 				if (dist < min_dist) {
-					edbg("yes\n");
 					min_dist = dist;
 					match = f;
 				}

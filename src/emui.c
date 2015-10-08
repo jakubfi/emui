@@ -152,9 +152,12 @@ static void emui_draw(struct emui_tile *t)
 
 	if (!t) return;
 
+	// TODO: geometry updates should really occur only when geometry changes, ie:
+	//  * on EV_RESIZE
+	//  * when a method is called that changes geometry
+
 	// update common tile geometry stuff
 	emui_tile_update_geometry(t);
-
 	// do tile-specific geometry updates
 	t->drv->update_geometry(t);
 

@@ -17,82 +17,97 @@
 
 #include "emui.h"
 
-struct emui_tile *layout;
-struct emui_tile *win0, *win1, *win2, *win3, *win4;
-struct emui_tile *wid1, *wid2, *wid3, *wid4, *wid5;
-
 // -----------------------------------------------------------------------
-struct emui_tile * create_win1(struct emui_tile *parent)
+struct emui_tile * ui_create_status(struct emui_tile *parent)
 {
-	struct emui_tile *win, *wid1, *wid2, *wid3;
+	struct emui_tile *split = emui_splitter_new(parent, AL_LEFT, 1, FIT_FILL, 30);
 
-	win = emui_window_new(parent, 0, 1, 30, 20, "Counters");
-	emui_tile_set_focus_key(win, KEY_F(1));
+	// left side
+	struct emui_tile *status_left = emui_window_new(split, 0, 0, 1, 1, "StatusL", P_NODECO);
+	emui_tile_set_style(status_left, S_TEXT_INVERSED);
+	struct emui_tile *misc = emui_label_new(status_left, 1, 0, 30, AL_LEFT, S_TEXT_INVERSED, "MIPS: 22.4  ALARM  TIMER  ...");
 
-	wid1 = emui_lineedit_new(win, 0, 3, 20, 20, TT_TEXT);
-	emui_lineedit_set_text(wid1, "Sooyoung");
+	// right side
+	struct emui_tile *status_right = emui_window_new(split, 0, 0, 1, 1, "StatusR", P_NODECO);
+	emui_tile_set_style(status_right, S_TEXT_INVERSED);
+	struct emui_tile *lfps = emui_label_new(status_right, 1, 0, 5, AL_RIGHT, S_TEXT_INVERSED, "FPS:");
+	struct emui_tile *fps = emui_fpscounter_new(status_right, 7, 0, S_TEXT_INVERSED_BOLD);
+	struct emui_tile *lframe = emui_label_new(status_right, 13, 0, 7, AL_RIGHT, S_TEXT_INVERSED, "Frame:");
+	struct emui_tile *frame = emui_framecounter_new(status_right, 21, 0, S_TEXT_INVERSED_BOLD);
 
-	wid2 = emui_label_new(win, 0, 0, 10, AL_LEFT, S_TEXT, "Frame:");
-	wid2 = emui_framecounter_new(win, 17, 0, S_TEXT_BOLD);
-	wid3 = emui_label_new(win, 0, 1, 10, AL_CENTER, S_DEBUG, "FPS:");
-	wid3 = emui_fpscounter_new(win, 17, 1, S_TEXT_BOLD);
-
-	return win;
+	return split;
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * create_win2(struct emui_tile *parent)
+struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 {
-	struct emui_tile *win, *wid1, *wid2, *wid3, *wid4, *cont1, *cont2;
+	struct emui_tile *top = emui_splitter_new(parent, AL_LEFT, 30, 30, FIT_FILL);
+	emui_tile_set_properties(top, P_FOCUS_GROUP);
+	emui_tile_set_name(top, "Debugger");
+	emui_tile_set_focus_key(top, KEY_F(12));
 
-	win = emui_window_new(parent, 30, 1, 30, 20, "Edits");
-	emui_tile_set_focus_key(win, KEY_F(2));
+	// ASM
+	struct emui_tile *dasm = emui_window_new(top, 0, 0, 30, 20, "ASM", P_NONE);
+	emui_tile_set_focus_key(dasm, 'a');
 
-	cont1 = emui_dummy_cont_new(win, 0, 0, win->w, 1);
-	cont2 = emui_dummy_cont_new(win, 0, 1, win->w, 1);
+	// registers
+	struct emui_tile *reg_split = emui_splitter_new(top, AL_TOP, 11, 11, FIT_FILL);
+	struct emui_tile *sreg_split = emui_splitter_new(reg_split, AL_LEFT, 55, FIT_DIV2, 55);
+	struct emui_tile *ureg = emui_window_new(sreg_split, 0, 0, 55, 11, "Registers", P_NONE);
+	emui_tile_set_focus_key(ureg, 'r');
+	struct emui_tile *sreg = emui_window_new(sreg_split, 0, 0, 55, 11, "Sys Registers", P_NONE);
+	emui_tile_set_focus_key(sreg, 's');
+	struct emui_tile *test = emui_label_new(sreg, 0, 0, 30, AL_CENTER, S_TEXT_CHANGED, "Test");
 
-	wid1 = emui_lineedit_new(cont1, 0, 0, 10, 10, TT_TEXT);
-	emui_lineedit_set_text(wid1, "EMUI");
+	// middle
+	struct emui_tile *midbot_split = emui_splitter_new(reg_split, AL_TOP, 10, FIT_DIV2, 6);
+	struct emui_tile *stack_split = emui_splitter_new(midbot_split, AL_LEFT, 18, 18, 20);
+	struct emui_tile *stack = emui_window_new(stack_split, 0, 0, 18, 10, "Stack", P_NONE);
+	struct emui_tile *watch_split = emui_splitter_new(stack_split, AL_LEFT, 10, FIT_DIV2, 10);
+	struct emui_tile *brk = emui_window_new(watch_split, 0, 0, 30, 10, "Watches", P_NONE);
+	emui_tile_set_focus_key(brk, 'w');
+	struct emui_tile *watch = emui_window_new(watch_split, 0, 0, 30, 10, "Breakpoints", P_NONE);
+	emui_tile_set_focus_key(watch, 'b');
 
-	wid2 = emui_lineedit_new(cont1, 15, 0, 10, 10, TT_TEXT);
-	emui_lineedit_set_text(wid2, "is");
+	// memory
+	struct emui_tile *mem = emui_window_new(midbot_split, 0, 0, 80, 20, "Memory", P_NONE);
+	emui_tile_set_focus_key(mem, 'm');
 
-	wid3 = emui_lineedit_new(cont2, 0, 0, 10, 10, TT_TEXT);
-	emui_lineedit_set_text(wid3, "a lot");
-
-	wid4 = emui_lineedit_new(cont2, 15, 0, 10, 10, TT_TEXT);
-	emui_lineedit_set_text(wid4, "of fun");
-
-	return win;
+	return top;
 }
 
-// -----------------------------------------------------------------------
-struct emui_tile * create_win3(struct emui_tile *parent)
-{
-	struct emui_tile *win, *wid1;
-
-	win = emui_window_new(parent, 60, 1, 30, 20, "Other");
-	emui_tile_set_focus_key(win, KEY_F(3));
-	wid1 = emui_lineedit_new(win, 0, 0, 20, 20, TT_TEXT);
-	emui_lineedit_set_text(wid1, "Sample txt");
-
-	return win;
-}
 // -----------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-	struct emui_tile *tabs;
-	struct emui_tile *win1, *win2, *win3;
+	//emui_tile_debug_set(1);
 
-	emui_tile_debug_set(1);
+	struct emui_tile *layout = emui_init(30);
 
-	layout = emui_init(30);
-	tabs = emui_tabs_new(layout);
-	//tabs = emui_splitter_new(layout, AL_TOP, 20, 30, 20);
+	// status
+	struct emui_tile *status_split = emui_splitter_new(layout, AL_BOTTOM, 1, 1, FIT_FILL);
+	struct emui_tile *status = ui_create_status(status_split);
 
-	win1 = create_win1(tabs);
-	win2 = create_win2(tabs);
-	//win3 = create_win3(tabs);
+	// tabs
+	struct emui_tile *tabs = emui_tabs_new(status_split);
+
+	// terminal windows
+	struct emui_tile *term1 = emui_window_new(tabs, 0, 0, 80, 25, "Term 1", P_MAXIMIZED);
+	emui_tile_set_focus_key(term1, KEY_F(1));
+	struct emui_tile *term2 = emui_window_new(tabs, 0, 0, 80, 25, "Term 2", P_MAXIMIZED);
+	emui_tile_set_focus_key(term2, KEY_F(2));
+	struct emui_tile *term3 = emui_window_new(tabs, 0, 0, 80, 25, "Term 3", P_MAXIMIZED);
+	emui_tile_set_focus_key(term3, KEY_F(3));
+	struct emui_tile *term4 = emui_window_new(tabs, 0, 0, 80, 25, "Term 4", P_MAXIMIZED);
+	emui_tile_set_focus_key(term4, KEY_F(4));
+
+	// device manager
+	struct emui_tile *devmgr = emui_window_new(tabs, 0, 0, 80, 25, "DevManager", P_MAXIMIZED);
+	emui_tile_set_focus_key(devmgr, KEY_F(11));
+
+	// debugger
+	struct emui_tile *debugger = ui_create_debugger(tabs);
+
+	emui_focus(term1);
 
 	emui_loop();
 	emui_destroy();

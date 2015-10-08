@@ -23,6 +23,7 @@
 #include "style.h"
 #include "event.h"
 #include "focus.h"
+#include "print.h"
 
 static int emui_tile_debug_mode = 0;
 
@@ -56,6 +57,18 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		t->dy = parent->y + t->ry;
 		t->dw = t->rw;
 		t->dh = t->rh;
+	}
+
+	if (t->properties & P_NODECO) {
+		t->mt = 0;
+		t->mb = 0;
+		t->ml = 0;
+		t->mr = 0;
+	} else {
+		t->mt = t->rmt;
+		t->mb = t->rmb;
+		t->ml = t->rml;
+		t->mr = t->rmr;
 	}
 
 	// hide tile if outside parent's area
@@ -93,7 +106,7 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	}
 
 	// prepare decoration window
-	if (t->properties & P_DECORATED) {
+	if (ACTIVE_DECO(t)) {
 		if (!t->ncdeco) {
 	        t->ncdeco = newwin(t->dh, t->dw, t->dy, t->dx);
 		} else {
@@ -124,7 +137,7 @@ static void emui_tile_debug(struct emui_tile *t)
 
 	// format debug string
 	buf[255] = '\0';
-	snprintf(buf, 256, "d:%i,%i/%ix%i %i,%i/%ix%i%s%s%s%s%s%s%s",
+	snprintf(buf, 256, "d:%i,%i/%ix%i %i,%i/%ix%i%s%s%s%s%s%s%s %s",
 		t->dx,
 		t->dy,
 		t->dw,
@@ -139,7 +152,8 @@ static void emui_tile_debug(struct emui_tile *t)
 		t->properties & P_GEOM_FORCED ? "F" : "",
 		t->properties & P_FOCUS_GROUP ? "G" : "",
 		t->properties & P_INTERACTIVE ? "I" : "",
-		t->properties & P_DECORATED ? "D" : ""
+		t->properties & P_DECORATED ? "D" : "",
+		t->name
 	);
 
 	// find a possibly free space to print
@@ -183,7 +197,11 @@ int emui_tile_draw(struct emui_tile *t)
 		werase(t->ncdeco);
 	}
 	if (t->ncwin) {
-		werase(t->ncwin);
+		if (t->style) {
+			emuifillbg(t, t->style);
+		} else {
+			werase(t->ncwin);
+		}
 	}
 
 	// draw the tile
@@ -196,7 +214,7 @@ int emui_tile_draw(struct emui_tile *t)
 
 	// update ncurses windows, but don't refresh
 	// (we'll do the update in emui_loop())
-	if (t->properties & P_DECORATED) {
+	if (ACTIVE_DECO(t)) {
 		wnoutrefresh(t->ncdeco);
 	}
 	wnoutrefresh(t->ncwin);
@@ -210,9 +228,7 @@ static int emui_tile_handle_user_focus_keys(struct emui_tile *fg, int key)
 	struct emui_tile *t = fg->fg_first;
 
 	while (t) {
-		edbg("%i == %i ?\n", t->key, key);
 		if (t->key == key) {
-			edbg("match\n");
 			emui_focus(t);
 			return 0;
 		}
@@ -255,20 +271,17 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 {
 	// if tile has a driver event handler, run it first
 	if (!t->drv->event_handler(t, ev)) {
-		edbg("\"%s\" driver handled event %i %i\n", t->name, ev->type, ev->data.key);
 		return 0;
 	}
 
 	// then run user event handler, so it may override default focus handling
 	if (t->user_ev_handler && !t->user_ev_handler(t, ev)) {
-		edbg("\"%s\" user event handler handled event %i %i\n", t->name, ev->type, ev->data.key);
 		return 0;
 	}
 
 	// if tile is a focus group, search for user-set focus keys handled by it
 	if (t->properties & P_FOCUS_GROUP) {
 		if ((ev->type == EV_KEY) && !emui_tile_handle_user_focus_keys(t, ev->data.key)) {
-			edbg("\"%s\" focus event handler handled event %i %i\n", t->name, ev->type, ev->data.key);
 			return 0;
 		}
 	// if tile is a widget, handle neighbourhood focus change
@@ -278,7 +291,6 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 		}
 	}
 
-	edbg("unhandled event %i %i\n", ev->type, ev->data.key);
 	// event has not been handled
 	return 1;
 }
@@ -324,10 +336,10 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_d
 	t->rh = h;
 	t->rw = w;
 
-	t->mt = mt;
-	t->mb = mb;
-	t->ml = ml;
-	t->mr = mr;
+	t->rmt = mt;
+	t->rmb = mb;
+	t->rml = ml;
+	t->rmr = mr;
 
 	if (mt || mb || ml || mr) {
 		t->properties |= P_DECORATED;
@@ -362,6 +374,22 @@ int emui_tile_set_properties(struct emui_tile *t, unsigned properties)
 
 	t->properties |= properties;
 
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_set_name(struct emui_tile *t, char *name)
+{
+	free(t->name);
+	t->name = strdup(name);
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_set_style(struct emui_tile *t, int style)
+{
+	t->style = style;
 	return 0;
 }
 

@@ -58,17 +58,18 @@ enum emui_tile_properties {
 	P_NONE			= 0,
 	// user-settable
 	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
+	P_NODECO		= 1 << 1,	// hide decoration
+	P_FOCUS_GROUP	= 1 << 2,	// tile is a root of focus group
 	// internal
-	P_HIDDEN		= 1 << 1,	// tile is hidden due to geometry constraints
-	P_DECORATED		= 1 << 2,	// tile has decoration
-	P_GEOM_FORCED	= 1 << 3,	// tile geometry is forced by the parent
-	P_unused_3		= 1 << 4,
-	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
-	P_INTERACTIVE	= 1 << 6,	// user can interact with the tile (thus it can be focused)
-	P_unused_2		= 1 << 7,
+	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
+	P_DECORATED		= 1 << 17,	// tile has decoration
+	P_GEOM_FORCED	= 1 << 18,	// tile geometry is forced by the parent
+	P_INTERACTIVE	= 1 << 19,	// user can interact with the tile (thus it can be focused)
 };
 
-#define P_USER_SETTABLE ( P_MAXIMIZED )
+#define P_USER_SETTABLE 0xffff
+
+#define ACTIVE_DECO(t) (((t)->properties & (P_DECORATED | P_NODECO)) == P_DECORATED)
 
 struct emui_tile;
 struct emui_event;
@@ -92,12 +93,14 @@ struct emui_tile {
 	char *name;					// tile name
 	unsigned properties;		// tile properties
 	int key;					// shortcut key
+	int style;					// default style
 
 	// geometry
 	unsigned rx, ry, rw, rh;	// user-requested tile geometry including decoration (relative to parent's work area)
-	unsigned mt, mb, ml, mr;	// user-requested margins for decoration
+	unsigned mt, mb, ml, mr;	// tile-requested margins for decoration
 	unsigned dx, dy, dw, dh;	// actual tile area including decoration
 	unsigned x, y, w, h;		// actual tile work area geometry (d* minus m*)
+	unsigned rmt, rmb, rml, rmr;// actual margins for decoration
 
 	// ncurses data
 	WINDOW *ncdeco;				// decoration ncurses window
@@ -139,6 +142,8 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev);
 int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler);
 int emui_tile_set_focus_key(struct emui_tile *t, int key);
 int emui_tile_set_properties(struct emui_tile *t, unsigned properties);
+int emui_tile_set_name(struct emui_tile *t, char *name);
+int emui_tile_set_style(struct emui_tile *t, int style);
 
 #endif
 

@@ -24,8 +24,6 @@
 #include "style.h"
 #include "tiles.h"
 
-void edbg(char *format, ...);
-
 void emui_destroy();
 struct emui_tile * emui_init(unsigned fps);
 void emui_loop();

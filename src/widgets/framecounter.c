@@ -24,16 +24,10 @@
 #include "style.h"
 #include "print.h"
 
-struct framecounter {
-	int style;
-};
-
 // -----------------------------------------------------------------------
 void emui_framecounter_draw(struct emui_tile *t)
 {
-	struct framecounter *d = t->priv_data;
-
-	emuixyprt(t, 0, 0, d->style, "%i", emui_get_frame());
+	emuixyprt(t, 0, 0, t->style, "%i", emui_get_frame());
 }
 
 // -----------------------------------------------------------------------
@@ -57,7 +51,6 @@ int emui_framecounter_event_handler(struct emui_tile *t, struct emui_event *ev)
 // -----------------------------------------------------------------------
 void emui_framecounter_destroy_priv_data(struct emui_tile *t)
 {
-	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
@@ -70,24 +63,13 @@ struct emui_tile_drv emui_framecounter_drv = {
 };
 
 // -----------------------------------------------------------------------
-void emui_framecounter_set_style(struct emui_tile *t, int style)
-{
-	struct framecounter *d = t->priv_data;
-	d->style = style;
-}
-
-// -----------------------------------------------------------------------
 struct emui_tile * emui_framecounter_new(struct emui_tile *parent, int x, int y, int style)
 {
 	struct emui_tile *t;
 
 	t = emui_tile_create(parent, &emui_framecounter_drv, T_WIDGET, x, y, 20, 1, 0, 0, 0, 0, NULL, P_NONE);
 
-	t->priv_data = calloc(1, sizeof(struct framecounter));
-
-	struct framecounter *d = t->priv_data;
-
-	d->style = style;
+	t->style = style;
 
 	return t;
 }
