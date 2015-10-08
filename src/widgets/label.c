@@ -101,7 +101,7 @@ struct emui_tile * emui_label_new(struct emui_tile *parent, int x, int y, int w,
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, &emui_label_drv, T_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, P_NONE);
+	t = emui_tile_create(parent, &emui_label_drv, F_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->style = style;
 	t->priv_data = calloc(1, sizeof(struct label));

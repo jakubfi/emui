@@ -133,7 +133,7 @@ static void emui_tile_debug(struct emui_tile *t)
 	attr_t attr_old;
 	short colorpair_old;
 
-	if (t->type == T_WIDGET) return;
+	if (t->family == F_WIDGET) return;
 
 	// format debug string
 	buf[255] = '\0';
@@ -296,23 +296,23 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 }
 
 // -----------------------------------------------------------------------
-static const int emui_tile_compatibile(struct emui_tile *parent, int child_type)
+static const int emui_tile_compatibile(struct emui_tile *parent, int child_family)
 {
-	static const int tile_compat[T_NUMTYPES][T_NUMTYPES] = {
+	static const int tile_compat[F_NUMFAMILIES][F_NUMFAMILIES] = {
 	/*					child:								*/
-	/* parent:			T_CONTAINER	T_WINDOW	T_WIDGET	*/
-	/* T_CONTAINER */	{1,			1,			1 },
-	/* T_WINDOW */		{1,			0,			1 },
-	/* T_WIDGET */		{0,			0,			0 },
+	/* parent:			F_CONTAINER	F_WINDOW	F_WIDGET	*/
+	/* F_CONTAINER */	{1,			1,			1 },
+	/* F_WINDOW */		{1,			0,			1 },
+	/* F_WIDGET */		{0,			0,			0 },
 	};
 
-	return tile_compat[parent->type][child_type];
+	return tile_compat[parent->family][child_family];
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int type, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
+struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
 {
-	if (!emui_tile_compatibile(parent, type)) {
+	if (!emui_tile_compatibile(parent, family)) {
 		return NULL;
 	}
 
@@ -327,7 +327,7 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_d
 		}
 	}
 
-	t->type = type;
+	t->family = family;
 	t->properties = properties;
 	t->drv = drv;
 

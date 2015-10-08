@@ -179,7 +179,7 @@ struct emui_tile * emui_splitter_new(struct emui_tile *parent, int edge, int min
 		return NULL;
 	}
 
-	t = emui_tile_create(parent, &emui_splitter_drv, T_CONTAINER, 0, 0, parent->w, parent->h, 0, 0, 0, 0, "Splitter", P_MAXIMIZED);
+	t = emui_tile_create(parent, &emui_splitter_drv, F_CONTAINER, 0, 0, parent->w, parent->h, 0, 0, 0, 0, "Splitter", P_MAXIMIZED);
 
 	if (!t) return NULL;
 

@@ -86,7 +86,7 @@ struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y, i
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, &emui_fpscounter_drv, T_WIDGET, x, y, 6, 1, 0, 0, 0, 0, NULL, P_NONE);
+	t = emui_tile_create(parent, &emui_fpscounter_drv, F_WIDGET, x, y, 6, 1, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->style = style;
 	t->priv_data = calloc(1, sizeof(struct fpscounter));

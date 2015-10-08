@@ -172,7 +172,7 @@ struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, &emui_lineedit_drv, T_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emui_tile_create(parent, &emui_lineedit_drv, F_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
 	t->priv_data = calloc(1, sizeof(struct lineedit));
 
 	struct lineedit *le = t->priv_data;

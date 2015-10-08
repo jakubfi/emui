@@ -37,12 +37,12 @@ enum emui_fit_types {
 	FIT_FILL = -1,
 };
 
-enum emui_tile_types {
-	T_CONTAINER,
-	T_WINDOW,
-	T_WIDGET,
+enum emui_tile_families {
+	F_CONTAINER,
+	F_WINDOW,
+	F_WIDGET,
 	
-	T_NUMTYPES
+	F_NUMFAMILIES
 };
 
 enum emui_align_types {
@@ -89,7 +89,7 @@ struct emui_tile_drv {
 
 struct emui_tile {
 	// general
-	unsigned type;				// tile type
+	unsigned family;			// tile family
 	char *name;					// tile name
 	unsigned properties;		// tile properties
 	int key;					// shortcut key
@@ -129,7 +129,7 @@ struct emui_tile {
 	emui_event_handler_f user_ev_handler;
 };
 
-struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int type, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
+struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
 void emui_tile_destroy(struct emui_tile *t);
 void emui_tile_debug_set(int i);
 
