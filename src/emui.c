@@ -146,20 +146,21 @@ static int emui_event_router(struct emui_event *ev)
 }
 
 // -----------------------------------------------------------------------
-static void emui_draw(struct emui_tile *t)
+static void emui_draw(struct emui_tile *t, int force)
 {
 	struct emui_tile *focused_child = NULL;
 
 	if (!t) return;
 
-	// TODO: geometry updates should really occur only when geometry changes, ie:
-	//  * on EV_RESIZE
-	//  * when a method is called that changes geometry
-
-	// update common tile geometry stuff
-	emui_tile_update_geometry(t);
-	// do tile-specific geometry updates
-	t->drv->update_geometry(t);
+	// do we need to update tile geometry?
+	int geometry_update = (t->geometry_changed || force);
+	if (geometry_update) {
+		// update common tile geometry stuff
+		emui_tile_update_geometry(t);
+		// do tile-specific geometry updates
+		t->drv->update_geometry(t);
+		t->geometry_changed = 0;
+	}
 
 	// draw the tile
 	if (emui_tile_draw(t)) {
@@ -172,7 +173,7 @@ static void emui_draw(struct emui_tile *t)
 	while (child) {
 		// draw non-focused tiles first, store focused
 		if (!emui_has_focus(child)) {
-			emui_draw(child);
+			emui_draw(child, geometry_update);
 		} else {
 			focused_child = child;
 		}
@@ -180,7 +181,7 @@ static void emui_draw(struct emui_tile *t)
 	}
 
 	// finally, draw focused tile
-	emui_draw(focused_child);
+	emui_draw(focused_child, geometry_update);
 }
 
 // -----------------------------------------------------------------------
@@ -237,7 +238,7 @@ static inline int emui_need_screen_update(struct timeval *ft)
 // -----------------------------------------------------------------------
 static void emui_update_screen()
 {
-	emui_draw(layout);
+	emui_draw(layout, 0);
 	doupdate();
 	emui_frame++;
 }

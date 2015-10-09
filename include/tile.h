@@ -94,6 +94,7 @@ struct emui_tile {
 	unsigned properties;		// tile properties
 	int key;					// shortcut key
 	int style;					// default style
+	int geometry_changed;		// geometry has changed (and needs to be updated)
 
 	// geometry
 	unsigned rx, ry, rw, rh;	// user-requested tile geometry including decoration (relative to parent's work area)

@@ -43,8 +43,8 @@ int emui_screen_update_geometry(struct emui_tile *t)
 	t->mr = t->ml = t->mt = t->mb = 0;
 	// it seems that getmaxyx() without preceding wrefresh() can sometimes
 	// spit wrong numbers after screen resize
-	wrefresh(stdscr);
-	getmaxyx(stdscr, t->dh, t->dw);
+	wrefresh(t->ncwin);
+	getmaxyx(t->ncwin, t->dh, t->dw);
 	t->h = t->rh = t->dh;
 	t->w = t->rw = t->dw;
 
@@ -57,7 +57,7 @@ int emui_screen_event_handler(struct emui_tile *t, struct emui_event *ev)
 	if (ev->type == EV_RESIZE) {
 		// handle resize here, so if terminal is resized when fps is low,
 		// UI reacts quickly
-		emui_screen_update_geometry(t);
+		t->geometry_changed = 1;
 	} else if ((ev->type == EV_KEY) && (ev->data.key == 'q')) {
 		struct emui_event *ev = malloc(sizeof(struct emui_event));
 		ev->type = EV_QUIT;
@@ -93,7 +93,7 @@ struct emui_tile_drv emui_screen_drv = {
 struct emui_tile * emui_screen_new()
 {
 	struct emui_tile *t = calloc(1, sizeof(struct emui_tile));
-	t->ncdeco = stdscr;
+	t->ncdeco = NULL;
 	t->ncwin = stdscr;
 	t->family = F_CONTAINER;
 	t->drv = &emui_screen_drv;

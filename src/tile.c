@@ -200,7 +200,8 @@ int emui_tile_draw(struct emui_tile *t)
 		if (t->style) {
 			emuifillbg(t, t->style);
 		} else {
-			werase(t->ncwin);
+			// this may be needed in the end
+			//werase(t->ncwin);
 		}
 	}
 
@@ -330,6 +331,7 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_d
 	t->family = family;
 	t->properties = properties;
 	t->drv = drv;
+	t->geometry_changed = 1;
 
 	t->rx = x;
 	t->ry = y;

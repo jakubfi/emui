@@ -138,6 +138,7 @@ int emuifillbg(struct emui_tile *t, int style)
 
 	wattr_get(win, &attr_old, &colorpair_old, NULL);
 	wattrset(win, emui_style_get(style));
+	wmove(win, 0, 0);
 	for (int y=0 ; y<t->h ; y++) {
 		ret = whline(win, ' ', t->w);
 	}
