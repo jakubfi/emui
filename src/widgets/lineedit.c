@@ -29,10 +29,11 @@
 struct lineedit {
 	int type;
 	int in_edit;
-	int inserting;
+	int ovr;
 	int pos;
 	int maxlen;
 	char *buf;
+	int txt_offset;
 };
 
 // -----------------------------------------------------------------------
@@ -47,8 +48,24 @@ void emui_lineedit_draw(struct emui_tile *t)
 		style = S_TEXT_FOCUSED;
 	}
 
-	emuixyprt(t, 0, 0, style, "%s", le->buf);
-	wmove(t->ncwin, 0, le->pos);
+	emuifillbg(t, style);
+
+	int margin = 1;
+	if (le->ovr) margin = 0;
+
+	// scroll the string so it's within the window
+	if (le->pos >= t->w + le->txt_offset) {
+		le->txt_offset = le->pos - t->w + margin;
+	} else if (le->pos < le->txt_offset) {
+		le->txt_offset = le->pos;
+	}
+
+	if (le->in_edit) {
+		emuixyprt(t, 0, 0, style, "%s", le->buf + le->txt_offset);
+		wmove(t->ncwin, 0, le->pos - le->txt_offset);
+	} else {
+		emuixyprt(t, 0, 0, style, "%s", le->buf);
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -90,12 +107,10 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 		case '\n':
 		case '\r':
 			le->in_edit = 0;
-			le->pos = 0;
 			curs_set(0);
 			break;
-		case 27:
+		case 27: // ESC
 			le->in_edit = 0;
-			le->pos = 0;
 			curs_set(0);
 			break;
 		case KEY_LEFT:
@@ -112,19 +127,35 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 			break;
 		case KEY_BACKSPACE:
 		case 127:
-			memmove(le->buf+le->pos-1, le->buf+le->pos, strlen(le->buf)-le->pos);
-			le->pos -= 1;
-			le->buf[strlen(le->buf)-1] = '\0';
+			if (le->pos > 0) {
+				memmove(le->buf+le->pos-1, le->buf+le->pos, strlen(le->buf)-le->pos);
+				le->pos -= 1;
+				le->buf[strlen(le->buf)-1] = '\0';
+			}
 			break;
 		case KEY_DC:
-			memmove(le->buf+le->pos, le->buf+le->pos+1, strlen(le->buf)-le->pos-1);
-			le->buf[strlen(le->buf)-1] = '\0';
+			if (le->pos < strlen(le->buf)) {
+				memmove(le->buf+le->pos, le->buf+le->pos+1, strlen(le->buf)-le->pos-1);
+				le->buf[strlen(le->buf)-1] = '\0';
+			}
 			break;
 		default:
 			if (isprint(ev->data.key)) {
-				if (le->pos < le->maxlen) {
-					memmove(le->buf+le->pos+1, le->buf+le->pos, strlen(le->buf)-le->pos);
-					le->buf[le->pos++] = ev->data.key;
+				if (le->ovr) {
+					if (le->pos < le->maxlen) {
+						if (le->pos == strlen(le->buf)) {
+							le->buf[le->pos+1] = '\0';
+						}
+						le->buf[le->pos] = ev->data.key;
+						if (le->pos < le->maxlen - 1) {
+							le->pos++;
+						}
+					}
+				} else {
+					if (strlen(le->buf) < le->maxlen) {
+						memmove(le->buf+le->pos+1, le->buf+le->pos, strlen(le->buf)-le->pos);
+						le->buf[le->pos++] = ev->data.key;
+					}
 				}
 			}
 	}
@@ -180,6 +211,7 @@ struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int
 	le->maxlen = maxlen;
 	le->type = type;
 	le->buf = calloc(1, maxlen+1);
+	le->ovr = 1;
 
 	return t;
 }

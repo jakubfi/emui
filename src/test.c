@@ -54,6 +54,22 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	struct emui_tile *sreg_split = emui_splitter_new(reg_split, AL_LEFT, 55, FIT_DIV2, 55);
 	struct emui_tile *ureg = emui_window_new(sreg_split, 0, 0, 55, 11, "Registers", P_NONE);
 	emui_tile_set_focus_key(ureg, 'r');
+	emui_label_new(ureg, 0, 1, 2, AL_RIGHT, S_TEXT, "0x");
+	emui_label_new(ureg, 0, 2, 2, AL_RIGHT, S_TEXT, "0x");
+	emui_label_new(ureg, 0, 3, 2, AL_RIGHT, S_TEXT, "0x");
+	emui_label_new(ureg, 0, 4, 2, AL_RIGHT, S_TEXT, "0x");
+	emui_label_new(ureg, 0, 5, 2, AL_RIGHT, S_TEXT, "0x");
+	emui_label_new(ureg, 0, 6, 2, AL_RIGHT, S_TEXT, "0x");
+	emui_label_new(ureg, 0, 7, 2, AL_RIGHT, S_TEXT, "0x");
+	emui_label_new(ureg, 0, 8, 2, AL_RIGHT, S_TEXT, "0x");
+	emui_lineedit_new(ureg, 2, 1, 4, 4, TT_TEXT);
+	emui_lineedit_new(ureg, 2, 2, 4, 4, TT_TEXT);
+	emui_lineedit_new(ureg, 2, 3, 4, 4, TT_TEXT);
+	emui_lineedit_new(ureg, 2, 4, 4, 4, TT_TEXT);
+	emui_lineedit_new(ureg, 2, 5, 4, 4, TT_TEXT);
+	emui_lineedit_new(ureg, 2, 6, 4, 4, TT_TEXT);
+	emui_lineedit_new(ureg, 2, 7, 4, 4, TT_TEXT);
+	emui_lineedit_new(ureg, 2, 8, 4, 4, TT_TEXT);
 	struct emui_tile *sreg = emui_window_new(sreg_split, 0, 0, 55, 11, "Sys Registers", P_NONE);
 
 	emui_tile_set_focus_key(sreg, 's');
@@ -86,7 +102,7 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 // -----------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-	//emui_tile_debug_set(1);
+	emui_tile_debug_set(1);
 
 	struct emui_tile *layout = emui_init(30);
 

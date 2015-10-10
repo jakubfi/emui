@@ -22,6 +22,7 @@
 #include "event.h"
 #include "style.h"
 #include "print.h"
+#include "focus.h"
 
 struct label {
 	char *txt;
@@ -55,6 +56,11 @@ void emui_label_draw(struct emui_tile *t)
 // -----------------------------------------------------------------------
 void emui_label_debug(struct emui_tile *t)
 {
+	if (emui_is_focused(t)) {
+		emuixyprt(t, 0, 0, S_DEBUG, "*");
+	} else if (emui_has_focus(t)) {
+		emuixyprt(t, 0, 0, S_DEBUG, "+");
+	}
 }
 
 // -----------------------------------------------------------------------

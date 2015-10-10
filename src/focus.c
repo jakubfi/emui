@@ -33,6 +33,17 @@ static int distance(int x1, int y1, int x2, int y2)
 }
 
 // -----------------------------------------------------------------------
+static void _focus_up(struct emui_tile *t)
+{
+	// set new focus path
+	focus = t;
+	while (t && t->parent) {
+		t->parent->focus = t;
+		t = t->parent;
+	}
+}
+
+// -----------------------------------------------------------------------
 int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 {
 	struct emui_tile *f = t->fg->fg_first;
@@ -64,7 +75,7 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 		f = f->fg_next;
 	}
 
-	if (match != t) emui_focus(match);
+	if (match != t) _focus_up(match);
 
 	return 0;
 }
@@ -73,6 +84,8 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 {
 	struct emui_tile *next = t;
+	// for cases when we start searching at t = t->fg->fg_first
+	int first_item = 1;
 
 	while (1) {
 		switch (dir) {
@@ -86,9 +99,9 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 		if (next) {
 			if (next->properties & P_INTERACTIVE) {
 				// got a tile that can be focused
-				emui_focus(next);
+				_focus_up(next);
 				break;
-			} else if (next == t) {
+			} else if ((next == t) && (!first_item)) {
 				// we've looped over, nothing to do
 				break;
 			}
@@ -96,6 +109,8 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 			// hit the boundary, start from the other and
 			dir = (dir == FC_NEXT) ? FC_BEG : FC_END;
 		}
+
+		first_item = 0;
 	}
 
 	return 0;
@@ -104,21 +119,34 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 // -----------------------------------------------------------------------
 void emui_focus(struct emui_tile *t)
 {
-	// go down the tree if tile is not a leaf (focus needs to cover full tile path)
-	while (t->ch_first) {
-		if (t->focus) {
-			 t = t->focus;
-		} else {
-			t = t->ch_first;
-		}
+	// first, if the subtree had a focus previously, use it
+	while (t->focus) {
+		t = t->focus;
 	}
 
-	focus = t;
+	// if we're at an interactive leaf
+	if (t->properties & P_INTERACTIVE) {
+		// search is done
+		_focus_up(t);
 
-	// set new focus path
-	while (t->parent) {
-		t->parent->focus = t;
-		t = t->parent;
+	// if we're at a non-interactive widget
+	} else if (t->family == F_WIDGET) {
+		// we may only try to find something interactive in this focus group
+		// if this fails - bummer, but that's the best we can do
+		emui_focus_list_neighbour(t, FC_BEG);
+
+	// User wants to focus on something non-interactive, non-widgety,
+	// without a previous focus (the layout, in an extreme case).
+	// Because focus needs to cover full path from a leaf to the root,
+	// we need to find something
+	} else {
+		while (t->ch_first) {
+			t = t->ch_first;
+		}
+		// focus here, if there is nothing better
+		_focus_up(t);
+		// try to focus something better
+		emui_focus_list_neighbour(t, FC_BEG);
 	}
 }
 

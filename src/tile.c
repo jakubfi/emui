@@ -133,7 +133,10 @@ static void emui_tile_debug(struct emui_tile *t)
 	attr_t attr_old;
 	short colorpair_old;
 
-	if (t->family == F_WIDGET) return;
+	if (t->family == F_WIDGET) {
+		if (t->drv->debug) t->drv->debug(t);
+		return;
+	}
 
 	// format debug string
 	buf[255] = '\0';
@@ -286,7 +289,7 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 			return 0;
 		}
 	// if tile is a widget, handle neighbourhood focus change
-	} else if (t->properties & P_INTERACTIVE) {
+	} else if (t->family == F_WIDGET) {
 		if ((ev->type == EV_KEY) && !emui_tile_handle_neighbour_focus(t, ev->data.key)) {
 			return 0;
 		}
