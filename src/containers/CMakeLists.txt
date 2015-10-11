@@ -4,6 +4,7 @@ add_library(containers
 	window.c
 	tabs.c
 	splitter.c
+	justifier.c
 )
 
 set_target_properties(containers

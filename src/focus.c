@@ -62,7 +62,7 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 	int dist, dist_min = INT_MAX;
 
 	while (f) {
-		if (f->properties & P_INTERACTIVE) {
+		if (IS_FOCUSABLE(f)) {
 
 			dist = _distance(t->x+t->w/2, t->y+t->h/2, f->x+f->w/2, f->y+f->h/2);
 
@@ -129,20 +129,22 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 		}
 
 		if (next) {
-			if (next->properties & P_INTERACTIVE) {
+			if (IS_FOCUSABLE(next)) {
 				// got a tile that can be focused
 				_focus_up(next);
 				break;
-			} else if ((next == t) && (!first_item)) {
-				// we've looped over, nothing to do
-				break;
+			} else if (next == t) {
+				if (first_item) {
+					first_item = 0;
+				} else {
+					// we've looped over, nothing to do
+					break;
+				}
 			}
 		} else {
-			// hit the boundary, start from the other and
+			// hit the boundary, start from the other end
 			dir = (dir == FC_NEXT) ? FC_BEG : FC_END;
 		}
-
-		first_item = 0;
 	}
 
 	return 0;
@@ -157,7 +159,7 @@ void emui_focus(struct emui_tile *t)
 	}
 
 	// if we're at an interactive leaf
-	if (t->properties & P_INTERACTIVE) {
+	if (IS_FOCUSABLE(t)) {
 		// search is done
 		_focus_up(t);
 

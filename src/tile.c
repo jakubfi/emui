@@ -73,12 +73,12 @@ void emui_tile_update_geometry(struct emui_tile *t)
 
 	// hide tile if outside parent's area
 	if ((t->dx >= parent->x + parent->w) || (t->dy >= parent->y + parent->h)) {
-		t->properties |= P_HIDDEN;
+		emui_tile_hide(t);
 		// give up on hidden tile
 		return;
 	// unhide and fit otherwise
 	} else {
-		t->properties &= ~P_HIDDEN;
+		emui_tile_unhide(t);
 	}
 
 	// fit tile width to parent's width
@@ -99,10 +99,10 @@ void emui_tile_update_geometry(struct emui_tile *t)
 
 	// hide if no space for contents
 	if ((t->dw <= t->ml+t->mr) || (t->dh <= t->mt+t->mb)) {
-		t->properties |= P_HIDDEN;
+		emui_tile_hide(t);
 		return;
 	} else {
-		t->properties &= ~P_HIDDEN;
+		emui_tile_unhide(t);
 	}
 
 	// prepare decoration window
@@ -477,6 +477,32 @@ void emui_tile_destroy(struct emui_tile *t)
 
 	// remove the tile itself
 	emui_tile_free(t);
+}
+
+// -----------------------------------------------------------------------
+void emui_tile_hide(struct emui_tile *t)
+{
+	if (t->properties & P_HIDDEN) return;
+
+	t->properties |= P_HIDDEN;
+	t = t->ch_first;
+	while (t) {
+		emui_tile_hide(t);
+		t = t->next;
+	}
+}
+
+// -----------------------------------------------------------------------
+void emui_tile_unhide(struct emui_tile *t)
+{
+	if (!(t->properties & P_HIDDEN)) return;
+
+	t->properties &= ~P_HIDDEN;
+	t = t->ch_first;
+	while (t) {
+		emui_tile_unhide(t);
+		t = t->next;
+	}
 }
 
 // -----------------------------------------------------------------------

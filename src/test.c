@@ -51,20 +51,34 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 
 	// registers
 	struct emui_tile *reg_split = emui_splitter_new(dasm_split, AL_TOP, 11, 11, FIT_FILL);
-	struct emui_tile *sreg_split = emui_splitter_new(reg_split, AL_LEFT, 55, FIT_DIV2, 55);
+	struct emui_tile *sreg_split = emui_splitter_new(reg_split, AL_LEFT, 10, FIT_DIV2, 55);
 	struct emui_tile *ureg = emui_window_new(sreg_split, 0, 0, 55, 11, "Registers", P_NONE);
 	emui_tile_set_focus_key(ureg, 'r');
-	emui_label_new(ureg, 0, 0, 55, AL_LEFT, S_TEXT, "    hex  dec    ZMVCLEGY X1234567 ch R40");
-	for (int i=0 ; i<8 ; i++) {
+	struct emui_tile *ureg_just = emui_justifier_new(ureg);
+	struct emui_tile *ureg_r = emui_dummy_cont_new(ureg_just, 0, 0, 4, 11);
+	struct emui_tile *ureg_hex = emui_dummy_cont_new(ureg_just, 4, 0, 4, 11);
+	struct emui_tile *ureg_dec = emui_dummy_cont_new(ureg_just, 9, 0, 6, 11);
+	struct emui_tile *ureg_oct = emui_dummy_cont_new(ureg_just, 16, 0, 6, 11);
+	struct emui_tile *ureg_bin = emui_dummy_cont_new(ureg_just, 32, 0, 16, 11);
+	struct emui_tile *ureg_ch = emui_dummy_cont_new(ureg_just, 40, 0, 2, 11);
+	struct emui_tile *ureg_r40 = emui_dummy_cont_new(ureg_just, 42, 0, 3, 11);
+	emui_label_new(ureg_r, 0, 0, 4, AL_LEFT, S_TEXT, "");
+	emui_label_new(ureg_hex, 0, 0, 4, AL_LEFT, S_TEXT, "hex");
+	emui_label_new(ureg_dec, 0, 0, 6, AL_LEFT, S_TEXT, "dec");
+	emui_label_new(ureg_oct, 0, 0, 6, AL_LEFT, S_TEXT, "oct");
+	emui_label_new(ureg_bin, 0, 0, 16, AL_LEFT, S_TEXT, "ZMVCLEGYX1234567");
+	emui_label_new(ureg_ch, 0, 0, 2, AL_LEFT, S_TEXT, "ch");
+	emui_label_new(ureg_r40, 0, 0, 3, AL_LEFT, S_TEXT, "R40");
+	for (int i=1 ; i<=8 ; i++) {
 		char buf[] = "R_:";
-		buf[1] = '0' + i;
-		emui_label_new(ureg, 0, 1+i, 3, AL_RIGHT, S_TEXT, buf);
-		emui_lineedit_new(ureg, 4, 1+i, 4, 4, TT_TEXT);
-		emui_lineedit_new(ureg, 9, 1+i, 6, 6, TT_TEXT);
-		emui_lineedit_new(ureg, 16, 1+i, 8, 8, TT_TEXT);
-		emui_lineedit_new(ureg, 25, 1+i, 8, 8, TT_TEXT);
-		emui_lineedit_new(ureg, 34, 1+i, 2, 2, TT_TEXT);
-		emui_lineedit_new(ureg, 37, 1+i, 3, 3, TT_TEXT);
+		buf[1] = '0' + i-1;
+		emui_label_new(ureg_r, 0, i, 3, AL_RIGHT, S_TEXT, buf);
+		emui_lineedit_new(ureg_hex, 0, i, 4, 4, TT_TEXT);
+		emui_lineedit_new(ureg_dec, 0, i, 6, 6, TT_TEXT);
+		emui_lineedit_new(ureg_oct, 0, i, 6, 6, TT_TEXT);
+		emui_lineedit_new(ureg_bin, 0, i, 16, 16, TT_TEXT);
+		emui_lineedit_new(ureg_ch, 0, i, 2, 2, TT_TEXT);
+		emui_lineedit_new(ureg_r40, 0, i, 3, 3, TT_TEXT);
 	}
 
 	struct emui_tile *sreg = emui_window_new(sreg_split, 0, 0, 55, 11, "Sys Registers", P_NONE);
@@ -117,7 +131,7 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 // -----------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-	emui_tile_debug_set(1);
+	//emui_tile_debug_set(1);
 
 	struct emui_tile *layout = emui_init(30);
 

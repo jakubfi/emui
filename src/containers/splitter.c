@@ -77,9 +77,9 @@ static inline void geom(struct emui_tile *ch, int x, int y, int w, int h)
 
 	// disable it, if doesn't fit
 	if ((w <= 0) || (h <= 0)) {
-		ch->properties |= P_HIDDEN;
+		emui_tile_hide(ch);
 	} else {
-		ch->properties &= ~P_HIDDEN;
+		emui_tile_unhide(ch);
 		ch->dx = x;
 		ch->dy = y;
 		ch->dw = w;

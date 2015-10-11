@@ -70,6 +70,7 @@ enum emui_tile_properties {
 #define P_USER_SETTABLE 0xffff
 
 #define ACTIVE_DECO(t) (((t)->properties & (P_DECORATED | P_NODECO)) == P_DECORATED)
+#define IS_FOCUSABLE(t) (((t)->properties & (P_INTERACTIVE | P_HIDDEN)) == P_INTERACTIVE)
 
 struct emui_tile;
 struct emui_event;
@@ -145,6 +146,8 @@ int emui_tile_set_focus_key(struct emui_tile *t, int key);
 int emui_tile_set_properties(struct emui_tile *t, unsigned properties);
 int emui_tile_set_name(struct emui_tile *t, char *name);
 int emui_tile_set_style(struct emui_tile *t, int style);
+void emui_tile_hide(struct emui_tile *t);
+void emui_tile_unhide(struct emui_tile *t);
 
 #endif
 
