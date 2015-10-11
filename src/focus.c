@@ -26,7 +26,15 @@
 static struct emui_tile *focus;
 
 // -----------------------------------------------------------------------
-static int distance(int x1, int y1, int x2, int y2)
+static int _overlap(int b1, int e1, int b2, int e2)
+{
+#define MIN(a, b) ((a) < (b) ? a : b)
+#define MAX(a, b) ((a) > (b) ? a : b)
+	return MIN(e1, e2) - MAX(b1, b2);
+}
+
+// -----------------------------------------------------------------------
+static int _distance(int x1, int y1, int x2, int y2)
 {
 	int distance = (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2);
 	return distance;
@@ -48,27 +56,51 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 {
 	struct emui_tile *f = t->fg->fg_first;
 	struct emui_tile *match = t;
-	int min_dist = INT_MAX;
+
+	int dd, dd_min = INT_MAX; // directional distance (distance in the move direction)
+	int ovrl, ovrl_max = 0; // overlap region
+	int dist, dist_min = INT_MAX;
 
 	while (f) {
 		if (f->properties & P_INTERACTIVE) {
-			int dist = distance(t->x, t->y, f->x, f->y);
-			int cl, cg;
 
-			// TODO: find more ergonomic policy for switching up/down/left/right
+			dist = _distance(t->x+t->w/2, t->y+t->h/2, f->x+f->w/2, f->y+f->h/2);
 
 			switch (dir) {
-				case FC_UP: cl = f->y; cg = t->y; break;
-				case FC_DOWN: cl = t->y; cg = f->y; break;
-				case FC_LEFT: cl = f->x; cg = t->x; break;
-				case FC_RIGHT: cl = t->x; cg = f->x; break;
-				default: return 0; // unknown or incompatibile direction
+				case FC_UP:
+					dd = t->y - f->y - f->h;
+					ovrl = _overlap(t->x, t->x + t->w, f->x, f->x + f->w);
+					break;
+				case FC_DOWN:
+					dd = f->y - t->y - t->h;
+					ovrl = _overlap(t->x, t->x + t->w, f->x, f->x + f->w);
+					break;
+				case FC_LEFT:
+					dd = t->x - f->x - f->w;
+					ovrl = _overlap(t->y, t->y + t->h, f->y, f->y + f->h);
+					break;
+				case FC_RIGHT:
+					dd = f->x - t->x - t->w;
+					ovrl = _overlap(t->y, t->y + t->h, f->y, f->y + f->h);
+					break;
+				default:
+					return 0; // unknown or incompatibile direction
 			}
 
-			if (cl < cg) {
-				if (dist < min_dist) {
-					min_dist = dist;
-					match = f;
+			// tile has to be:
+			//  * other than the current tile
+			//  * further in the move direction
+			//  * "overlapping" with current tile in axis perpendicural to movement
+			if ((f != t) && (dd >= 0) && (ovrl > 0)) {
+				// we search for the closest tile
+				if (dist <= dist_min) {
+					// we search for a tile that "overlaps" the most with the current one
+					if (ovrl >= ovrl_max) {
+						ovrl_max = ovrl/2; // /2 = less impact on decision
+						dd_min = dd;
+						dist_min = dist;
+						match = f;
+					}
 				}
 			}
 		}
