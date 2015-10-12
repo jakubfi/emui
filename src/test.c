@@ -25,7 +25,7 @@ struct emui_tile * ui_create_status(struct emui_tile *parent)
 	// left side
 	struct emui_tile *status_left = emui_window(split, 0, 0, 1, 1, "StatusL", P_NODECO);
 	emui_tile_set_style(status_left, S_TEXT_INVERSED);
-	struct emui_tile *misc = emui_label(status_left, 1, 0, 30, AL_LEFT, S_TEXT_INVERSED, "MIPS: 22.4  ALARM  TIMER  ...");
+	struct emui_tile *misc = emui_label(status_left, 1, 0, 50, AL_LEFT, S_TEXT_INVERSED, "MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
 
 	// right side
 	struct emui_tile *status_right = emui_window(split, 0, 0, 1, 1, "StatusR", P_NODECO);
@@ -39,21 +39,11 @@ struct emui_tile * ui_create_status(struct emui_tile *parent)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * ui_create_debugger(struct emui_tile *parent)
+struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 {
-	// ASM
-	struct emui_tile *dasm_split = emui_splitter(parent, AL_LEFT, 30, 30, FIT_FILL);
-	emui_tile_set_properties(dasm_split, P_FOCUS_GROUP);
-	emui_tile_set_name(dasm_split, "Debugger");
-	emui_tile_set_focus_key(dasm_split, KEY_F(12));
-	struct emui_tile *dasm = emui_window(dasm_split, 0, 0, 30, 20, "ASM", P_NONE);
-	emui_tile_set_focus_key(dasm, 'a');
-
-	// registers
-	struct emui_tile *reg_split = emui_splitter(dasm_split, AL_TOP, 11, 11, FIT_FILL);
-	struct emui_tile *sreg_split = emui_splitter(reg_split, AL_LEFT, 10, FIT_DIV2, 55);
-	struct emui_tile *ureg = emui_window(sreg_split, 0, 0, 55, 11, "Registers", P_NONE);
+	struct emui_tile *ureg = emui_window(parent, 0, 0, 55, 11, "Registers", P_NONE);
 	emui_tile_set_focus_key(ureg, 'r');
+
 	struct emui_tile *ureg_just = emui_justifier(ureg);
 	struct emui_tile *ureg_r = emui_dummy_cont(ureg_just, 0, 0, 4, 11);
 	struct emui_tile *ureg_hex = emui_dummy_cont(ureg_just, 4, 0, 4, 11);
@@ -73,36 +63,62 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 		char buf[] = "R_:";
 		buf[1] = '0' + i-1;
 		emui_label(ureg_r, 0, i, 3, AL_RIGHT, S_TEXT, buf);
-		emui_lineedit(ureg_hex, 0, i, 4, 4, TT_TEXT);
-		emui_lineedit(ureg_dec, 0, i, 6, 6, TT_TEXT);
-		emui_lineedit(ureg_oct, 0, i, 6, 6, TT_TEXT);
-		emui_lineedit(ureg_bin, 0, i, 16, 16, TT_TEXT);
-		emui_lineedit(ureg_ch, 0, i, 2, 2, TT_TEXT);
-		emui_lineedit(ureg_r40, 0, i, 3, 3, TT_TEXT);
+		emui_lineedit(ureg_hex, 0, i, 4, 4, TT_HEX, M_OVR);
+		emui_lineedit(ureg_dec, 0, i, 6, 6, TT_INT, M_OVR);
+		emui_lineedit(ureg_oct, 0, i, 6, 6, TT_OCT, M_OVR);
+		emui_lineedit(ureg_bin, 0, i, 16, 16, TT_BIN, M_OVR);
+		emui_lineedit(ureg_ch, 0, i, 2, 2, TT_TEXT, M_OVR);
+		emui_lineedit(ureg_r40, 0, i, 3, 3, TT_R40, M_OVR);
 	}
 
-	struct emui_tile *sreg = emui_window(sreg_split, 0, 0, 55, 11, "Sys Registers", P_NONE);
+	return ureg;
+}
+
+// -----------------------------------------------------------------------
+struct emui_tile * ui_create_sreg(struct emui_tile *parent)
+{
+	struct emui_tile *sreg = emui_window(parent, 0, 0, 55, 11, "Sys Registers", P_NONE);
 	emui_label(sreg, 0, 0, 55, AL_LEFT, S_TEXT, "    hex  opcode D A   B   C");
 	emui_label(sreg, 0, 1, 55, AL_LEFT, S_TEXT, "IR:");
-	emui_lineedit(sreg, 4, 1, 4, 4, TT_TEXT);
-	emui_lineedit(sreg, 9, 1, 6, 6, TT_TEXT);
-	emui_lineedit(sreg, 16, 1, 1, 1, TT_TEXT);
-	emui_lineedit(sreg, 18, 1, 3, 3, TT_TEXT);
-	emui_lineedit(sreg, 22, 1, 3, 3, TT_TEXT);
-	emui_lineedit(sreg, 26, 1, 3, 3, TT_TEXT);
+	emui_lineedit(sreg, 4, 1, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, 9, 1, 6, 6, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 16, 1, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 18, 1, 3, 3, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 22, 1, 3, 3, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 26, 1, 3, 3, TT_BIN, M_OVR);
 	emui_label(sreg, 0, 2, 55, AL_LEFT, S_TEXT, "    hex  PMCZs139fS Q s NB");
 	emui_label(sreg, 0, 3, 55, AL_LEFT, S_TEXT, "SR:");
-	emui_lineedit(sreg, 4, 3, 4, 4, TT_TEXT);
-	emui_lineedit(sreg, 9, 3, 10, 10, TT_TEXT);
-	emui_lineedit(sreg, 20, 3, 1, 1, TT_TEXT);
-	emui_lineedit(sreg, 22, 3, 1, 1, TT_TEXT);
-	emui_lineedit(sreg, 24, 3, 4, 4, TT_TEXT);
+	emui_lineedit(sreg, 4, 3, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, 9, 3, 10, 10, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 20, 3, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 22, 3, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 24, 3, 4, 4, TT_BIN, M_OVR);
 	emui_label(sreg, 0, 4, 55, AL_LEFT, S_TEXT, "KB:");
-	emui_lineedit(sreg, 4, 4, 4, 4, TT_TEXT);
-	emui_lineedit(sreg, 9, 4, 8, 8, TT_TEXT);
-	emui_lineedit(sreg, 18, 4, 8, 8, TT_TEXT);
+	emui_lineedit(sreg, 4, 4, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, 9, 4, 8, 8, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 18, 4, 8, 8, TT_BIN, M_OVR);
 
 	emui_tile_set_focus_key(sreg, 's');
+
+	return sreg;
+}
+
+// -----------------------------------------------------------------------
+struct emui_tile * ui_create_debugger(struct emui_tile *parent)
+{
+	// ASM
+	struct emui_tile *dasm_split = emui_splitter(parent, AL_LEFT, 30, 30, FIT_FILL);
+	emui_tile_set_properties(dasm_split, P_FOCUS_GROUP);
+	emui_tile_set_name(dasm_split, "Debugger");
+	emui_tile_set_focus_key(dasm_split, KEY_F(12));
+	struct emui_tile *dasm = emui_window(dasm_split, 0, 0, 30, 20, "ASM", P_NONE);
+	emui_tile_set_focus_key(dasm, 'a');
+
+	// registers
+	struct emui_tile *reg_split = emui_splitter(dasm_split, AL_TOP, 11, 11, FIT_FILL);
+	struct emui_tile *sreg_split = emui_splitter(reg_split, AL_LEFT, 10, FIT_DIV2, 55);
+	struct emui_tile *ureg = ui_create_ureg(sreg_split);
+	struct emui_tile *sreg = ui_create_sreg(sreg_split);
 
 	// memory
 	struct emui_tile *mem_split = emui_splitter(reg_split, AL_TOP, 10, FIT_DIV2, 6);

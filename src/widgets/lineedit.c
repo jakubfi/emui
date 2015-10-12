@@ -29,7 +29,7 @@
 struct lineedit {
 	int type;
 	int in_edit;
-	int ovr;
+	int mode;
 	int pos;
 	int maxlen;
 	char *buf;
@@ -51,7 +51,7 @@ void emui_lineedit_draw(struct emui_tile *t)
 	emuifillbg(t, style);
 
 	int margin = 1;
-	if (le->ovr) margin = 0;
+	if (le->mode == M_OVR) margin = 0;
 
 	// scroll the string so it's within the window
 	if (le->pos >= t->w + le->txt_offset) {
@@ -80,6 +80,13 @@ int emui_lineedit_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
+void emui_lineedit_mode(struct emui_tile *t, int mode)
+{
+	struct lineedit *le = t->priv_data;
+	le->mode = mode;
+}
+
+// -----------------------------------------------------------------------
 static int le_handle_non_edit(struct emui_tile *t, struct emui_event *ev)
 {
 	struct lineedit *le = t->priv_data;
@@ -94,6 +101,40 @@ static int le_handle_non_edit(struct emui_tile *t, struct emui_event *ev)
 			return 1;
 	}
 
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+static int le_char_valid(int type, int ch)
+{
+	switch (type) {
+		case TT_TEXT:
+			if (isprint(ch)) return 1;
+			break;
+		case TT_UINT:
+			if (isdigit(ch)) return 1;
+			break;
+		case TT_INT:
+			if (isdigit(ch) || (ch == '-')) return 1;
+			break;
+		case TT_HEX:
+			if (isxdigit(ch)) return 1;
+			break;
+		case TT_OCT:
+			if ((ch >= 0) && (ch <= '7')) return 1;
+			break;
+		case TT_BIN:
+			if ((ch >= 0) && (ch <= '1')) return 1;
+			break;
+		case TT_FLOAT:
+			if (isdigit(ch) || (ch == '.') || (ch == '-')) return 1;
+			break;
+		case TT_R40:
+			if (((ch >= 'A') && (ch <= 'Z')) || ((ch >= 'a') && (ch <= 'z')) || ((ch >= '0') && (ch <= '9')) || (ch == '#') || (ch == '%') || (ch == '_')) return 1;
+			break;
+		default:
+			break;
+	}
 	return 0;
 }
 
@@ -133,34 +174,38 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 				le->buf[strlen(le->buf)-1] = '\0';
 			}
 			break;
-		case KEY_DC:
+		case KEY_IC: // INSERT
+			emui_lineedit_mode(t, le->mode ^ 1);
+			break;
+		case KEY_DC: // DELETE
 			if (le->pos < strlen(le->buf)) {
 				memmove(le->buf+le->pos, le->buf+le->pos+1, strlen(le->buf)-le->pos-1);
 				le->buf[strlen(le->buf)-1] = '\0';
 			}
 			break;
 		default:
-			if (isprint(ev->data.key)) {
-				if (le->ovr) {
-					if (le->pos < le->maxlen) {
-						if (le->pos == strlen(le->buf)) {
-							le->buf[le->pos+1] = '\0';
-						}
-						le->buf[le->pos] = ev->data.key;
-						if (le->pos < le->maxlen - 1) {
-							le->pos++;
-						}
+			if (!le_char_valid(le->type, ev->data.key)) break;
+
+			if (le->mode == M_OVR) {
+				if (le->pos < le->maxlen) {
+					if (le->pos == strlen(le->buf)) {
+						le->buf[le->pos+1] = '\0';
 					}
-				} else {
-					if (strlen(le->buf) < le->maxlen) {
-						memmove(le->buf+le->pos+1, le->buf+le->pos, strlen(le->buf)-le->pos);
-						le->buf[le->pos++] = ev->data.key;
+					le->buf[le->pos] = ev->data.key;
+					if (le->pos < le->maxlen - 1) {
+						le->pos++;
 					}
 				}
+			} else {
+				if (strlen(le->buf) < le->maxlen) {
+					memmove(le->buf+le->pos+1, le->buf+le->pos, strlen(le->buf)-le->pos);
+					le->buf[le->pos++] = ev->data.key;
+				}
 			}
+			break;
 	}
 
-	// eat all unhandled events
+	// eat all unhandled events (ignore keypresses invalid for input type)
 	return 0;
 }
 
@@ -199,7 +244,7 @@ struct emui_tile_drv emui_lineedit_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_lineedit(struct emui_tile *parent, int x, int y, int w, int maxlen, int type)
+struct emui_tile * emui_lineedit(struct emui_tile *parent, int x, int y, int w, int maxlen, int type, int mode)
 {
 	struct emui_tile *t;
 
@@ -211,7 +256,7 @@ struct emui_tile * emui_lineedit(struct emui_tile *parent, int x, int y, int w, 
 	le->maxlen = maxlen;
 	le->type = type;
 	le->buf = calloc(1, maxlen+1);
-	le->ovr = 1;
+	le->mode = mode;
 
 	return t;
 }

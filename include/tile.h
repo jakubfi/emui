@@ -22,11 +22,18 @@
 
 enum emui_text_types {
 	TT_TEXT,
-	TT_DEC,
+	TT_INT,
+	TT_UINT,
 	TT_HEX,
 	TT_OCT,
 	TT_BIN,
 	TT_FLOAT,
+	TT_R40,
+};
+
+enum emui_edit_modes {
+	M_INSERT,
+	M_OVR,
 };
 
 enum emui_fit_types {
