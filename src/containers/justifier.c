@@ -98,7 +98,7 @@ struct emui_tile_drv emui_justifier_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_justifier_new(struct emui_tile *parent)
+struct emui_tile * emui_justifier(struct emui_tile *parent)
 {
 	struct emui_tile *t;
 

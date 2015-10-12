@@ -74,7 +74,7 @@ struct emui_tile * emui_init(unsigned fps)
 		emui_fps = fps;
 	}
 	emui_scheme_default();
-	layout = emui_screen_new();
+	layout = emui_screen();
 
 	return layout;
 }

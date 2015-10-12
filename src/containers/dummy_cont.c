@@ -58,7 +58,7 @@ struct emui_tile_drv emui_dummy_cont_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_dummy_cont_new(struct emui_tile *parent, int x, int y, int w, int h)
+struct emui_tile * emui_dummy_cont(struct emui_tile *parent, int x, int y, int w, int h)
 {
 	struct emui_tile *t;
 

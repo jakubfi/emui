@@ -67,7 +67,7 @@ struct emui_tile_drv emui_W_NAME_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_W_NAME_new(struct emui_tile *parent, int x, int y, int w, int h)
+struct emui_tile * emui_W_NAME(struct emui_tile *parent, int x, int y, int w, int h)
 {
 	struct emui_tile *t;
 

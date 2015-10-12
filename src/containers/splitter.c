@@ -171,7 +171,7 @@ struct emui_tile_drv emui_splitter_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_splitter_new(struct emui_tile *parent, int edge, int min1, int max1, int min2)
+struct emui_tile * emui_splitter(struct emui_tile *parent, int edge, int min1, int max1, int min2)
 {
 	struct emui_tile *t;
 

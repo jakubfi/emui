@@ -199,7 +199,7 @@ struct emui_tile_drv emui_lineedit_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_lineedit_new(struct emui_tile *parent, int x, int y, int w, int maxlen, int type)
+struct emui_tile * emui_lineedit(struct emui_tile *parent, int x, int y, int w, int maxlen, int type)
 {
 	struct emui_tile *t;
 

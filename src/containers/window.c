@@ -75,7 +75,7 @@ struct emui_tile_drv emui_window_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_window_new(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties)
+struct emui_tile * emui_window(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties)
 {
 	struct emui_tile *t;
 

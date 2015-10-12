@@ -82,7 +82,7 @@ struct emui_tile_drv emui_fpscounter_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_fpscounter_new(struct emui_tile *parent, int x, int y, int style)
+struct emui_tile * emui_fpscounter(struct emui_tile *parent, int x, int y, int style)
 {
 	struct emui_tile *t;
 

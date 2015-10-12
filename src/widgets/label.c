@@ -103,7 +103,7 @@ int emui_label_set_text(struct emui_tile *t, char *txt)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_label_new(struct emui_tile *parent, int x, int y, int w, int align, int style, char *txt)
+struct emui_tile * emui_label(struct emui_tile *parent, int x, int y, int w, int align, int style, char *txt)
 {
 	struct emui_tile *t;
 
