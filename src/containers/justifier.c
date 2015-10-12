@@ -66,9 +66,9 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 	float offset = 0;
 	while (ch) {
 		ch->dx = ch->parent->x + offset;
-		ch->dy = ch->parent->y + ch->ry;
+		ch->dy = ch->parent->y;
 		ch->dw = ch->rw;
-		ch->dh = ch->rh;
+		ch->dh = ch->parent->h;
 		offset += ch->rw + 1 + per_ch;
 		ch = ch->next;
 	}
