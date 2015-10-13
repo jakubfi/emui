@@ -91,8 +91,8 @@ static int le_handle_non_edit(struct emui_tile *t, struct emui_event *ev)
 {
 	struct lineedit *le = t->priv_data;
 
-	switch (ev->data.key) {
-		case 10:
+	switch (ev->sender) {
+		case '\n':
 			le->in_edit = 1;
 			curs_set(1);
 			break;
@@ -143,10 +143,9 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 {
 	struct lineedit *le = t->priv_data;
 
-	switch (ev->data.key) {
+	switch (ev->sender) {
 		case KEY_ENTER:
 		case '\n':
-		case '\r':
 			le->in_edit = 0;
 			curs_set(0);
 			break;
@@ -184,14 +183,14 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 			}
 			break;
 		default:
-			if (!le_char_valid(le->type, ev->data.key)) break;
+			if (!le_char_valid(le->type, ev->sender)) break;
 
 			if (le->mode == M_OVR) {
 				if (le->pos < le->maxlen) {
 					if (le->pos == strlen(le->buf)) {
 						le->buf[le->pos+1] = '\0';
 					}
-					le->buf[le->pos] = ev->data.key;
+					le->buf[le->pos] = ev->sender;
 					if (le->pos < le->maxlen - 1) {
 						le->pos++;
 					}
@@ -199,7 +198,7 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 			} else {
 				if (strlen(le->buf) < le->maxlen) {
 					memmove(le->buf+le->pos+1, le->buf+le->pos, strlen(le->buf)-le->pos);
-					le->buf[le->pos++] = ev->data.key;
+					le->buf[le->pos++] = ev->sender;
 				}
 			}
 			break;

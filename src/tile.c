@@ -285,12 +285,12 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 
 	// if tile is a focus group, search for user-set focus keys handled by it
 	if (t->properties & P_FOCUS_GROUP) {
-		if ((ev->type == EV_KEY) && !emui_tile_handle_user_focus_keys(t, ev->data.key)) {
+		if ((ev->type == EV_KEY) && !emui_tile_handle_user_focus_keys(t, ev->sender)) {
 			return 0;
 		}
 	// if tile is a widget, handle neighbourhood focus change
 	} else if (t->family == F_WIDGET) {
-		if ((ev->type == EV_KEY) && !emui_tile_handle_neighbour_focus(t, ev->data.key)) {
+		if ((ev->type == EV_KEY) && !emui_tile_handle_neighbour_focus(t, ev->sender)) {
 			return 0;
 		}
 	}

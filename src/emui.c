@@ -112,14 +112,14 @@ static int emui_evq_update(struct timeval *tv)
 	if (retval > 0) {
 		ch = getch();
 		ev->type = EV_KEY;
-		ev->data.key = ch;
+		ev->sender = ch;
 	// this may be a resize event
 	} else if ((errno == EINTR) && ((ch = getch() == KEY_RESIZE))) {
 		ev->type = EV_RESIZE;
 	// error
 	} else {
 		ev->type = EV_ERROR;
-		ev->data.key = errno;
+		ev->sender = errno;
 	}
 
 	emui_evq_append(ev);

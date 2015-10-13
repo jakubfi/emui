@@ -21,15 +21,10 @@
 enum event_types { EV_NONE, EV_RESIZE, EV_QUIT, EV_DIE, EV_KEY, EV_FD_DATA, EV_ERROR };
 
 struct emui_event {
-	int type;
-	union {
-		int key;
-		struct {
-			int num;
-			int len;
-			char *data;
-		} fd;
-	} data;
+	int type;		// event type
+	int sender;		// event sender (key, error, fd number)
+	void *data;		// event data
+	int size;		// data size (if any)
 };
 
 struct emui_event * emui_evq_get();
