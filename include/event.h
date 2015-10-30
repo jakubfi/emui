@@ -18,7 +18,16 @@
 #ifndef EMUI_EVENT_H
 #define EMUI_EVENT_H
 
-enum event_types { EV_NONE, EV_RESIZE, EV_QUIT, EV_DIE, EV_KEY, EV_FD_DATA, EV_ERROR };
+enum event_types {
+	EV_QUIT,		// (queued) exit the main UI loop
+	EV_RESIZE,		// (queued) terminal resized
+	EV_KEY,			// (queued) key pressed
+	EV_ERROR,		// (queued) error
+	EV_UPDATE,		// (direct) tile requests a content update
+	EV_CHANGED,		// (direct) tile content has changed
+	EV_FOCUS,		// (direct) tile got focus
+	EV_FOCUS_LOST,	// (direct) tile lost focus
+};
 
 struct emui_event {
 	int type;		// event type

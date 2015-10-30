@@ -23,16 +23,13 @@
 enum emui_text_types {
 	TT_TEXT,
 	TT_INT,
-	TT_UINT,
 	TT_HEX,
 	TT_OCT,
 	TT_BIN,
-	TT_FLOAT,
-	TT_R40,
 };
 
 enum emui_edit_modes {
-	M_INSERT,
+	M_INS,
 	M_OVR,
 };
 
@@ -97,7 +94,9 @@ struct emui_tile_drv {
 
 struct emui_tile {
 	// general
-	unsigned family;			// tile family
+	unsigned family;			// tile family (widget, container, ...)
+	unsigned type;				// tile type (lineedit, label, window, ...)
+	int id;					// tile id (user may set it to whatever is needed by the application)
 	char *name;					// tile name
 	unsigned properties;		// tile properties
 	int key;					// shortcut key
@@ -138,7 +137,7 @@ struct emui_tile {
 	emui_event_handler_f user_ev_handler;
 };
 
-struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
+struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
 void emui_tile_destroy(struct emui_tile *t);
 void emui_tile_debug_set(int i);
 
@@ -155,6 +154,8 @@ int emui_tile_set_name(struct emui_tile *t, char *name);
 int emui_tile_set_style(struct emui_tile *t, int style);
 void emui_tile_hide(struct emui_tile *t);
 void emui_tile_unhide(struct emui_tile *t);
+void emui_tile_set_id(struct emui_tile *t, int id);
+int emui_tile_get_id(struct emui_tile *t);
 
 #endif
 

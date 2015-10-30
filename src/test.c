@@ -15,6 +15,9 @@
 //  Foundation, Inc.,
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
+#include <inttypes.h>
+#include <emcrk/r40.h>
+
 #include "emui.h"
 
 // -----------------------------------------------------------------------
@@ -24,19 +27,91 @@ struct emui_tile * ui_create_status(struct emui_tile *parent)
 
 	// left side
 	struct emui_tile *status_left = emui_window(split, 0, 0, 1, 1, "StatusL", P_NODECO);
-	emui_tile_set_style(status_left, S_TEXT_INVERSED);
-	struct emui_tile *misc = emui_label(status_left, 1, 0, 50, AL_LEFT, S_TEXT_INVERSED, "MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
+	emui_tile_set_style(status_left, S_INV);
+	struct emui_tile *misc = emui_label(status_left, 1, 0, 50, AL_LEFT, S_INV, "MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
 
 	// right side
 	struct emui_tile *status_right = emui_window(split, 0, 0, 1, 1, "StatusR", P_NODECO);
-	emui_tile_set_style(status_right, S_TEXT_INVERSED);
-	struct emui_tile *lfps = emui_label(status_right, 1, 0, 5, AL_RIGHT, S_TEXT_INVERSED, "FPS:");
-	struct emui_tile *fps = emui_fpscounter(status_right, 7, 0, S_TEXT_INVERSED_BOLD);
-	struct emui_tile *lframe = emui_label(status_right, 13, 0, 7, AL_RIGHT, S_TEXT_INVERSED, "Frame:");
-	struct emui_tile *frame = emui_framecounter(status_right, 21, 0, S_TEXT_INVERSED_BOLD);
+	emui_tile_set_style(status_right, S_INV);
+	struct emui_tile *lfps = emui_label(status_right, 1, 0, 5, AL_RIGHT, S_INV, "FPS:");
+	struct emui_tile *fps = emui_fpscounter(status_right, 7, 0, S_INV_BOLD);
+	struct emui_tile *lframe = emui_label(status_right, 13, 0, 7, AL_RIGHT, S_INV, "Frame:");
+	struct emui_tile *frame = emui_framecounter(status_right, 21, 0, S_INV_BOLD);
 
 	return split;
 }
+
+struct _reg {
+	uint16_t v;
+	struct emui_tile *h, *d, *o, *b, *c, *r;
+} treg[8];
+
+// -----------------------------------------------------------------------
+int reg_2char_handler(struct emui_tile *t, struct emui_event *ev)
+{
+	char *txt;
+	char buf[3];
+
+	switch (ev->type) {
+		case EV_CHANGED:
+			txt = emui_lineedit_get_text(t);
+			treg[t->id].v = *txt ? (*txt << 8) + *(txt+1) : 0;
+			return 0;
+		case EV_UPDATE:
+			buf[0] = treg[t->id].v >> 8;
+			buf[1] = treg[t->id].v & 0xff;
+			buf[2] = '\0';
+			emui_lineedit_set_text(t, buf);
+			return 0;
+	}
+
+	return 1;
+}
+
+// -----------------------------------------------------------------------
+int reg_r40_handler(struct emui_tile *t, struct emui_event *ev)
+{
+	char buf[4];
+	uint16_t val;
+
+	switch (ev->type) {
+		case EV_CHANGED:
+			ascii_to_r40(emui_lineedit_get_text(t), NULL, &val);
+			treg[t->id].v = val;
+			return 0;
+		case EV_UPDATE:
+			val = treg[t->id].v;
+			emui_lineedit_set_text(t, r40_to_ascii(&val, 3, buf));
+			return 0;
+	}
+
+	return 1;
+}
+
+// -----------------------------------------------------------------------
+int reg_int_handler(struct emui_tile *t, struct emui_event *ev)
+{
+	int val;
+
+	switch (ev->type) {
+		case EV_CHANGED:
+			val = emui_lineedit_get_int(t);
+			if ((val > 65535) || (val < -32768)) {
+				emui_lineedit_invalid(t);
+				emui_lineedit_edit(t, 1);
+			} else {
+				treg[t->id].v = val;
+				emui_lineedit_set_pos(t, 0);
+			}
+			return 0;
+		case EV_UPDATE:
+			emui_lineedit_set_int(t, treg[t->id].v);
+			return 0;
+	}
+
+	return 1;
+}
+
 
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_ureg(struct emui_tile *parent)
@@ -52,23 +127,30 @@ struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 	struct emui_tile *ureg_bin = emui_dummy_cont(ureg_just, 32, 0, 16, 11);
 	struct emui_tile *ureg_ch = emui_dummy_cont(ureg_just, 40, 0, 2, 11);
 	struct emui_tile *ureg_r40 = emui_dummy_cont(ureg_just, 42, 0, 3, 11);
-	emui_label(ureg_r, 0, 0, 4, AL_LEFT, S_TEXT, "");
-	emui_label(ureg_hex, 0, 0, 4, AL_LEFT, S_TEXT, "hex");
-	emui_label(ureg_dec, 0, 0, 6, AL_LEFT, S_TEXT, "dec");
-	emui_label(ureg_oct, 0, 0, 6, AL_LEFT, S_TEXT, "oct");
-	emui_label(ureg_bin, 0, 0, 16, AL_LEFT, S_TEXT, "ZMVCLEGYX1234567");
-	emui_label(ureg_ch, 0, 0, 2, AL_LEFT, S_TEXT, "ch");
-	emui_label(ureg_r40, 0, 0, 3, AL_LEFT, S_TEXT, "R40");
+	emui_label(ureg_r, 0, 0, 4, AL_LEFT, S_TEXT_NN, "");
+	emui_label(ureg_hex, 0, 0, 4, AL_LEFT, S_TEXT_NN, "hex");
+	emui_label(ureg_dec, 0, 0, 6, AL_LEFT, S_TEXT_NN, "dec");
+	emui_label(ureg_oct, 0, 0, 6, AL_LEFT, S_TEXT_NN, "oct");
+	emui_label(ureg_bin, 0, 0, 16, AL_LEFT, S_TEXT_NN, "ZMVCLEGYX1234567");
+	emui_label(ureg_ch, 0, 0, 2, AL_LEFT, S_TEXT_NN, "ch");
+	emui_label(ureg_r40, 0, 0, 3, AL_LEFT, S_TEXT_NN, "R40");
 	for (int i=1 ; i<=8 ; i++) {
 		char buf[] = "R_:";
 		buf[1] = '0' + i-1;
-		emui_label(ureg_r, 0, i, 3, AL_RIGHT, S_TEXT, buf);
-		emui_lineedit(ureg_hex, 0, i, 4, 4, TT_HEX, M_OVR);
-		emui_lineedit(ureg_dec, 0, i, 6, 6, TT_INT, M_OVR);
-		emui_lineedit(ureg_oct, 0, i, 6, 6, TT_OCT, M_OVR);
-		emui_lineedit(ureg_bin, 0, i, 16, 16, TT_BIN, M_OVR);
-		emui_lineedit(ureg_ch, 0, i, 2, 2, TT_TEXT, M_OVR);
-		emui_lineedit(ureg_r40, 0, i, 3, 3, TT_R40, M_OVR);
+		emui_label(ureg_r, 0, i, 3, AL_RIGHT, S_TEXT_NN, buf);
+		treg[i].v = 0;
+		treg[i].h = emui_lineedit(ureg_hex, i, 0, i, 4, 4, TT_HEX, M_OVR);
+		emui_tile_set_event_handler(treg[i].h, reg_int_handler);
+		treg[i].d = emui_lineedit(ureg_dec, i, 0, i, 6, 6, TT_INT, M_OVR);
+		emui_tile_set_event_handler(treg[i].d, reg_int_handler);
+		treg[i].o = emui_lineedit(ureg_oct, i, 0, i, 6, 6, TT_OCT, M_OVR);
+		emui_tile_set_event_handler(treg[i].o, reg_int_handler);
+		treg[i].b = emui_lineedit(ureg_bin, i, 0, i, 16, 16, TT_BIN, M_OVR);
+		emui_tile_set_event_handler(treg[i].b, reg_int_handler);
+		treg[i].c = emui_lineedit(ureg_ch, i, 0, i, 2, 2, TT_TEXT, M_OVR);
+		emui_tile_set_event_handler(treg[i].c, reg_2char_handler);
+		treg[i].r = emui_lineedit(ureg_r40, i, 0, i, 3, 3, TT_TEXT, M_OVR);
+		emui_tile_set_event_handler(treg[i].r, reg_r40_handler);
 	}
 
 	return ureg;
@@ -78,25 +160,24 @@ struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 struct emui_tile * ui_create_sreg(struct emui_tile *parent)
 {
 	struct emui_tile *sreg = emui_window(parent, 0, 0, 55, 11, "Sys Registers", P_NONE);
-	emui_label(sreg, 0, 0, 55, AL_LEFT, S_TEXT, "    hex  opcode D A   B   C");
-	emui_label(sreg, 0, 1, 55, AL_LEFT, S_TEXT, "IR:");
-	emui_lineedit(sreg, 4, 1, 4, 4, TT_HEX, M_OVR);
-	emui_lineedit(sreg, 9, 1, 6, 6, TT_BIN, M_OVR);
-	emui_lineedit(sreg, 16, 1, 1, 1, TT_BIN, M_OVR);
-	emui_lineedit(sreg, 18, 1, 3, 3, TT_BIN, M_OVR);
-	emui_lineedit(sreg, 22, 1, 3, 3, TT_BIN, M_OVR);
-	emui_lineedit(sreg, 26, 1, 3, 3, TT_BIN, M_OVR);
-	emui_label(sreg, 0, 2, 55, AL_LEFT, S_TEXT, "    hex  PMCZs139fS Q s NB");
-	emui_label(sreg, 0, 3, 55, AL_LEFT, S_TEXT, "SR:");
-	emui_lineedit(sreg, 4, 3, 4, 4, TT_HEX, M_OVR);
-	emui_lineedit(sreg, 9, 3, 10, 10, TT_BIN, M_OVR);
-	emui_lineedit(sreg, 20, 3, 1, 1, TT_BIN, M_OVR);
-	emui_lineedit(sreg, 22, 3, 1, 1, TT_BIN, M_OVR);
-	emui_lineedit(sreg, 24, 3, 4, 4, TT_BIN, M_OVR);
-	emui_label(sreg, 0, 4, 55, AL_LEFT, S_TEXT, "KB:");
-	emui_lineedit(sreg, 4, 4, 4, 4, TT_HEX, M_OVR);
-	emui_lineedit(sreg, 9, 4, 8, 8, TT_BIN, M_OVR);
-	emui_lineedit(sreg, 18, 4, 8, 8, TT_BIN, M_OVR);
+	emui_label(sreg, 0, 0, 55, AL_LEFT, S_TEXT_NN, "    hex  opcode D A   B   C");
+	emui_label(sreg, 0, 1, 55, AL_LEFT, S_TEXT_NN, "IR:");
+	emui_lineedit(sreg, -1, 4, 1, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, -1, 9, 1, 6, 6, TT_BIN, M_OVR);
+	emui_lineedit(sreg, -1, 16, 1, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, -1, 18, 1, 3, 3, TT_BIN, M_OVR);
+	emui_lineedit(sreg, -1, 22, 1, 3, 3, TT_BIN, M_OVR);
+	emui_lineedit(sreg, -1, 26, 1, 3, 3, TT_BIN, M_OVR);
+	emui_label(sreg, 0, 2, 55, AL_LEFT, S_TEXT_NN, "    hex  PMCZs139fS Q s NB");
+	emui_label(sreg, 0, 3, 55, AL_LEFT, S_TEXT_NN, "SR:");
+	emui_lineedit(sreg, -1, 4, 3, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, -1, 9, 3, 10, 10, TT_BIN, M_OVR);
+	emui_lineedit(sreg, -1, 20, 3, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, -1, 22, 3, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, -1, 24, 3, 4, 4, TT_BIN, M_OVR);
+	emui_label(sreg, 0, 4, 55, AL_LEFT, S_TEXT_NN, "KB:");
+	emui_lineedit(sreg, -1, 4, 4, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, -1, 9, 4, 16, 16, TT_BIN, M_OVR);
 
 	emui_tile_set_focus_key(sreg, 's');
 
@@ -175,7 +256,7 @@ int main(int argc, char **argv)
 	// debugger
 	struct emui_tile *debugger = ui_create_debugger(tabs);
 
-	emui_focus(term1);
+	emui_focus(debugger);
 
 	emui_loop();
 	emui_destroy();

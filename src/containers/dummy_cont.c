@@ -62,7 +62,7 @@ struct emui_tile * emui_dummy_cont(struct emui_tile *parent, int x, int y, int w
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, &emui_dummy_cont_drv, F_CONTAINER, x, y, w, h, 0, 0, 0, 0, "DummyCont", P_NONE);
+	t = emui_tile_create(parent, -1, &emui_dummy_cont_drv, F_CONTAINER, x, y, w, h, 0, 0, 0, 0, "DummyCont", P_NONE);
 
 	return t;
 }

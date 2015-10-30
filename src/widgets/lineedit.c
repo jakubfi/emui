@@ -21,6 +21,7 @@
 #include <ctype.h>
 
 #include "tile.h"
+#include "tiles.h"
 #include "event.h"
 #include "style.h"
 #include "print.h"
@@ -29,6 +30,7 @@
 struct lineedit {
 	int type;
 	int in_edit;
+	int invalid;
 	int mode;
 	int pos;
 	int maxlen;
@@ -40,12 +42,28 @@ struct lineedit {
 void emui_lineedit_draw(struct emui_tile *t)
 {
 	struct lineedit *le = t->priv_data;
+	struct emui_event evc;
 
-	int style = S_TEXT_BOLD;
+	if (!le->in_edit) {
+		evc.type = EV_UPDATE;
+		evc.data = t;
+		emui_tile_handle_event(t, &evc);
+	}
+
+	int style = t->style;
+
 	if (le->in_edit) {
-		style = S_TEXT_EDITED;
+		if (le->invalid) {
+			style = S_TEXT_EI;
+		} else {
+			style = S_TEXT_EN;
+		}
 	} else if (emui_has_focus(t) ) {
-		style = S_TEXT_FOCUSED;
+		if (le->invalid) {
+			style = S_TEXT_FI;
+		} else {
+			style = S_TEXT_FN;
+		}
 	}
 
 	emuifillbg(t, style);
@@ -89,12 +107,9 @@ void emui_lineedit_mode(struct emui_tile *t, int mode)
 // -----------------------------------------------------------------------
 static int le_handle_non_edit(struct emui_tile *t, struct emui_event *ev)
 {
-	struct lineedit *le = t->priv_data;
-
 	switch (ev->sender) {
 		case '\n':
-			le->in_edit = 1;
-			curs_set(1);
+			emui_lineedit_edit(t, 1);
 			break;
 		default:
 			// event has not been handled
@@ -105,17 +120,14 @@ static int le_handle_non_edit(struct emui_tile *t, struct emui_event *ev)
 }
 
 // -----------------------------------------------------------------------
-static int le_char_valid(int type, int ch)
+static int le_char_valid(int type, int ch, int pos)
 {
 	switch (type) {
 		case TT_TEXT:
 			if (isprint(ch)) return 1;
 			break;
-		case TT_UINT:
-			if (isdigit(ch)) return 1;
-			break;
 		case TT_INT:
-			if (isdigit(ch) || (ch == '-')) return 1;
+			if (isdigit(ch) || ((ch == '-') && (pos == 0))) return 1;
 			break;
 		case TT_HEX:
 			if (isxdigit(ch)) return 1;
@@ -125,12 +137,6 @@ static int le_char_valid(int type, int ch)
 			break;
 		case TT_BIN:
 			if ((ch >= 0) && (ch <= '1')) return 1;
-			break;
-		case TT_FLOAT:
-			if (isdigit(ch) || (ch == '.') || (ch == '-')) return 1;
-			break;
-		case TT_R40:
-			if (((ch >= 'A') && (ch <= 'Z')) || ((ch >= 'a') && (ch <= 'z')) || ((ch >= '0') && (ch <= '9')) || (ch == '#') || (ch == '%') || (ch == '_')) return 1;
 			break;
 		default:
 			break;
@@ -142,12 +148,16 @@ static int le_char_valid(int type, int ch)
 static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 {
 	struct lineedit *le = t->priv_data;
+	struct emui_event evc;
 
 	switch (ev->sender) {
 		case KEY_ENTER:
 		case '\n':
-			le->in_edit = 0;
-			curs_set(0);
+			emui_lineedit_edit(t, 0);
+			le->invalid = 0;
+			evc.type = EV_CHANGED;
+			evc.data = t;
+			emui_tile_handle_event(t, &evc);
 			break;
 		case 27: // ESC
 			le->in_edit = 0;
@@ -164,6 +174,9 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 			break;
 		case KEY_END:
 			le->pos = strlen(le->buf);
+			if (le->mode == M_OVR) {
+				le->pos--;
+			}
 			break;
 		case KEY_BACKSPACE:
 		case 127:
@@ -175,6 +188,9 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 			break;
 		case KEY_IC: // INSERT
 			emui_lineedit_mode(t, le->mode ^ 1);
+			if ((le->mode == M_OVR) && (le->pos == strlen(le->buf))) {
+				le->pos--;
+			}
 			break;
 		case KEY_DC: // DELETE
 			if (le->pos < strlen(le->buf)) {
@@ -183,10 +199,10 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 			}
 			break;
 		default:
-			if (!le_char_valid(le->type, ev->sender)) break;
+			if (!le_char_valid(le->type, ev->sender, le->pos)) break;
 
 			if (le->mode == M_OVR) {
-				if (le->pos < le->maxlen) {
+				if (le->pos <= le->maxlen) {
 					if (le->pos == strlen(le->buf)) {
 						le->buf[le->pos+1] = '\0';
 					}
@@ -243,11 +259,13 @@ struct emui_tile_drv emui_lineedit_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_lineedit(struct emui_tile *parent, int x, int y, int w, int maxlen, int type, int mode)
+struct emui_tile * emui_lineedit(struct emui_tile *parent, int id, int x, int y, int w, int maxlen, int type, int mode)
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, &emui_lineedit_drv, F_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emui_tile_create(parent, id, &emui_lineedit_drv, F_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	emui_tile_set_style(t, S_EDIT_NN);
+
 	t->priv_data = calloc(1, sizeof(struct lineedit));
 
 	struct lineedit *le = t->priv_data;
@@ -261,6 +279,14 @@ struct emui_tile * emui_lineedit(struct emui_tile *parent, int x, int y, int w, 
 }
 
 // -----------------------------------------------------------------------
+char * emui_lineedit_get_text(struct emui_tile *t)
+{
+	struct lineedit *le = t->priv_data;
+
+	return le->buf;
+}
+
+// -----------------------------------------------------------------------
 int emui_lineedit_set_text(struct emui_tile *t, char *text)
 {
 	struct lineedit *le = t->priv_data;
@@ -270,6 +296,98 @@ int emui_lineedit_set_text(struct emui_tile *t, char *text)
 	le->pos = 0;
 
 	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_lineedit_get_int(struct emui_tile *t)
+{
+	struct lineedit *le = t->priv_data;
+	switch (le->type) {
+		case TT_HEX:
+			return strtol(le->buf, NULL, 16);
+			break;
+		case TT_OCT:
+			return strtol(le->buf, NULL, 8);
+			break;
+		case TT_BIN:
+			return strtol(le->buf, NULL, 2);
+			break;
+		case TT_INT:
+		case TT_TEXT:
+		default:
+			return strtol(le->buf, NULL, 10);
+			break;
+
+	}
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+// convert an integer to formatted string with its binary representation
+static void int2bin(char *o, int size, unsigned value)
+{
+	while (size > 0) {
+		size--;
+		*o = (value >> size) & 1 ? '1' : '0';
+		o++;
+	}
+	*o = '\0';
+}
+
+// -----------------------------------------------------------------------
+void emui_lineedit_set_int(struct emui_tile *t, int v)
+{
+	struct lineedit *le = t->priv_data;
+	switch (le->type) {
+		case TT_HEX:
+			snprintf(le->buf, le->maxlen+1, "%x", v);
+			break;
+		case TT_OCT:
+			snprintf(le->buf, le->maxlen+1, "%o", v);
+			break;
+		case TT_BIN:
+			int2bin(le->buf, le->maxlen, v);
+			break;
+		case TT_INT:
+		case TT_TEXT:
+		default:
+			snprintf(le->buf, le->maxlen+1, "%i", v);
+			break;
+	}
+}
+
+// -----------------------------------------------------------------------
+void emui_lineedit_set_mode(struct emui_tile *t, int mode)
+{
+	struct lineedit *le = t->priv_data;
+
+	le->mode = mode;
+}
+
+// -----------------------------------------------------------------------
+void emui_lineedit_set_pos(struct emui_tile *t, unsigned pos)
+{
+	struct lineedit *le = t->priv_data;
+	if (pos <= le->maxlen) {
+		le->pos = pos;
+	} else {
+		le->pos = 0;
+	}
+}
+
+// -----------------------------------------------------------------------
+void emui_lineedit_edit(struct emui_tile *t, int state)
+{
+	struct lineedit *le = t->priv_data;
+	le->in_edit = state;
+	curs_set(state);
+}
+
+// -----------------------------------------------------------------------
+void emui_lineedit_invalid(struct emui_tile *t)
+{
+	struct lineedit *le = t->priv_data;
+	le->invalid = 1;
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent

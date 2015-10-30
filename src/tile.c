@@ -273,29 +273,45 @@ static int emui_tile_handle_neighbour_focus(struct emui_tile *t, int key)
 // -----------------------------------------------------------------------
 int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 {
+	if (!t || !ev) {
+		return 0;
+	}
+
 	// if tile has a driver event handler, run it first
+	// that means user cannot override eg. default widget's keys
 	if (!t->drv->event_handler(t, ev)) {
+		// if driver handled the event, we're done
 		return 0;
 	}
 
-	// then run user event handler, so it may override default focus handling
+	// then try running user event handler
+	// that, on the other hand, means user may override default focus handling
 	if (t->user_ev_handler && !t->user_ev_handler(t, ev)) {
+		// if user-provided handler handled the event, we're done
 		return 0;
 	}
 
-	// if tile is a focus group, search for user-set focus keys handled by it
-	if (t->properties & P_FOCUS_GROUP) {
-		if ((ev->type == EV_KEY) && !emui_tile_handle_user_focus_keys(t, ev->sender)) {
-			return 0;
-		}
-	// if tile is a widget, handle neighbourhood focus change
-	} else if (t->family == F_WIDGET) {
-		if ((ev->type == EV_KEY) && !emui_tile_handle_neighbour_focus(t, ev->sender)) {
-			return 0;
+	// handle focus changes
+	if (ev->type == EV_KEY) {
+		// if tile is a focus group, search for user-set focus keys handled by it
+		if (t->properties & P_FOCUS_GROUP) {
+			if (!emui_tile_handle_user_focus_keys(t, ev->sender)) {
+				return 0;
+			}
+		// if tile is a widget, handle neighbourhood focus change
+		} else if (t->family == F_WIDGET) {
+			if (!emui_tile_handle_neighbour_focus(t, ev->sender)) {
+				return 0;
+			}
 		}
 	}
 
-	// event has not been handled
+	// finally, if above didn't work, propagate the event to the parent tile
+	if (!emui_tile_handle_event(t->parent, ev)) {
+		return 0;
+	}
+
+	// event has not been handled, bummer
 	return 1;
 }
 
@@ -314,7 +330,7 @@ static const int emui_tile_compatibile(struct emui_tile *parent, int child_famil
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
+struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
 {
 	if (!emui_tile_compatibile(parent, family)) {
 		return NULL;
@@ -335,6 +351,7 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, struct emui_tile_d
 	t->properties = properties;
 	t->drv = drv;
 	t->geometry_changed = 1;
+	t->id = id;
 
 	t->rx = x;
 	t->ry = y;
@@ -509,6 +526,18 @@ void emui_tile_unhide(struct emui_tile *t)
 void emui_tile_debug_set(int i)
 {
 	emui_tile_debug_mode = i;
+}
+
+// -----------------------------------------------------------------------
+void emui_tile_set_id(struct emui_tile *t, int id)
+{
+	t->id = id;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_get_id(struct emui_tile *t)
+{
+	return t->id;
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent

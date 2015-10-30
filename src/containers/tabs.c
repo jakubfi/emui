@@ -30,8 +30,8 @@ void emui_tabs_draw(struct emui_tile *t)
 	struct emui_tile *ch = t->ch_first;
 	emuixyd(t, 0, 0);
 	while (ch) {
-		int style = S_TAB;
-		if (emui_has_focus(ch)) style = S_TAB_FOCUSED;
+		int style = S_TAB_NN;
+		if (emui_has_focus(ch)) style = S_TAB_FN;
 		// TODO: check if we have enough sapce
 		emuidprt(t, style, " %s ", ch->name);
 		ch = ch->next;
@@ -73,7 +73,7 @@ struct emui_tile_drv emui_tabs_drv = {
 // -----------------------------------------------------------------------
 struct emui_tile * emui_tabs(struct emui_tile *parent)
 {
-	struct emui_tile *t = emui_tile_create(parent, &emui_tabs_drv, F_CONTAINER, 0, 0, parent->w, parent->h, 1, 0, 0, 0, "Tabs", P_MAXIMIZED | P_FOCUS_GROUP);
+	struct emui_tile *t = emui_tile_create(parent, -1, &emui_tabs_drv, F_CONTAINER, 0, 0, parent->w, parent->h, 1, 0, 0, 0, "Tabs", P_MAXIMIZED | P_FOCUS_GROUP);
 
 	return t;
 }

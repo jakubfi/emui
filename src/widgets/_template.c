@@ -71,7 +71,7 @@ struct emui_tile * emui_W_NAME(struct emui_tile *parent, int x, int y, int w, in
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, &emui_W_NAME_drv, T_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
+	t = emui_tile_create(parent, -1, &emui_W_NAME_drv, T_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->priv_data = calloc(1, sizeof(struct W_NAME));
 	struct W_NAME *d = t->priv_data;

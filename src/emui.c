@@ -128,24 +128,6 @@ static int emui_evq_update(struct timeval *tv)
 }
 
 // -----------------------------------------------------------------------
-static int emui_event_router(struct emui_event *ev)
-{
-	if (ev->type == EV_DIE) {
-		return 1;
-	}
-
-	struct emui_tile *t = emui_focus_get();
-	while (t) {
-		if (emui_tile_handle_event(t, ev) == 0) {
-			break;
-		}
-		t = t->parent;
-	}
-
-	return 0;
-}
-
-// -----------------------------------------------------------------------
 static void emui_draw(struct emui_tile *t, int force)
 {
 	struct emui_tile *focused_child = NULL;
@@ -248,7 +230,6 @@ void emui_loop()
 {
 	struct timeval *ft = NULL;
 	struct emui_event *ev;
-	int quit = 0;
 
 	// init focus
 	emui_focus(layout);
@@ -258,7 +239,7 @@ void emui_loop()
 		ft = calloc(1, sizeof(struct timeval));
 	}
 
-	do {
+	while (1) {
 		// update the screen if:
 		//  * loop has just started
 		//  * FPS = 0 (so we update as soon as event is processed)
@@ -273,9 +254,14 @@ process_event:
 		ev = emui_evq_get();
 
 		if (ev) {
-			// process the event
-			quit = emui_event_router(ev);
-			free(ev);
+			if (ev->type == EV_QUIT) {
+				free(ev);
+				break;
+			} else {
+				// process the event through the focus path
+				emui_tile_handle_event(emui_focus_get(), ev);
+				free(ev);
+			}
 		} else {
 			// get another event (or wait ft.tv_usec)
 			if (emui_evq_update(ft)) {
@@ -287,7 +273,7 @@ process_event:
 				goto process_event;
 			}
 		}
-	} while (!quit);
+	};
 
 	free(ft);
 }

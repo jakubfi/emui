@@ -34,9 +34,16 @@ void emui_framecounter_set_style(struct emui_tile *t, int style);
 struct emui_tile * emui_fpscounter(struct emui_tile *parent, int x, int y, int style);
 void emui_fpscounter_set_style(struct emui_tile *t, int style);
 
-struct emui_tile * emui_lineedit(struct emui_tile *parent, int x, int y, int w, int maxlen, int type, int mode);
+struct emui_tile * emui_lineedit(struct emui_tile *parent, int id, int x, int y, int w, int maxlen, int type, int mode);
 int emui_lineedit_set_text(struct emui_tile *t, char *text);
-void emui_lineedit_mode(struct emui_tile *t, int mode);
+char * emui_lineedit_get_text(struct emui_tile *t);
+void emui_lineedit_set_int(struct emui_tile *t, int v);
+int emui_lineedit_get_int(struct emui_tile *t);
+void emui_lineedit_set_mode(struct emui_tile *t, int mode);
+void emui_lineedit_set_pos(struct emui_tile *t, unsigned pos);
+void emui_lineedit_set_mode(struct emui_tile *t, int mode);
+void emui_lineedit_edit(struct emui_tile *t, int state);
+void emui_lineedit_invalid(struct emui_tile *t);
 
 struct emui_tile * emui_label(struct emui_tile *parent, int x, int y, int w, int align, int style, char *txt);
 int emui_label_set_text(struct emui_tile *t, char *txt);
