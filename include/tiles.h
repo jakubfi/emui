@@ -49,6 +49,11 @@ struct emui_tile * emui_label(struct emui_tile *parent, int x, int y, int w, int
 int emui_label_set_text(struct emui_tile *t, char *txt);
 void emui_label_set_style(struct emui_tile *t, int style);
 
+struct emui_tile * emui_textview(struct emui_tile *parent, int x, int y, int w, int h);
+int emui_textview_append(struct emui_tile *t, int style, char *str);
+void emui_textview_clear(struct emui_tile *t);
+
+
 #endif
 
 // vim: tabstop=4 shiftwidth=4 autoindent

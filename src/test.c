@@ -20,6 +20,74 @@
 
 #include "emui.h"
 
+char *help = "\
+UI shortcuts:\n\
+ * m, r, s, a, w, b - switch window\n\
+ * H,? - help\n\
+ * l - configure logging\n\
+ * ctrl-q - quit\n\
+\n\
+CPU control:\n\
+ * ctrl-r - run/stop\n\
+ * shift-del - reset\n\
+ * space - step (cycle)\n\
+ * ctrl-t - switch clock on/off\n\
+\n\
+Registers window:\n\
+ * arrows, tab - move around\n\
+ * 0-7 - select register\n\
+ * ENTER - edit contents\n\
+\n\
+Memory window:\n\
+ * arrows, pgup/down - move around\n\
+ * ctrl-pgup/-pgdown - skip to previosu/next memory page\n\
+ * < > - switch to prev/next memory segment\n\
+ * 0-9 - select memory segment 0-9\n\
+ * g - go to memory location\n\
+ * d - decode memory under cursor\n\
+ * f - find\n\
+ * o - open (load) image file\n\
+ * c - change character display between none/ASCII/R40\n\
+ * ENTER - edit memory under cursor\n\
+ * ESC - exit edit\n\
+ *  - show current memory layout\n\
+\n\
+Assembler window:\n\
+ * up/down/pgup/pgdn - move around\n\
+ * ctrl-pgup/-pgdown - skip to previosu/next memory page\n\
+ * < > - switch to previous/next memory segment\n\
+ * 0-9 - select memory segment 0-9\n\
+ * g - go to memory location\n\
+ * f - follow IC on/off\n\
+\n\
+Watches window:\n\
+ * up/down/pgup/pgdn/home/end - move around\n\
+ * INS - add watch\n\
+ * DEL - delete watch\n\
+ * ENTER - edit watch\n\
+\n\
+Breakpoints window:\n\
+ * up/down/pgup/pgdn/home/end - move around\n\
+ * INS - add breakpoint\n\
+ * DEL - delete breakpoint\n\
+ * ENTER - edit breakpoint\n\
+\n\
+Logging window:\n\
+ * up/down/pgup/pgdn/home/end - move around\n\
+ * 0-9 - change logging level\n\
+ * +/- - change logging level\n\
+ * space - diasble/enable logging\n\
+\n\
+Status bar indicators:\n\
+ * STOP/WAIT/RUN\n\
+ * ALARM\n\
+ * CLOCK\n\
+ * IRQ\n\
+ * Q\n\
+ * MC\n\
+ * P\n\
+";
+
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_status(struct emui_tile *parent)
 {
@@ -140,17 +208,17 @@ struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 		emui_label(ureg_r, 0, i, 3, AL_RIGHT, S_TEXT_NN, buf);
 		treg[i].v = 0;
 		treg[i].h = emui_lineedit(ureg_hex, i, 0, i, 4, 4, TT_HEX, M_OVR);
-		emui_tile_set_event_handler(treg[i].h, reg_int_handler);
+		emui_tile_set_event_handler(treg[i].h, reg_int_handler, 0);
 		treg[i].d = emui_lineedit(ureg_dec, i, 0, i, 6, 6, TT_INT, M_OVR);
-		emui_tile_set_event_handler(treg[i].d, reg_int_handler);
+		emui_tile_set_event_handler(treg[i].d, reg_int_handler, 0);
 		treg[i].o = emui_lineedit(ureg_oct, i, 0, i, 6, 6, TT_OCT, M_OVR);
-		emui_tile_set_event_handler(treg[i].o, reg_int_handler);
+		emui_tile_set_event_handler(treg[i].o, reg_int_handler, 0);
 		treg[i].b = emui_lineedit(ureg_bin, i, 0, i, 16, 16, TT_BIN, M_OVR);
-		emui_tile_set_event_handler(treg[i].b, reg_int_handler);
+		emui_tile_set_event_handler(treg[i].b, reg_int_handler, 0);
 		treg[i].c = emui_lineedit(ureg_ch, i, 0, i, 2, 2, TT_TEXT, M_OVR);
-		emui_tile_set_event_handler(treg[i].c, reg_2char_handler);
+		emui_tile_set_event_handler(treg[i].c, reg_2char_handler, 0);
 		treg[i].r = emui_lineedit(ureg_r40, i, 0, i, 3, 3, TT_TEXT, M_OVR);
-		emui_tile_set_event_handler(treg[i].r, reg_r40_handler);
+		emui_tile_set_event_handler(treg[i].r, reg_r40_handler, 0);
 	}
 
 	return ureg;
@@ -205,6 +273,8 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	struct emui_tile *mem_split = emui_splitter(reg_split, AL_TOP, 10, FIT_DIV2, 6);
 	struct emui_tile *mem = emui_window(mem_split, 0, 0, 80, 20, "Memory", P_NONE);
 	emui_tile_set_focus_key(mem, 'm');
+	struct emui_tile *tv = emui_textview(mem, 0, 0, 80, 30);
+	emui_textview_append(tv, S_DEFAULT, help);
 
 	// eval
 	struct emui_tile *eval_split = emui_splitter(mem_split, AL_BOTTOM, 3, 3, 10);
@@ -265,3 +335,5 @@ int main(int argc, char **argv)
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent
+
+

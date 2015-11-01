@@ -135,6 +135,7 @@ struct emui_tile {
 
 	// user data and methods
 	emui_event_handler_f user_ev_handler;
+	int early_handler;
 };
 
 struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
@@ -147,7 +148,7 @@ void emui_tile_child_remove(struct emui_tile *parent, struct emui_tile *t);
 void emui_tile_update_geometry(struct emui_tile *t);
 int emui_tile_draw(struct emui_tile *t);
 int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev);
-int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler);
+int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler, int early);
 int emui_tile_set_focus_key(struct emui_tile *t, int key);
 int emui_tile_set_properties(struct emui_tile *t, unsigned properties);
 int emui_tile_set_name(struct emui_tile *t, char *name);

@@ -277,16 +277,20 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 		return 0;
 	}
 
-	// if tile has a driver event handler, run it first
-	// that means user cannot override eg. default widget's keys
+	// try running early user event handler
+	if (t->early_handler && t->user_ev_handler && !t->user_ev_handler(t, ev)) {
+		// if user-provided handler handled the event, we're done
+		return 0;
+	}
+
+	// if tile has own event handler, run it
 	if (!t->drv->event_handler(t, ev)) {
 		// if driver handled the event, we're done
 		return 0;
 	}
 
-	// then try running user event handler
-	// that, on the other hand, means user may override default focus handling
-	if (t->user_ev_handler && !t->user_ev_handler(t, ev)) {
+	// try running late user event handler
+	if (!t->early_handler && t->user_ev_handler && !t->user_ev_handler(t, ev)) {
 		// if user-provided handler handled the event, we're done
 		return 0;
 	}
@@ -381,9 +385,10 @@ int emui_tile_set_focus_key(struct emui_tile *t, int key)
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler)
+int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler, int early)
 {
 	t->user_ev_handler = handler;
+	t->early_handler = early;
 	return 0;
 }
 

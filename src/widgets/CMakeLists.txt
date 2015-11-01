@@ -3,6 +3,7 @@ add_library(widgets
 	fpscounter.c
 	lineedit.c
 	label.c
+	textview.c
 )
 
 set_target_properties(widgets
