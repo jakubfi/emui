@@ -15,24 +15,10 @@
 //  Foundation, Inc.,
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef EMUI_TILES_H
-#define EMUI_TILES_H
+#ifndef EMUI_FCOUNTERS_H
+#define EMUI_FCOUNTERS_H
 
-#include "widgets/lineedit.h"
-#include "widgets/textview.h"
-#include "widgets/label.h"
-#include "widgets/fcounters.h"
-
-// containers
-
-struct emui_tile * emui_screen();
-struct emui_tile * emui_dummy_cont(struct emui_tile *parent, int x, int y, int w, int h);
-struct emui_tile * emui_splitter(struct emui_tile *parent, int edge, int min1, int max1, int min2);
-struct emui_tile * emui_tabs(struct emui_tile *parent);
-struct emui_tile * emui_window(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties);
-struct emui_tile * emui_justifier(struct emui_tile *parent);
-
+struct emui_tile * emui_framecounter(struct emui_tile *parent, int x, int y, int style);
+struct emui_tile * emui_fpscounter(struct emui_tile *parent, int x, int y, int style);
 
 #endif
-
-// vim: tabstop=4 shiftwidth=4 autoindent
