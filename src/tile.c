@@ -108,7 +108,7 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	// prepare decoration window
 	if (ACTIVE_DECO(t)) {
 		if (!t->ncdeco) {
-	        t->ncdeco = newwin(t->dh, t->dw, t->dy, t->dx);
+			t->ncdeco = newwin(t->dh, t->dw, t->dy, t->dx);
 		} else {
 			wresize(t->ncdeco, t->dh, t->dw);
 			mvwin(t->ncdeco, t->dy, t->dx);
@@ -196,6 +196,7 @@ int emui_tile_draw(struct emui_tile *t)
 		return 1;
 	}
 
+	// clear ncurses windows
 	if (t->ncdeco) {
 		werase(t->ncdeco);
 	}
@@ -208,10 +209,16 @@ int emui_tile_draw(struct emui_tile *t)
 		}
 	}
 
+	// if tile accepts content updates and user specified a handler,
+	// then update content before tile is drawn
+	if (t->accept_updates && t->user_update_handler) {
+		t->user_update_handler(t);
+	}
+
 	// draw the tile
 	t->drv->draw(t);
 
-	// DEBUG
+	// print debug information
 	if (emui_tile_debug_mode) {
 		emui_tile_debug(t);
 	}
@@ -277,8 +284,8 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 		return 0;
 	}
 
-	// try running early user event handler
-	if (t->early_handler && t->user_ev_handler && !t->user_ev_handler(t, ev)) {
+	// try running user key handler
+	if ((ev->type == EV_KEY) && t->user_key_handler && !t->user_key_handler(t, ev->sender)) {
 		// if user-provided handler handled the event, we're done
 		return 0;
 	}
@@ -286,12 +293,6 @@ int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
 	// if tile has own event handler, run it
 	if (!t->drv->event_handler(t, ev)) {
 		// if driver handled the event, we're done
-		return 0;
-	}
-
-	// try running late user event handler
-	if (!t->early_handler && t->user_ev_handler && !t->user_ev_handler(t, ev)) {
-		// if user-provided handler handled the event, we're done
 		return 0;
 	}
 
@@ -356,6 +357,7 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 	t->drv = drv;
 	t->geometry_changed = 1;
 	t->id = id;
+	t->accept_updates = 1;
 
 	t->rx = x;
 	t->ry = y;
@@ -385,10 +387,23 @@ int emui_tile_set_focus_key(struct emui_tile *t, int key)
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler, int early)
+int emui_tile_set_update_handler(struct emui_tile *t, emui_handler_f handler)
 {
-	t->user_ev_handler = handler;
-	t->early_handler = early;
+	t->user_update_handler = handler;
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_set_change_handler(struct emui_tile *t, emui_handler_f handler)
+{
+	t->user_change_handler = handler;
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_set_key_handler(struct emui_tile *t, emui_key_handler_f handler)
+{
+	t->user_key_handler = handler;
 	return 0;
 }
 
@@ -422,7 +437,7 @@ int emui_tile_set_style(struct emui_tile *t, int style)
 
 // -----------------------------------------------------------------------
 void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t)
-{   
+{
 	// lint into children list
 	t->parent = parent;
 	t->prev = parent->ch_last;
@@ -543,6 +558,18 @@ void emui_tile_set_id(struct emui_tile *t, int id)
 int emui_tile_get_id(struct emui_tile *t)
 {
 	return t->id;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_changed(struct emui_tile *t)
+{
+	if (t->user_change_handler && t->user_change_handler(t)) {
+		t->content_invalid = 1;
+	} else {
+		t->content_invalid = 0;
+	}
+
+	return t->content_invalid;
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent

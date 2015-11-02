@@ -72,21 +72,25 @@ int emui_textview_event_handler(struct emui_tile *t, struct emui_event *ev)
 	if (ev->type == EV_KEY) {
 		switch (ev->sender) {
 			case KEY_UP:
-				c = c->prev;
-				while (c && !c->lines) {
-					c = c->prev;
-				}
 				if (c) {
-					d->cur = c;
+					c = c->prev;
+					while (c && !c->lines) {
+						c = c->prev;
+					}
+					if (c) {
+						d->cur = c;
+					}
 				}
 				return 0;
 			case KEY_DOWN:
-				c = c->next;
-				while (c && !c->lines) {
-					c = c->next;
-				}
 				if (c) {
-					d->cur = c;
+					c = c->next;
+					while (c && !c->lines) {
+						c = c->next;
+					}
+					if (c) {
+						d->cur = c;
+					}
 				}
 				return 0;
 			case KEY_HOME:
@@ -96,25 +100,29 @@ int emui_textview_event_handler(struct emui_tile *t, struct emui_event *ev)
 				d->cur = d->end;
 				return 0;
 			case KEY_PPAGE:
-				while (c && (lines < t->h-1)) {
-					lines += c->lines;
-					c = c->prev;
-				}
 				if (c) {
-					d->cur = c;
-				} else {
-					d->cur = d->beg;
+					while (c && (lines < t->h-1)) {
+						lines += c->lines;
+						c = c->prev;
+					}
+					if (c) {
+						d->cur = c;
+					} else {
+						d->cur = d->beg;
+					}
 				}
 				return 0;
 			case KEY_NPAGE:
-				while (c && (lines < t->h-1)) {
-					lines += c->lines;
-					c = c->next;
-				}
 				if (c) {
-					d->cur = c;
-				} else {
-					d->cur = d->end;
+					while (c && (lines < t->h-1)) {
+						lines += c->lines;
+						c = c->next;
+					}
+					if (c) {
+						d->cur = c;
+					} else {
+						d->cur = d->end;
+					}
 				}
 				return 0;
 			default:
@@ -157,28 +165,28 @@ struct emui_tile * emui_textview(struct emui_tile *parent, int x, int y, int w, 
 // -----------------------------------------------------------------------
 static void _chunk_free(struct tchunk *c)
 {
+	if (!c) return;
 	free(c->txt);
 	free(c);
 }
 
 // -----------------------------------------------------------------------
-static void _chunks_destroy(struct textview *d)
+static void _chunks_destroy(struct tchunk *c)
 {
-	struct tchunk *c = d->beg;
 	struct tchunk *next;
 	while (c) {
 		next = c->next;
 		_chunk_free(c);
 		c = next;
 	}
-	d->beg = d->end = NULL;
 }
 
 // -----------------------------------------------------------------------
 void emui_textview_clear(struct emui_tile *t)
 {
 	struct textview *d = t->priv_data;
-	_chunks_destroy(d);
+	_chunks_destroy(d->beg);
+	d->beg = d->end = d->cur = NULL;
 }
 
 // -----------------------------------------------------------------------
@@ -188,6 +196,7 @@ static void _tv_append(struct textview *d, struct tchunk *chunk)
 		d->end->next = chunk;
 	}
 	chunk->prev = d->end;
+	chunk->next = NULL;
 	d->end = chunk;
 
 	if (!d->beg) {

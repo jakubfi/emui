@@ -79,7 +79,9 @@ int emui_label_event_handler(struct emui_tile *t, struct emui_event *ev)
 // -----------------------------------------------------------------------
 void emui_label_destroy_priv_data(struct emui_tile *t)
 {
-	free(t->priv_data);
+	struct label *d = t->priv_data;
+	free(d->txt);
+	free(d);
 }
 
 // -----------------------------------------------------------------------

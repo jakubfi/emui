@@ -46,6 +46,7 @@ enum emui_styles {
 
 	S_INV,
 	S_INV_BOLD,
+	S_YELLOW,
 };
 
 struct emui_style {

@@ -16,7 +16,10 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <inttypes.h>
+#include <limits.h>
+#include <stdlib.h>
 #include <emcrk/r40.h>
+#include <emdas.h>
 
 #include "emui.h"
 
@@ -88,6 +91,23 @@ Status bar indicators:\n\
  * P\n\
 ";
 
+#define MAX_MEM 1024*32
+
+struct emdas *emd;
+uint16_t *mem;
+uint16_t dasm_start;
+
+// -----------------------------------------------------------------------
+int mem_get(int nb, uint16_t addr, uint16_t *dest)
+{
+	if (addr < MAX_MEM) {
+		*dest = mem[addr];
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_status(struct emui_tile *parent)
 {
@@ -109,77 +129,74 @@ struct emui_tile * ui_create_status(struct emui_tile *parent)
 	return split;
 }
 
-struct _reg {
-	uint16_t v;
-	struct emui_tile *h, *d, *o, *b, *c, *r;
-} treg[8];
+uint16_t treg[8];
 
 // -----------------------------------------------------------------------
-int reg_2char_handler(struct emui_tile *t, struct emui_event *ev)
+int reg_2char_update(struct emui_tile *t)
 {
-	char *txt;
 	char buf[3];
 
-	switch (ev->type) {
-		case EV_CHANGED:
-			txt = emui_lineedit_get_text(t);
-			treg[t->id].v = *txt ? (*txt << 8) + *(txt+1) : 0;
-			return 0;
-		case EV_UPDATE:
-			buf[0] = treg[t->id].v >> 8;
-			buf[1] = treg[t->id].v & 0xff;
-			buf[2] = '\0';
-			emui_lineedit_set_text(t, buf);
-			return 0;
-	}
+	buf[0] = treg[t->id] >> 8;
+	buf[1] = treg[t->id] & 0xff;
+	buf[2] = '\0';
+	emui_lineedit_set_text(t, buf);
 
-	return 1;
+	return 0;
+}
+// -----------------------------------------------------------------------
+int reg_2char_changed(struct emui_tile *t)
+{
+	char *txt;
+
+	txt = emui_lineedit_get_text(t);
+	treg[t->id] = *txt ? (*txt << 8) + *(txt+1) : 0;
+	return 0;
 }
 
 // -----------------------------------------------------------------------
-int reg_r40_handler(struct emui_tile *t, struct emui_event *ev)
+int reg_r40_update(struct emui_tile *t)
 {
 	char buf[4];
 	uint16_t val;
 
-	switch (ev->type) {
-		case EV_CHANGED:
-			ascii_to_r40(emui_lineedit_get_text(t), NULL, &val);
-			treg[t->id].v = val;
-			return 0;
-		case EV_UPDATE:
-			val = treg[t->id].v;
-			emui_lineedit_set_text(t, r40_to_ascii(&val, 3, buf));
-			return 0;
-	}
+	val = treg[t->id];
+	emui_lineedit_set_text(t, r40_to_ascii(&val, 1, buf));
 
-	return 1;
+	return 0;
 }
 
 // -----------------------------------------------------------------------
-int reg_int_handler(struct emui_tile *t, struct emui_event *ev)
+int reg_r40_changed(struct emui_tile *t)
+{
+	uint16_t val;
+
+	ascii_to_r40(emui_lineedit_get_text(t), NULL, &val);
+	treg[t->id] = val;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int reg_int_update(struct emui_tile *t)
+{
+	emui_lineedit_set_int(t, treg[t->id]);
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int reg_int_changed(struct emui_tile *t)
 {
 	int val;
 
-	switch (ev->type) {
-		case EV_CHANGED:
-			val = emui_lineedit_get_int(t);
-			if ((val > 65535) || (val < -32768)) {
-				emui_lineedit_invalid(t);
-				emui_lineedit_edit(t, 1);
-			} else {
-				treg[t->id].v = val;
-				emui_lineedit_set_pos(t, 0);
-			}
-			return 0;
-		case EV_UPDATE:
-			emui_lineedit_set_int(t, treg[t->id].v);
-			return 0;
+	val = emui_lineedit_get_int(t);
+
+	if ((val > USHRT_MAX) || (val < SHRT_MIN)) {
+		return 1;
+	} else {
+		treg[t->id] = val;
+		return 0;
 	}
-
-	return 1;
 }
-
 
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_ureg(struct emui_tile *parent)
@@ -202,23 +219,38 @@ struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 	emui_label(ureg_bin, 0, 0, 16, AL_LEFT, S_TEXT_NN, "ZMVCLEGYX1234567");
 	emui_label(ureg_ch, 0, 0, 2, AL_LEFT, S_TEXT_NN, "ch");
 	emui_label(ureg_r40, 0, 0, 3, AL_LEFT, S_TEXT_NN, "R40");
-	for (int i=1 ; i<=8 ; i++) {
-		char buf[] = "R_:";
-		buf[1] = '0' + i-1;
-		emui_label(ureg_r, 0, i, 3, AL_RIGHT, S_TEXT_NN, buf);
-		treg[i].v = 0;
-		treg[i].h = emui_lineedit(ureg_hex, i, 0, i, 4, 4, TT_HEX, M_OVR);
-		emui_tile_set_event_handler(treg[i].h, reg_int_handler, 0);
-		treg[i].d = emui_lineedit(ureg_dec, i, 0, i, 6, 6, TT_INT, M_OVR);
-		emui_tile_set_event_handler(treg[i].d, reg_int_handler, 0);
-		treg[i].o = emui_lineedit(ureg_oct, i, 0, i, 6, 6, TT_OCT, M_OVR);
-		emui_tile_set_event_handler(treg[i].o, reg_int_handler, 0);
-		treg[i].b = emui_lineedit(ureg_bin, i, 0, i, 16, 16, TT_BIN, M_OVR);
-		emui_tile_set_event_handler(treg[i].b, reg_int_handler, 0);
-		treg[i].c = emui_lineedit(ureg_ch, i, 0, i, 2, 2, TT_TEXT, M_OVR);
-		emui_tile_set_event_handler(treg[i].c, reg_2char_handler, 0);
-		treg[i].r = emui_lineedit(ureg_r40, i, 0, i, 3, 3, TT_TEXT, M_OVR);
-		emui_tile_set_event_handler(treg[i].r, reg_r40_handler, 0);
+
+	char buf[] = "R_:";
+	struct emui_tile *r;
+
+	for (int i=0 ; i<8 ; i++) {
+		buf[1] = '0';
+		emui_label(ureg_r, 0, i+1, 3, AL_RIGHT, S_TEXT_NN, buf);
+		treg[i] = 0;
+
+		r = emui_lineedit(ureg_hex, i, 0, i+1, 4, 4, TT_HEX, M_OVR);
+		emui_tile_set_change_handler(r, reg_int_changed);
+		emui_tile_set_update_handler(r, reg_int_update);
+
+		r = emui_lineedit(ureg_dec, i, 0, i+1, 6, 6, TT_INT, M_OVR);
+		emui_tile_set_change_handler(r, reg_int_changed);
+		emui_tile_set_update_handler(r, reg_int_update);
+
+		r = emui_lineedit(ureg_oct, i, 0, i+1, 6, 6, TT_OCT, M_OVR);
+		emui_tile_set_change_handler(r, reg_int_changed);
+		emui_tile_set_update_handler(r, reg_int_update);
+
+		r = emui_lineedit(ureg_bin, i, 0, i+1, 16, 16, TT_BIN, M_OVR);
+		emui_tile_set_change_handler(r, reg_int_changed);
+		emui_tile_set_update_handler(r, reg_int_update);
+
+		r = emui_lineedit(ureg_ch, i, 0, i+1, 2, 2, TT_TEXT, M_OVR);
+		emui_tile_set_change_handler(r, reg_2char_changed);
+		emui_tile_set_update_handler(r, reg_2char_update);
+
+		r = emui_lineedit(ureg_r40, i, 0, i+1, 3, 3, TT_TEXT, M_OVR);
+		emui_tile_set_change_handler(r, reg_r40_changed);
+		emui_tile_set_update_handler(r, reg_r40_update);
 	}
 
 	return ureg;
@@ -253,6 +285,75 @@ struct emui_tile * ui_create_sreg(struct emui_tile *parent)
 }
 
 // -----------------------------------------------------------------------
+static int dasm_update(struct emui_tile *t)
+{
+	char *buf = malloc(t->w + 1);
+	char *dbuf;
+	int pos = 0;
+	uint16_t addr;
+	int astyle;
+	int istyle;
+
+	emui_textview_clear(t);
+
+	while (pos < t->h) {
+		addr = dasm_start + pos;
+		emdas_dasm(emd, 0, addr);
+		dbuf = emdas_get_buf(emd);
+
+		astyle = S_DEFAULT;
+
+		if (addr == 16) {
+			istyle = S_TEXT_FN;
+			astyle = S_TEXT_FN;
+		} else if (*dbuf == '.') {
+			istyle = S_EDIT_NN;
+		} else if (*dbuf == ';') {
+			istyle = S_TEXT_NI;
+			dbuf += 2;
+		} else {
+			istyle = S_YELLOW;
+		}
+
+		sprintf(buf, "0x%04x: ", addr);
+		emui_textview_append(t, astyle, buf);
+		sprintf(buf, "%-*s", t->w-8, dbuf);
+		emui_textview_append(t, istyle, buf);
+
+		pos++;
+	}
+	free(buf);
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int dasm_key_handler(struct emui_tile *t, int key)
+{
+	switch (key) {
+	case KEY_UP:
+		dasm_start--;
+		return 0;
+	case KEY_DOWN:
+		dasm_start++;
+		return 0;
+	case KEY_PPAGE:
+		dasm_start -= t->h;
+		return 0;
+	case KEY_NPAGE:
+		dasm_start += t->h;
+		return 0;
+	case KEY_HOME:
+		dasm_start = 0;
+		return 0;
+	case KEY_END:
+		dasm_start = 0x10000 - t->h;
+		return 0;
+	}
+
+	return 1;
+}
+
+// -----------------------------------------------------------------------
 struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 {
 	// ASM
@@ -262,6 +363,10 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	emui_tile_set_focus_key(dasm_split, KEY_F(12));
 	struct emui_tile *dasm = emui_window(dasm_split, 0, 0, 30, 20, "ASM", P_NONE);
 	emui_tile_set_focus_key(dasm, 'a');
+	struct emui_tile *asmv = emui_textview(dasm, 0, 0, 30, 20);
+	emui_tile_set_properties(asmv, P_MAXIMIZED);
+	emui_tile_set_key_handler(asmv, dasm_key_handler);
+	emui_tile_set_update_handler(asmv, dasm_update);
 
 	// registers
 	struct emui_tile *reg_split = emui_splitter(dasm_split, AL_TOP, 11, 11, FIT_FILL);
@@ -299,6 +404,19 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 int main(int argc, char **argv)
 {
 	//emui_tile_debug_set(1);
+	mem = malloc(sizeof(uint16_t) * MAX_MEM);
+	for (int i=0 ; i<MAX_MEM ; i++) {
+		mem[i] = rand();
+	}
+
+	// initialize deassembler
+	emd = emdas_create(EMD_ISET_MX16, mem_get);
+	if (!emd) {
+		exit(1);
+	}
+	emdas_set_nl(emd, '\0');
+	emdas_set_features(emd, EMD_FEAT_NONE);
+	emdas_set_tabs(emd, 0, 0, 4, 4);
 
 	struct emui_tile *layout = emui_init(30);
 
@@ -330,6 +448,7 @@ int main(int argc, char **argv)
 
 	emui_loop();
 	emui_destroy();
+	emdas_destroy(emd);
 
 	return 0;
 }

@@ -45,7 +45,7 @@ enum emui_tile_families {
 	F_CONTAINER,
 	F_WINDOW,
 	F_WIDGET,
-	
+
 	F_NUMFAMILIES
 };
 
@@ -79,10 +79,15 @@ enum emui_tile_properties {
 struct emui_tile;
 struct emui_event;
 
+// provided by the tile driver
 typedef void (*emui_draw_f)(struct emui_tile *t);
 typedef int (*emui_update_geometry_f)(struct emui_tile *t);
-typedef int (*emui_event_handler_f)(struct emui_tile *t, struct emui_event *ev);
 typedef void (*emui_destroy_priv_data_f)(struct emui_tile *t);
+typedef int (*emui_event_handler_f)(struct emui_tile *t, struct emui_event *ev);
+
+// user-provided handlers
+typedef int (*emui_handler_f)(struct emui_tile *t);
+typedef int (*emui_key_handler_f)(struct emui_tile *t, int key);
 
 struct emui_tile_drv {
 	emui_draw_f draw;
@@ -96,12 +101,14 @@ struct emui_tile {
 	// general
 	unsigned family;			// tile family (widget, container, ...)
 	unsigned type;				// tile type (lineedit, label, window, ...)
-	int id;					// tile id (user may set it to whatever is needed by the application)
+	int id;						// tile id (user may set it to whatever is needed by the application)
 	char *name;					// tile name
 	unsigned properties;		// tile properties
 	int key;					// shortcut key
 	int style;					// default style
 	int geometry_changed;		// geometry has changed (and needs to be updated)
+	int accept_updates;			// tile accepts content updates (contents are not being edited)
+	int content_invalid;		// tile contents are invalid after last edit
 
 	// geometry
 	unsigned rx, ry, rw, rh;	// user-requested tile geometry including decoration (relative to parent's work area)
@@ -133,9 +140,10 @@ struct emui_tile {
 	void *priv_data;
 	struct emui_tile_drv *drv;
 
-	// user data and methods
-	emui_event_handler_f user_ev_handler;
-	int early_handler;
+	// user-provided handlers
+	emui_handler_f user_update_handler;
+	emui_handler_f user_change_handler;
+	emui_key_handler_f user_key_handler;
 };
 
 struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
@@ -148,7 +156,9 @@ void emui_tile_child_remove(struct emui_tile *parent, struct emui_tile *t);
 void emui_tile_update_geometry(struct emui_tile *t);
 int emui_tile_draw(struct emui_tile *t);
 int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev);
-int emui_tile_set_event_handler(struct emui_tile *t, emui_event_handler_f handler, int early);
+int emui_tile_set_update_handler(struct emui_tile *t, emui_handler_f handler);
+int emui_tile_set_change_handler(struct emui_tile *t, emui_handler_f handler);
+int emui_tile_set_key_handler(struct emui_tile *t, emui_key_handler_f handler);
 int emui_tile_set_focus_key(struct emui_tile *t, int key);
 int emui_tile_set_properties(struct emui_tile *t, unsigned properties);
 int emui_tile_set_name(struct emui_tile *t, char *name);
@@ -157,6 +167,7 @@ void emui_tile_hide(struct emui_tile *t);
 void emui_tile_unhide(struct emui_tile *t);
 void emui_tile_set_id(struct emui_tile *t, int id);
 int emui_tile_get_id(struct emui_tile *t);
+int emui_tile_changed(struct emui_tile *t);
 
 #endif
 

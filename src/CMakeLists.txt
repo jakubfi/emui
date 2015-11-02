@@ -35,7 +35,7 @@ add_executable(emui
 	test.c
 )
 
-target_link_libraries(emui m ${EMCRK_LIBRARIES} emui-lib ${CURSES_LIBRARIES})
+target_link_libraries(emui m ${EMCRK_LIBRARIES} ${EMDAS_LIBRARIES} emui-lib ${CURSES_LIBRARIES})
 
 install(TARGETS emui RUNTIME DESTINATION bin)
 

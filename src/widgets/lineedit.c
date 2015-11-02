@@ -30,11 +30,11 @@
 struct lineedit {
 	int type;
 	int in_edit;
-	int invalid;
 	int mode;
 	int pos;
 	int maxlen;
 	char *buf;
+	char *editbuf;
 	int txt_offset;
 };
 
@@ -42,27 +42,25 @@ struct lineedit {
 void emui_lineedit_draw(struct emui_tile *t)
 {
 	struct lineedit *le = t->priv_data;
-	struct emui_event evc;
-
-	if (!le->in_edit) {
-		evc.type = EV_UPDATE;
-		evc.data = t;
-		emui_tile_handle_event(t, &evc);
-	}
+	char *cbuf;
 
 	int style = t->style;
 
 	if (le->in_edit) {
-		if (le->invalid) {
+		cbuf = le->editbuf;
+		if (t->content_invalid) {
 			style = S_TEXT_EI;
 		} else {
 			style = S_TEXT_EN;
 		}
-	} else if (emui_has_focus(t) ) {
-		if (le->invalid) {
-			style = S_TEXT_FI;
-		} else {
-			style = S_TEXT_FN;
+	} else {
+		cbuf = le->buf;
+		if (emui_has_focus(t) ) {
+			if (t->content_invalid) {
+				style = S_TEXT_FI;
+			} else {
+				style = S_TEXT_FN;
+			}
 		}
 	}
 
@@ -79,10 +77,10 @@ void emui_lineedit_draw(struct emui_tile *t)
 	}
 
 	if (le->in_edit) {
-		emuixyprt(t, 0, 0, style, "%s", le->buf + le->txt_offset);
+		emuixyprt(t, 0, 0, style, "%s", cbuf + le->txt_offset);
 		wmove(t->ncwin, 0, le->pos - le->txt_offset);
 	} else {
-		emuixyprt(t, 0, 0, style, "%s", le->buf);
+		emuixyprt(t, 0, 0, style, "%s", cbuf);
 	}
 }
 
@@ -148,32 +146,33 @@ static int le_char_valid(int type, int ch, int pos)
 static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 {
 	struct lineedit *le = t->priv_data;
-	struct emui_event evc;
 
 	switch (ev->sender) {
 		case KEY_ENTER:
 		case '\n':
 			emui_lineedit_edit(t, 0);
-			le->invalid = 0;
-			evc.type = EV_CHANGED;
-			evc.data = t;
-			emui_tile_handle_event(t, &evc);
+			if (emui_tile_changed(t)) {
+				emui_lineedit_edit(t, 1);
+			} else {
+				emui_lineedit_set_pos(t, 0);
+			}
 			break;
 		case 27: // ESC
 			le->in_edit = 0;
+			t->accept_updates = 1;
 			curs_set(0);
 			break;
 		case KEY_LEFT:
 			if (le->pos > 0) le->pos -= 1;
 			break;
 		case KEY_RIGHT:
-			if (le->pos < strlen(le->buf)) le->pos += 1;
+			if (le->pos < strlen(le->editbuf)) le->pos += 1;
 			break;
 		case KEY_HOME:
 			le->pos = 0;
 			break;
 		case KEY_END:
-			le->pos = strlen(le->buf);
+			le->pos = strlen(le->editbuf);
 			if (le->mode == M_OVR) {
 				le->pos--;
 			}
@@ -181,21 +180,21 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 		case KEY_BACKSPACE:
 		case 127:
 			if (le->pos > 0) {
-				memmove(le->buf+le->pos-1, le->buf+le->pos, strlen(le->buf)-le->pos);
+				memmove(le->editbuf+le->pos-1, le->editbuf+le->pos, strlen(le->editbuf)-le->pos);
 				le->pos -= 1;
-				le->buf[strlen(le->buf)-1] = '\0';
+				le->editbuf[strlen(le->editbuf)-1] = '\0';
 			}
 			break;
 		case KEY_IC: // INSERT
 			emui_lineedit_mode(t, le->mode ^ 1);
-			if ((le->mode == M_OVR) && (le->pos == strlen(le->buf))) {
+			if ((le->mode == M_OVR) && (le->pos == strlen(le->editbuf))) {
 				le->pos--;
 			}
 			break;
 		case KEY_DC: // DELETE
-			if (le->pos < strlen(le->buf)) {
-				memmove(le->buf+le->pos, le->buf+le->pos+1, strlen(le->buf)-le->pos-1);
-				le->buf[strlen(le->buf)-1] = '\0';
+			if (le->pos < strlen(le->editbuf)) {
+				memmove(le->editbuf+le->pos, le->editbuf+le->pos+1, strlen(le->editbuf)-le->pos-1);
+				le->editbuf[strlen(le->editbuf)-1] = '\0';
 			}
 			break;
 		default:
@@ -203,18 +202,18 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 
 			if (le->mode == M_OVR) {
 				if (le->pos <= le->maxlen) {
-					if (le->pos == strlen(le->buf)) {
-						le->buf[le->pos+1] = '\0';
+					if (le->pos == strlen(le->editbuf)) {
+						le->editbuf[le->pos+1] = '\0';
 					}
-					le->buf[le->pos] = ev->sender;
+					le->editbuf[le->pos] = ev->sender;
 					if (le->pos < le->maxlen - 1) {
 						le->pos++;
 					}
 				}
 			} else {
-				if (strlen(le->buf) < le->maxlen) {
-					memmove(le->buf+le->pos+1, le->buf+le->pos, strlen(le->buf)-le->pos);
-					le->buf[le->pos++] = ev->sender;
+				if (strlen(le->editbuf) < le->maxlen) {
+					memmove(le->editbuf+le->pos+1, le->editbuf+le->pos, strlen(le->editbuf)-le->pos);
+					le->editbuf[le->pos++] = ev->sender;
 				}
 			}
 			break;
@@ -246,6 +245,7 @@ void emui_lineedit_destroy_priv_data(struct emui_tile *t)
 {
 	struct lineedit *le = t->priv_data;
 	free(le->buf);
+	free(le->editbuf);
 	free(le);
 }
 
@@ -292,7 +292,8 @@ int emui_lineedit_set_text(struct emui_tile *t, char *text)
 	struct lineedit *le = t->priv_data;
 
 	free(le->buf);
-	le->buf = strdup(text);
+	le->buf = calloc(1, le->maxlen + 1);
+	strncpy(le->buf, text, le->maxlen);
 	le->pos = 0;
 
 	return 0;
@@ -381,13 +382,18 @@ void emui_lineedit_edit(struct emui_tile *t, int state)
 	struct lineedit *le = t->priv_data;
 	le->in_edit = state;
 	curs_set(state);
-}
 
-// -----------------------------------------------------------------------
-void emui_lineedit_invalid(struct emui_tile *t)
-{
-	struct lineedit *le = t->priv_data;
-	le->invalid = 1;
+	if (state == 1) {
+		t->accept_updates = 0;
+		free(le->editbuf);
+		le->editbuf = calloc(1, le->maxlen + 1);
+		strcpy(le->editbuf, le->buf);
+	} else {
+		t->accept_updates = 1;
+		free(le->buf);
+		le->buf = calloc(1, le->maxlen + 1);
+		strcpy(le->buf, le->editbuf);
+	}
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent

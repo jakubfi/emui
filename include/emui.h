@@ -18,7 +18,6 @@
 #ifndef EMUI_H
 #define EMUI_H
 
-#include "event.h"
 #include "focus.h"
 #include "print.h"
 #include "style.h"

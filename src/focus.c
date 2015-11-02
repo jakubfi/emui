@@ -57,7 +57,7 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 	struct emui_tile *f = t->fg->fg_first;
 	struct emui_tile *match = t;
 
-	int dd, dd_min = INT_MAX; // directional distance (distance in the move direction)
+	int dd; // directional distance (distance in the move direction)
 	int ovrl, ovrl_max = 0; // overlap region
 	int dist, dist_min = INT_MAX;
 
@@ -97,7 +97,6 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 					// we search for a tile that "overlaps" the most with the current one
 					if (ovrl >= ovrl_max) {
 						ovrl_max = ovrl/2; // /2 = less impact on decision
-						dd_min = dd;
 						dist_min = dist;
 						match = f;
 					}
@@ -222,7 +221,7 @@ int emui_focus_group_add(struct emui_tile *parent, struct emui_tile *t)
 	}
 
 	// there is a focus group to be in
-	if (fg) { 
+	if (fg) {
 		t->fg = fg;
 		t->fg_prev = fg->fg_last;
 		if (fg->fg_last) {

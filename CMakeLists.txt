@@ -11,6 +11,7 @@ set(EMUI_VERSION ${EMUI_VERSION_MAJOR}.${EMUI_VERSION_MINOR}.${EMUI_VERSION_PATC
 set(CURSES_NEED_NCURSES TRUE)
 find_package(Curses REQUIRED)
 find_package(emcrk REQUIRED)
+find_package(emdas REQUIRED)
 include_directories(SYSTEM ${CURSES_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
