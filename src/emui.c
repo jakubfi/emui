@@ -226,6 +226,112 @@ static void emui_update_screen()
 }
 
 // -----------------------------------------------------------------------
+static int emui_handle_user_focus_keys(struct emui_tile *fg, int key)
+{
+	struct emui_tile *t = fg->fg_first;
+
+	while (t) {
+		if (t->key == key) {
+			emui_focus(t);
+			return 0;
+		}
+		t = t->fg_next;
+	}
+
+	// event has not been handled
+	return 1;
+}
+
+// -----------------------------------------------------------------------
+static int emui_handle_neighbour_focus(struct emui_tile *t, int key)
+{
+	switch (key) {
+		case 9: // TAB
+			emui_focus_list_neighbour(t, FC_NEXT);
+			return 0;
+		case KEY_BTAB:
+			emui_focus_list_neighbour(t, FC_PREV);
+			return 0;
+		case KEY_UP:
+			emui_focus_physical_neighbour(t, FC_UP);
+			return 0;
+		case KEY_DOWN:
+			emui_focus_physical_neighbour(t, FC_DOWN);
+			return 0;
+		case KEY_LEFT:
+			emui_focus_physical_neighbour(t, FC_LEFT);
+			return 0;
+		case KEY_RIGHT:
+			emui_focus_physical_neighbour(t, FC_RIGHT);
+			return 0;
+		default:
+			return 1;
+	}
+}
+
+// -----------------------------------------------------------------------
+static int emui_handle_focus(struct emui_tile *t, int key)
+{
+	if (!t) return 1;
+
+	// if tile is a top of a focus group, search for user-set focus keys handled by it
+	if (t->properties & P_FOCUS_GROUP) {
+		if (!emui_handle_user_focus_keys(t, key)) {
+			return 0;
+		}
+	// if tile is a widget, handle neighbourhood focus change
+	} else if (t->family == F_WIDGET) {
+		if (!emui_handle_neighbour_focus(t, key)) {
+			return 0;
+		}
+	}
+
+	// finally, if above didn't work, propagate the event to the focus group above
+	if (!emui_handle_focus(t->fg, key)) {
+		return 0;
+	}
+
+	// event has not been handled, bummer
+	return 1;
+}
+
+// -----------------------------------------------------------------------
+static int emui_process_event(struct emui_event *ev)
+{
+	struct emui_tile *t = emui_focus_get();
+
+	// resize goes straight to the top tile
+	if ((ev->type == EV_RESIZE) && !layout->drv->event_handler(layout, ev)) {
+		return 0;
+	}
+
+	// TODO: temporary
+	if ((ev->type == EV_KEY) && (ev->sender == 'q')) {
+		struct emui_event *ev = malloc(sizeof(struct emui_event));
+		ev->type = EV_QUIT;
+		emui_evq_prepend(ev);
+		return 0;
+	}
+
+	// try running user key handler
+	if ((ev->type == EV_KEY) && t->user_key_handler && !t->user_key_handler(t, ev->sender)) {
+		return 0;
+	}
+
+	// run tile's own event handler
+	if (!t->drv->event_handler(t, ev)) {
+		return 0;
+	}
+
+	// try the key to change focus
+	if ((ev->type == EV_KEY) && !emui_handle_focus(t, ev->sender)) {
+		return 0;
+	}
+
+	return 1;
+}
+
+// -----------------------------------------------------------------------
 void emui_loop()
 {
 	struct timeval *ft = NULL;
@@ -259,7 +365,8 @@ process_event:
 				break;
 			} else {
 				// process the event through the focus path
-				emui_tile_handle_event(emui_focus_get(), ev);
+				//emui_tile_handle_event(emui_focus_get(), ev);
+				emui_process_event(ev);
 				free(ev);
 			}
 		} else {

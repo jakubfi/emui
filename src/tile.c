@@ -21,7 +21,6 @@
 
 #include "tile.h"
 #include "style.h"
-#include "event.h"
 #include "focus.h"
 #include "print.h"
 
@@ -231,93 +230,6 @@ int emui_tile_draw(struct emui_tile *t)
 	wnoutrefresh(t->ncwin);
 
 	return 0;
-}
-
-// -----------------------------------------------------------------------
-static int emui_tile_handle_user_focus_keys(struct emui_tile *fg, int key)
-{
-	struct emui_tile *t = fg->fg_first;
-
-	while (t) {
-		if (t->key == key) {
-			emui_focus(t);
-			return 0;
-		}
-		t = t->fg_next;
-	}
-
-	// event has not been handled
-	return 1;
-}
-
-// -----------------------------------------------------------------------
-static int emui_tile_handle_neighbour_focus(struct emui_tile *t, int key)
-{
-	switch (key) {
-		case 9: // TAB
-			emui_focus_list_neighbour(t, FC_NEXT);
-			return 0;
-		case KEY_BTAB:
-			emui_focus_list_neighbour(t, FC_PREV);
-			return 0;
-		case KEY_UP:
-			emui_focus_physical_neighbour(t, FC_UP);
-			return 0;
-		case KEY_DOWN:
-			emui_focus_physical_neighbour(t, FC_DOWN);
-			return 0;
-		case KEY_LEFT:
-			emui_focus_physical_neighbour(t, FC_LEFT);
-			return 0;
-		case KEY_RIGHT:
-			emui_focus_physical_neighbour(t, FC_RIGHT);
-			return 0;
-		default:
-			return 1;
-	}
-}
-
-// -----------------------------------------------------------------------
-int emui_tile_handle_event(struct emui_tile *t, struct emui_event *ev)
-{
-	if (!t || !ev) {
-		return 0;
-	}
-
-	// try running user key handler
-	if ((ev->type == EV_KEY) && t->user_key_handler && !t->user_key_handler(t, ev->sender)) {
-		// if user-provided handler handled the event, we're done
-		return 0;
-	}
-
-	// if tile has own event handler, run it
-	if (!t->drv->event_handler(t, ev)) {
-		// if driver handled the event, we're done
-		return 0;
-	}
-
-	// handle focus changes
-	if (ev->type == EV_KEY) {
-		// if tile is a focus group, search for user-set focus keys handled by it
-		if (t->properties & P_FOCUS_GROUP) {
-			if (!emui_tile_handle_user_focus_keys(t, ev->sender)) {
-				return 0;
-			}
-		// if tile is a widget, handle neighbourhood focus change
-		} else if (t->family == F_WIDGET) {
-			if (!emui_tile_handle_neighbour_focus(t, ev->sender)) {
-				return 0;
-			}
-		}
-	}
-
-	// finally, if above didn't work, propagate the event to the parent tile
-	if (!emui_tile_handle_event(t->parent, ev)) {
-		return 0;
-	}
-
-	// event has not been handled, bummer
-	return 1;
 }
 
 // -----------------------------------------------------------------------

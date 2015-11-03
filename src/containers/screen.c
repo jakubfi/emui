@@ -58,11 +58,6 @@ int emui_screen_event_handler(struct emui_tile *t, struct emui_event *ev)
 		// handle resize here, so if terminal is resized when fps is low,
 		// UI reacts quickly
 		t->geometry_changed = 1;
-	// TODO: temporary
-	} else if ((ev->type == EV_KEY) && (ev->sender == 'q')) {
-		struct emui_event *ev = malloc(sizeof(struct emui_event));
-		ev->type = EV_QUIT;
-		emui_evq_prepend(ev);
 		return 0;
 	}
 
