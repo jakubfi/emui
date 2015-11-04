@@ -56,6 +56,8 @@ enum emui_align_types {
 	AL_BOTTOM,
 	AL_CENTER,
 	AL_MIDDLE,
+	AL_HORIZONTAL,
+	AL_VERTICAL,
 };
 
 enum emui_tile_properties {

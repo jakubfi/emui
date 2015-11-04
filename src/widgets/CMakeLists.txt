@@ -4,6 +4,7 @@ add_library(widgets
 	lineedit.c
 	label.c
 	textview.c
+	line.c
 )
 
 set_target_properties(widgets

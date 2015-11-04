@@ -5,6 +5,7 @@ add_library(containers
 	tabs.c
 	splitter.c
 	justifier.c
+	grid.c
 )
 
 set_target_properties(containers

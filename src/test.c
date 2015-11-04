@@ -378,8 +378,29 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	struct emui_tile *mem_split = emui_splitter(reg_split, AL_TOP, 10, FIT_DIV2, 6);
 	struct emui_tile *mem = emui_window(mem_split, 0, 0, 80, 20, "Memory", P_NONE);
 	emui_tile_set_focus_key(mem, 'm');
-	struct emui_tile *tv = emui_textview(mem, 0, 0, 80, 30);
-	emui_textview_append(tv, S_DEFAULT, help);
+
+	emui_label(mem, 1, 0, 6, AL_LEFT, S_DEFAULT, "seg 2");
+
+	char buf[5];
+	for (int i=0 ; i<32 ; i++) {
+		sprintf(buf, "%x", i);
+		emui_label(mem, 9+i*5, 0, 4, AL_LEFT, S_DEFAULT, buf);
+	}
+	struct emui_tile *mem_hline = emui_line(mem, AL_HORIZONTAL, 0, 1, 1000);
+	struct emui_tile *mem_vline = emui_line(mem, AL_VERTICAL, 8, 0, 1000);
+
+	for (int i=2 ; i<50 ; i++) {
+		emui_label(mem, 0, i, 7, AL_LEFT, S_DEFAULT, "addr");
+	}
+
+	struct emui_tile *memv_cont = emui_dummy_cont(mem, 9, 2, 1000, 1000);
+	struct emui_tile *memv = emui_grid(memv_cont, -1, -1, 4, 1, 1);
+
+	for (int i=0 ; i<1000 ; i++) {
+		sprintf(buf, "%x", i);
+		struct emui_tile *l = emui_lineedit(memv, -1, 0, 0, 4, 4, TT_HEX, M_OVR);
+		emui_lineedit_set_text(l, buf);
+	}
 
 	// eval
 	struct emui_tile *eval_split = emui_splitter(mem_split, AL_BOTTOM, 3, 3, 10);
