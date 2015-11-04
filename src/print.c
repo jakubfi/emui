@@ -5,18 +5,10 @@
 #include "style.h"
 
 // -----------------------------------------------------------------------
-static int __nc_vprint(WINDOW *win, int style, char *format, va_list vl)
+static inline int __nc_vprint(WINDOW *win, int style, char *format, va_list vl)
 {
-	int ret;
-	attr_t attr_old;
-	short colorpair_old;
-
-	wattr_get(win, &attr_old, &colorpair_old, NULL);
 	wattrset(win, emui_style_get(style));
-	ret = vwprintw(win, format, vl);
-	wattrset(win, colorpair_old | attr_old);
-
-	return ret;
+	return vwprintw(win, format, vl);
 }
 
 // -----------------------------------------------------------------------
@@ -32,14 +24,14 @@ int vemuidprt(struct emui_tile *t, int style, char *format, va_list vl)
 }
 
 // -----------------------------------------------------------------------
-int vemuixyprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl) 
+int vemuixyprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl)
 {
 	wmove(t->ncwin, y, x);
 	return __nc_vprint(t->ncwin, style, format, vl);
 }
 
 // -----------------------------------------------------------------------
-int vemuixydprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl) 
+int vemuixydprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl)
 {
 	wmove(t->ncdeco, y, x);
 	return __nc_vprint(t->ncdeco, style, format, vl);
@@ -114,37 +106,29 @@ int emuixyd(struct emui_tile *t, int x, int y)
 // -----------------------------------------------------------------------
 int emuidbox(struct emui_tile *t, int style)
 {
-	int ret;
-	attr_t attr_old;
-	short colorpair_old;
-	WINDOW *win = t->ncdeco;
-			    
-	wattr_get(win, &attr_old, &colorpair_old, NULL);
-	wattrset(win, emui_style_get(style));
-	ret = box(win, 0, 0);
-	wattrset(win, colorpair_old | attr_old);
-								    
-	return ret;
+	wattrset(t->ncdeco, emui_style_get(style));
+	return box(t->ncdeco, 0, 0);
 }
 
 // -----------------------------------------------------------------------
 int emuifillbg(struct emui_tile *t, int style)
 {
-	int ret;
-	attr_t attr_old;
-	short colorpair_old;
+	wbkgd(t->ncwin, emui_style_get(style));
+	return 1;
+}
 
-	WINDOW *win = t->ncwin;
+// -----------------------------------------------------------------------
+int emuihline(struct emui_tile *t, int x, int y, int len, int style)
+{
+	wattrset(t->ncwin, emui_style_get(style));
+	return mvwhline(t->ncwin, y, x, 0, len);
+}
 
-	wattr_get(win, &attr_old, &colorpair_old, NULL);
-	wattrset(win, emui_style_get(style));
-	wmove(win, 0, 0);
-	for (int y=0 ; y<t->h ; y++) {
-		ret = whline(win, ' ', t->w);
-	}
-	wattrset(win, colorpair_old | attr_old);
-
-	return ret;
+// -----------------------------------------------------------------------
+int emuivline(struct emui_tile *t, int x, int y, int len, int style)
+{
+	wattrset(t->ncwin, emui_style_get(style));
+	return mvwvline(t->ncwin, y, x, 0, len);
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent
