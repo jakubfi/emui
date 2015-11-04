@@ -26,7 +26,7 @@
 char *help = "\
 UI shortcuts:\n\
  * m, r, s, a, w, b - switch window\n\
- * H,? - help\n\
+ * h,? - help\n\
  * l - configure logging\n\
  * ctrl-q - quit\n\
 \n\
@@ -36,30 +36,32 @@ CPU control:\n\
  * space - step (cycle)\n\
  * ctrl-t - switch clock on/off\n\
 \n\
-Registers window:\n\
+Registers and system registers windows:\n\
  * arrows, tab - move around\n\
- * 0-7 - select register\n\
- * ENTER - edit contents\n\
+ * 0-7 - select user register\n\
+ * ENTER - edit register contents\n\
 \n\
 Memory window:\n\
  * arrows, pgup/down - move around\n\
  * ctrl-pgup/-pgdown - skip to previosu/next memory page\n\
  * < > - switch to prev/next memory segment\n\
  * 0-9 - select memory segment 0-9\n\
+ * i - move to current IC location\n\
  * g - go to memory location\n\
  * d - decode memory under cursor\n\
  * f - find\n\
  * o - open (load) image file\n\
- * c - change character display between none/ASCII/R40\n\
+ * c - change display between hex/ASCII/R40\n\
  * ENTER - edit memory under cursor\n\
  * ESC - exit edit\n\
- *  - show current memory layout\n\
+ * . - show current memory layout\n\
 \n\
 Assembler window:\n\
- * up/down/pgup/pgdn - move around\n\
- * ctrl-pgup/-pgdown - skip to previosu/next memory page\n\
+ * up/down/pgup/pgdn/home/end - scroll contents\n\
+ * ctrl-pgup/-pgdown - skip to previous/next memory page\n\
  * < > - switch to previous/next memory segment\n\
  * 0-9 - select memory segment 0-9\n\
+ * i - move to current IC location\n\
  * g - go to memory location\n\
  * f - follow IC on/off\n\
 \n\
@@ -93,15 +95,18 @@ Status bar indicators:\n\
 
 #define MAX_MEM 1024*32
 
+uint16_t treg[8];
 struct emdas *emd;
-uint16_t *mem;
+uint16_t *mem[16];
 uint16_t dasm_start;
+int dasm_segment;
+int dasm_follow;
 
 // -----------------------------------------------------------------------
 int mem_get(int nb, uint16_t addr, uint16_t *dest)
 {
 	if (addr < MAX_MEM) {
-		*dest = mem[addr];
+		*dest = mem[nb][addr];
 		return 1;
 	} else {
 		return 0;
@@ -128,8 +133,6 @@ struct emui_tile * ui_create_status(struct emui_tile *parent)
 
 	return split;
 }
-
-uint16_t treg[8];
 
 // -----------------------------------------------------------------------
 int reg_2char_update(struct emui_tile *t)
@@ -224,13 +227,14 @@ struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 	struct emui_tile *r;
 
 	for (int i=0 ; i<8 ; i++) {
-		buf[1] = '0';
+		buf[1] = '0' + i;
 		emui_label(ureg_r, 0, i+1, 3, AL_RIGHT, S_TEXT_NN, buf);
 		treg[i] = 0;
 
 		r = emui_lineedit(ureg_hex, i, 0, i+1, 4, 4, TT_HEX, M_OVR);
 		emui_tile_set_change_handler(r, reg_int_changed);
 		emui_tile_set_update_handler(r, reg_int_update);
+		emui_tile_set_focus_key(r, buf[1]);
 
 		r = emui_lineedit(ureg_dec, i, 0, i+1, 6, 6, TT_INT, M_OVR);
 		emui_tile_set_change_handler(r, reg_int_changed);
@@ -298,7 +302,7 @@ static int dasm_update(struct emui_tile *t)
 
 	while (pos < t->h) {
 		addr = dasm_start + pos;
-		emdas_dasm(emd, 0, addr);
+		emdas_dasm(emd, dasm_segment, addr);
 		dbuf = emdas_get_buf(emd);
 
 		astyle = S_DEFAULT;
@@ -348,6 +352,38 @@ int dasm_key_handler(struct emui_tile *t, int key)
 	case KEY_END:
 		dasm_start = 0x10000 - t->h;
 		return 0;
+	case 550: // ctrl-page up
+		dasm_start = (dasm_start & 0xf000) - 0x1000;
+		return 0;
+	case 545: // ctrl-page down
+		dasm_start = (dasm_start & 0xf000) + 0x1000;
+		return 0;
+	case '>':
+		dasm_segment = (dasm_segment+1) & 0xf;
+		return 0;
+	case '<':
+		dasm_segment = (dasm_segment-1) & 0xf;
+		return 0;
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		dasm_segment = key - '0';
+		return 0;
+	case 'f':
+		dasm_follow ^= 1;
+		return 0;
+	case 'g':
+		return 0;
+	case 'i':
+		return 0;
+
 	}
 
 	return 1;
@@ -425,9 +461,19 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 int main(int argc, char **argv)
 {
 	//emui_tile_debug_set(1);
-	mem = malloc(sizeof(uint16_t) * MAX_MEM);
-	for (int i=0 ; i<MAX_MEM ; i++) {
-		mem[i] = rand();
+	for (int seg=0 ; seg<16 ; seg++) {
+
+	}
+
+	for (int seg=0 ; seg<16 ; seg++) {
+		mem[seg] = malloc(sizeof(uint16_t) * MAX_MEM);
+		for (int addr=0 ; addr<MAX_MEM ; addr++) {
+			mem[seg][addr] = rand();
+		}
+	}
+
+	for (int addr=0 ; addr<MAX_MEM ; addr++) {
+		mem[1][addr] = addr;
 	}
 
 	// initialize deassembler
