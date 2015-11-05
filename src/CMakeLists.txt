@@ -10,7 +10,7 @@ add_library(emui-lib SHARED
 	tile.c
 )
 
-target_link_libraries(emui-lib ${CURSES_LIBRARIES} containers widgets)
+target_link_libraries(emui-lib containers widgets ${CURSES_LIBRARIES})
 
 set_target_properties(emui-lib PROPERTIES
 	OUTPUT_NAME "emui"
@@ -35,7 +35,7 @@ add_executable(emui
 	test.c
 )
 
-target_link_libraries(emui m ${EMCRK_LIBRARIES} ${EMDAS_LIBRARIES} emui-lib ${CURSES_LIBRARIES})
+target_link_libraries(emui emui-lib ${EMCRK_LIBRARIES} ${EMDAS_LIBRARIES})
 
 install(TARGETS emui RUNTIME DESTINATION bin)
 
