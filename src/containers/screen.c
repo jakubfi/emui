@@ -18,39 +18,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "tile.h"
 #include "event.h"
 
 // -----------------------------------------------------------------------
-static void _screen_update_geometry(struct emui_tile *t)
+int emui_screen_update_geometry(struct emui_tile *t)
 {
-	// it seems that getmaxyx() without preceding wrefresh() can sometimes
-	// spit wrong numbers after screen resize
-	wrefresh(t->ncwin);
-	getmaxyx(t->ncwin, t->e.h, t->e.w);
-	t->i.h = t->r.h = t->e.h;
-	t->i.w = t->r.w = t->e.w;
+	struct winsize w;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	resize_term(w.ws_row, w.ws_col);
+	clear();
+	t->i.h = t->r.h = LINES;
+	t->i.w = t->r.w = COLS;
 	t->geometry_changed = 1;
-}
 
-// -----------------------------------------------------------------------
-int emui_screen_event_handler(struct emui_tile *t, struct emui_event *ev)
-{
-	if (ev->type == EV_RESIZE) {
-		_screen_update_geometry(t);
-		return 0;
-	}
-
-	// event has not been handled
-	return 1;
+	return 0;
 }
 
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_screen_drv = {
 	.draw = NULL,
-	.update_children_geometry = NULL,
-	.event_handler = emui_screen_event_handler,
+	.update_children_geometry = emui_screen_update_geometry,
+	.event_handler = NULL,
 	.destroy_priv_data = NULL,
 };
 
@@ -67,7 +59,7 @@ struct emui_tile * emui_screen()
 	t->i.x = t->r.x = t->e.x = 0;
 	t->i.y = t->r.y = t->e.y = 0;
 	t->mr = t->ml = t->mt = t->mb = 0;
-	_screen_update_geometry(t);
+	emui_screen_update_geometry(t);
 
 	return t;
 }

@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/select.h>
 #include <ncurses.h>
@@ -40,6 +41,14 @@ static struct emui_tile *layout;
 static int emui_fps;
 static long emui_frame_no;
 long emui_ft;
+volatile int terminal_resized;
+
+// -----------------------------------------------------------------------
+static void _aw_sigwinch_handler(int signum)
+{
+	terminal_resized = 1;
+	while (signal(SIGWINCH, _aw_sigwinch_handler));
+}
 
 // -----------------------------------------------------------------------
 void edbg(char *format, ...)
@@ -75,6 +84,10 @@ struct emui_tile * emui_init(unsigned fps)
 	}
 	emui_scheme_default();
 	layout = emui_screen();
+
+	if (signal(SIGWINCH, _aw_sigwinch_handler) == SIG_ERR) {
+		return NULL;
+	}
 
 	return layout;
 }
@@ -113,9 +126,6 @@ static int emui_evq_update(struct timeval *tv)
 		ch = getch();
 		ev->type = EV_KEY;
 		ev->sender = ch;
-	// this may be a resize event
-	} else if ((errno == EINTR) && ((ch = getch() == KEY_RESIZE))) {
-		ev->type = EV_RESIZE;
 	// error
 	} else {
 		ev->type = EV_ERROR;
@@ -220,7 +230,14 @@ static inline int emui_need_screen_update(struct timeval *ft)
 // -----------------------------------------------------------------------
 static void emui_update_screen()
 {
-	emui_draw(layout, 0);
+	int force = 0;
+
+	if (terminal_resized) {
+		terminal_resized = 0;
+		force = 1;
+	}
+
+	emui_draw(layout, force);
 	doupdate();
 	emui_frame_no++;
 }
@@ -300,11 +317,6 @@ static int emui_process_event(struct emui_event *ev)
 {
 	struct emui_tile *t = emui_focus_get();
 
-	// resize goes straight to the top tile
-	if ((ev->type == EV_RESIZE) && layout->drv->event_handler && !layout->drv->event_handler(layout, ev)) {
-		return 0;
-	}
-
 	// TODO: temporary
 	if ((ev->type == EV_KEY) && (ev->sender == 'q')) {
 		struct emui_event *ev = malloc(sizeof(struct emui_event));
@@ -319,7 +331,7 @@ static int emui_process_event(struct emui_event *ev)
 	}
 
 	// run tile's own event handler
-	if (layout->drv->event_handler && !t->drv->event_handler(t, ev)) {
+	if (t->drv->event_handler && !t->drv->event_handler(t, ev)) {
 		return 0;
 	}
 

@@ -359,9 +359,11 @@ int dasm_key_handler(struct emui_tile *t, int key)
 		dasm_start = (dasm_start & 0xf000) + 0x1000;
 		return 0;
 	case '>':
+	case '.':
 		dasm_segment = (dasm_segment+1) & 0xf;
 		return 0;
 	case '<':
+	case ',':
 		dasm_segment = (dasm_segment-1) & 0xf;
 		return 0;
 	case '0':

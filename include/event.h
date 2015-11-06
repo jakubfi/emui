@@ -20,7 +20,6 @@
 
 enum event_types {
 	EV_QUIT,		// (queued) exit the main UI loop
-	EV_RESIZE,		// (queued) terminal resized
 	EV_KEY,			// (queued) key pressed
 	EV_ERROR,		// (queued) error
 };

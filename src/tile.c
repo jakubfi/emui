@@ -100,18 +100,14 @@ void emui_tile_update_geometry(struct emui_tile *t)
 int emui_tile_draw(struct emui_tile *t)
 {
 	// tile is hidden, nothing to do
-	if (t->properties & P_HIDDEN) {
+	if ((t->properties & P_HIDDEN) || !t->ncwin) {
 		return 1;
 	}
 
 	// clear ncurses window
-	if (t->ncwin) {
-		if (t->style) {
-			emuifillbg(t, t->style);
-		} else {
-			// this may be needed in the end
-			werase(t->ncwin);
-		}
+	werase(t->ncwin);
+	if (t->style) {
+		emuifillbg(t, t->style);
 	}
 
 	// if tile accepts content updates and user specified a handler,
@@ -123,8 +119,8 @@ int emui_tile_draw(struct emui_tile *t)
 	// draw the tile
 	if (t->drv->draw) t->drv->draw(t);
 
-	// update ncurses windows, but don't refresh
-	// (we'll do the update in emui_loop())
+	// update ncurses windows, but don't output
+	// (we will doupdate() in emui_loop())
 	wnoutrefresh(t->ncwin);
 
 	return 0;
