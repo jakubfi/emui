@@ -77,7 +77,6 @@ struct emui_tile_drv emui_screen_drv = {
 struct emui_tile * emui_screen()
 {
 	struct emui_tile *t = calloc(1, sizeof(struct emui_tile));
-	t->ncdeco = NULL;
 	t->ncwin = stdscr;
 	t->family = F_CONTAINER;
 	t->drv = &emui_screen_drv;

@@ -64,18 +64,15 @@ enum emui_tile_properties {
 	P_NONE			= 0,
 	// user-settable
 	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
-	P_NODECO		= 1 << 1,	// hide decoration
-	P_FOCUS_GROUP	= 1 << 2,	// tile is a root of focus group
+	P_FOCUS_GROUP	= 1 << 1,	// tile is a root of focus group
 	// internal
 	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
-	P_DECORATED		= 1 << 17,	// tile has decoration
-	P_GEOM_FORCED	= 1 << 18,	// tile geometry is forced by the parent
-	P_INTERACTIVE	= 1 << 19,	// user can interact with the tile (thus it can be focused)
+	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
+	P_INTERACTIVE	= 1 << 18,	// user can interact with the tile (thus it can be focused)
 };
 
 #define P_USER_SETTABLE 0xffff
 
-#define ACTIVE_DECO(t) (((t)->properties & (P_DECORATED | P_NODECO)) == P_DECORATED)
 #define IS_FOCUSABLE(t) (((t)->properties & (P_INTERACTIVE | P_HIDDEN)) == P_INTERACTIVE)
 
 struct emui_tile;
@@ -112,14 +109,12 @@ struct emui_tile {
 	int content_invalid;		// tile contents are invalid after last edit
 
 	// geometry
-	unsigned rx, ry, rw, rh;	// user-requested tile geometry including decoration (relative to parent's work area)
-	unsigned mt, mb, ml, mr;	// tile-requested margins for decoration
-	unsigned dx, dy, dw, dh;	// actual tile area including decoration
-	unsigned x, y, w, h;		// actual tile work area geometry (d* minus m*)
-	unsigned rmt, rmb, rml, rmr;// actual margins for decoration
+	unsigned rx, ry, rw, rh;	// user-requested tile geometry (relative to parent's internal work area)
+	unsigned mt, mb, ml, mr;	// tile-requested interior margins
+	unsigned dx, dy, dw, dh;	// actual external tile area
+	unsigned x, y, w, h;		// actual internal tile work area (d* minus m*)
 
 	// ncurses data
-	WINDOW *ncdeco;				// decoration ncurses window
 	WINDOW *ncwin;				// contents ncurses window
 
 	// UI hierarchical structure

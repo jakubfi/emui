@@ -18,23 +18,10 @@ int vemuiprt(struct emui_tile *t, int style, char *format, va_list vl)
 }
 
 // -----------------------------------------------------------------------
-int vemuidprt(struct emui_tile *t, int style, char *format, va_list vl)
-{
-	return __nc_vprint(t->ncdeco, style, format, vl);
-}
-
-// -----------------------------------------------------------------------
 int vemuixyprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl)
 {
 	wmove(t->ncwin, y, x);
 	return __nc_vprint(t->ncwin, style, format, vl);
-}
-
-// -----------------------------------------------------------------------
-int vemuixydprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl)
-{
-	wmove(t->ncdeco, y, x);
-	return __nc_vprint(t->ncdeco, style, format, vl);
 }
 
 // -----------------------------------------------------------------------
@@ -45,19 +32,6 @@ int emuiprt(struct emui_tile *t, int style, char *format, ...)
 
 	va_start(vl, format);
 	ret = __nc_vprint(t->ncwin, style, format, vl);
-	va_end(vl);
-
-	return ret;
-}
-
-// -----------------------------------------------------------------------
-int emuidprt(struct emui_tile *t, int style, char *format, ...)
-{
-	int ret;
-	va_list vl;
-
-	va_start(vl, format);
-	ret = __nc_vprint(t->ncdeco, style, format, vl);
 	va_end(vl);
 
 	return ret;
@@ -78,36 +52,16 @@ int emuixyprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *form
 }
 
 // -----------------------------------------------------------------------
-int emuixydprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, ...)
-{
-	int ret;
-	va_list vl;
-
-	va_start(vl, format);
-	wmove(t->ncdeco, y, x);
-	ret = __nc_vprint(t->ncdeco, style, format, vl);
-	va_end(vl);
-
-	return ret;
-}
-
-// -----------------------------------------------------------------------
 int emuixy(struct emui_tile *t, int x, int y)
 {
 	return wmove(t->ncwin, y, x);
 }
 
 // -----------------------------------------------------------------------
-int emuixyd(struct emui_tile *t, int x, int y)
+int emuibox(struct emui_tile *t, int style)
 {
-	return wmove(t->ncdeco, y, x);
-}
-
-// -----------------------------------------------------------------------
-int emuidbox(struct emui_tile *t, int style)
-{
-	wattrset(t->ncdeco, emui_style_get(style));
-	return box(t->ncdeco, 0, 0);
+	wattrset(t->ncwin, emui_style_get(style));
+	return box(t->ncwin, 0, 0);
 }
 
 // -----------------------------------------------------------------------

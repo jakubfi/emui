@@ -30,15 +30,13 @@ void emui_window_draw(struct emui_tile *t)
 	int title_style = S_TITLE_NN;
 	int frame_style = S_FRAME_NN;
 
-	if (ACTIVE_DECO(t)) {
-		if (emui_has_focus(t)) {
-			title_style = S_TITLE_FN;
-			frame_style = S_FRAME_FN;
-		}
-
-		emuidbox(t, frame_style);
-		emuixydprt(t, 2, 0, title_style, "[ %s ]", t->name);
+	if (emui_has_focus(t)) {
+		title_style = S_TITLE_FN;
+		frame_style = S_FRAME_FN;
 	}
+
+	emuibox(t, frame_style);
+	emuixyprt(t, 2, 0, title_style, "[ %s ]", t->name);
 }
 
 // -----------------------------------------------------------------------

@@ -28,12 +28,12 @@
 void emui_tabs_draw(struct emui_tile *t)
 {
 	struct emui_tile *ch = t->ch_first;
-	emuixyd(t, 0, 0);
+	emuixy(t, 0, 0);
 	while (ch) {
 		int style = S_TAB_NN;
 		if (emui_has_focus(ch)) style = S_TAB_FN;
 		// TODO: check if we have enough sapce
-		emuidprt(t, style, " %s ", ch->name);
+		emuiprt(t, style, " %s ", ch->name);
 		ch = ch->next;
 	}
 }

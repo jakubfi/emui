@@ -22,18 +22,13 @@
 #include <stdarg.h>
 
 int emuixy(struct emui_tile *t, int x, int y);
-int emuixyd(struct emui_tile *t, int x, int y);
 
 int emuiprt(struct emui_tile *t, int style, char *format, ...);
 int emuixyprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, ...);
 int vemuiprt(struct emui_tile *t, int style, char *format, va_list vl);
 int vemuixyprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl);
 
-int emuidprt(struct emui_tile *t, int style, char *format, ...);
-int emuixydprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, ...);
-int vemuidprt(struct emui_tile *t, int style, char *format, va_list vl);
-int vemuixydprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl);
-int emuidbox(struct emui_tile *t, int style);
+int emuibox(struct emui_tile *t, int style);
 int emuifillbg(struct emui_tile *t, int style);
 int emuihline(struct emui_tile *t, int x, int y, int len, int style);
 int emuivline(struct emui_tile *t, int x, int y, int len, int style);

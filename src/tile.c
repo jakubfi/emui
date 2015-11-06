@@ -34,7 +34,7 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		return;
 	}
 
-	// set decoration window geometry
+	// set external tile geometry
 	if (t->properties & P_GEOM_FORCED) {
 		if (t->properties & P_HIDDEN) {
 			// just leave, don't even try to unhide it
@@ -54,18 +54,6 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		t->dy = parent->y + t->ry;
 		t->dw = t->rw;
 		t->dh = t->rh;
-	}
-
-	if (t->properties & P_NODECO) {
-		t->mt = 0;
-		t->mb = 0;
-		t->ml = 0;
-		t->mr = 0;
-	} else {
-		t->mt = t->rmt;
-		t->mb = t->rmb;
-		t->ml = t->rml;
-		t->mr = t->rmr;
 	}
 
 	// hide tile if outside parent's area
@@ -88,7 +76,7 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		t->dh = parent->h - (t->dy - parent->y);
 	}
 
-	// set contents window geometry
+	// set internal tile geometry
 	t->x = t->dx + t->ml;
 	t->y = t->dy + t->mt;
 	t->w = t->dw - t->ml - t->mr;
@@ -102,22 +90,12 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		emui_tile_unhide(t);
 	}
 
-	// prepare decoration window
-	if (ACTIVE_DECO(t)) {
-		if (!t->ncdeco) {
-			t->ncdeco = newwin(t->dh, t->dw, t->dy, t->dx);
-		} else {
-			wresize(t->ncdeco, t->dh, t->dw);
-			mvwin(t->ncdeco, t->dy, t->dx);
-		}
-	}
-
-	// prepare contents widow
+	// prepare ncurses widow
 	if (!t->ncwin) {
-		t->ncwin = newwin(t->h, t->w, t->y, t->x);
+		t->ncwin = newwin(t->dh, t->dw, t->dy, t->dx);
 	} else {
-		wresize(t->ncwin, t->h, t->w);
-		mvwin(t->ncwin, t->y, t->x);
+		wresize(t->ncwin, t->dh, t->dw);
+		mvwin(t->ncwin, t->dy, t->dx);
 	}
 }
 
@@ -129,16 +107,13 @@ int emui_tile_draw(struct emui_tile *t)
 		return 1;
 	}
 
-	// clear ncurses windows
-	if (t->ncdeco) {
-		werase(t->ncdeco);
-	}
+	// clear ncurses window
 	if (t->ncwin) {
 		if (t->style) {
 			emuifillbg(t, t->style);
 		} else {
 			// this may be needed in the end
-			//werase(t->ncwin);
+			werase(t->ncwin);
 		}
 	}
 
@@ -153,9 +128,6 @@ int emui_tile_draw(struct emui_tile *t)
 
 	// update ncurses windows, but don't refresh
 	// (we'll do the update in emui_loop())
-	if (ACTIVE_DECO(t)) {
-		wnoutrefresh(t->ncdeco);
-	}
 	wnoutrefresh(t->ncwin);
 
 	return 0;
@@ -205,14 +177,10 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 	t->rh = h;
 	t->rw = w;
 
-	t->rmt = mt;
-	t->rmb = mb;
-	t->rml = ml;
-	t->rmr = mr;
-
-	if (mt || mb || ml || mr) {
-		t->properties |= P_DECORATED;
-	}
+	t->mt = mt;
+	t->mb = mb;
+	t->ml = ml;
+	t->mr = mr;
 
 	emui_tile_child_append(parent, t);
 	emui_tile_update_geometry(t);
@@ -320,9 +288,6 @@ static void emui_tile_free(struct emui_tile *t)
 
 	// free ncurses windows
 	delwin(t->ncwin);
-	if (t->ncdeco) {
-		delwin(t->ncdeco);
-	}
 
 	free(t);
 }
