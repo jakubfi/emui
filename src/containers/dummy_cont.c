@@ -26,11 +26,6 @@ void emui_dummy_cont_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_dummy_cont_debug(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 int emui_dummy_cont_update_geometry(struct emui_tile *t)
 {
 	return 0;
@@ -51,7 +46,6 @@ void emui_dummy_cont_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_dummy_cont_drv = {
 	.draw = emui_dummy_cont_draw,
-	.debug = emui_dummy_cont_debug,
 	.update_geometry = emui_dummy_cont_update_geometry,
 	.event_handler = emui_dummy_cont_event_handler,
 	.destroy_priv_data = emui_dummy_cont_destroy_priv_data,

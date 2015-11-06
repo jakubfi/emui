@@ -28,11 +28,6 @@ void emui_screen_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_screen_debug(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 int emui_screen_update_geometry(struct emui_tile *t)
 {
 	// handle resize here, because if terminal is resized quickly enough,
@@ -73,7 +68,6 @@ void emui_screen_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_screen_drv = {
 	.draw = emui_screen_draw,
-	.debug = emui_screen_debug,
 	.update_geometry = emui_screen_update_geometry,
 	.event_handler = emui_screen_event_handler,
 	.destroy_priv_data = emui_screen_destroy_priv_data,

@@ -27,11 +27,6 @@ void emui_justifier_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_justifier_debug(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 int emui_justifier_update_geometry(struct emui_tile *t)
 {
 	int ch_width = -1;
@@ -91,7 +86,6 @@ void emui_justifier_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_justifier_drv = {
 	.draw = emui_justifier_draw,
-	.debug = emui_justifier_debug,
 	.update_geometry = emui_justifier_update_geometry,
 	.event_handler = emui_justifier_event_handler,
 	.destroy_priv_data = emui_justifier_destroy_priv_data,

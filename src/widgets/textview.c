@@ -52,11 +52,6 @@ void emui_textview_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_textview_debug(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 int emui_textview_update_geometry(struct emui_tile *t)
 {
 	return 0;
@@ -144,7 +139,6 @@ void emui_textview_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_textview_drv = {
 	.draw = emui_textview_draw,
-	.debug = emui_textview_debug,
 	.update_geometry = emui_textview_update_geometry,
 	.event_handler = emui_textview_event_handler,
 	.destroy_priv_data = emui_textview_destroy_priv_data,

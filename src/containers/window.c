@@ -42,12 +42,6 @@ void emui_window_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_window_debug(struct emui_tile *t)
-{
-	mvwprintw(t->ncwin, 0, 0, "Sample content");
-}
-
-// -----------------------------------------------------------------------
 int emui_window_update_geometry(struct emui_tile *t)
 {
 	return 0;
@@ -68,7 +62,6 @@ void emui_window_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_window_drv = {
 	.draw = emui_window_draw,
-	.debug = emui_window_debug,
 	.update_geometry = emui_window_update_geometry,
 	.event_handler = emui_window_event_handler,
 	.destroy_priv_data = emui_window_destroy_priv_data,

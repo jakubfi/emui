@@ -24,8 +24,6 @@
 #include "focus.h"
 #include "print.h"
 
-static int emui_tile_debug_mode = 0;
-
 // -----------------------------------------------------------------------
 void emui_tile_update_geometry(struct emui_tile *t)
 {
@@ -124,70 +122,6 @@ void emui_tile_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-static void emui_tile_debug(struct emui_tile *t)
-{
-	int x, y;
-	WINDOW *win;
-	char buf[256];
-	attr_t attr_old;
-	short colorpair_old;
-
-	if (t->family == F_WIDGET) {
-		if (t->drv->debug) t->drv->debug(t);
-		return;
-	}
-
-	// format debug string
-	buf[255] = '\0';
-	snprintf(buf, 256, "d:%i,%i/%ix%i %i,%i/%ix%i%s%s%s%s%s%s%s %s",
-		t->dx,
-		t->dy,
-		t->dw,
-		t->dh,
-		t->x,
-		t->y,
-		t->w,
-		t->h,
-		emui_has_focus(t) ? (emui_is_focused(t) ? "*" : "+") : " ",
-		t->properties & P_MAXIMIZED ? "M" : "",
-		t->properties & P_HIDDEN ? "H"  : "",
-		t->properties & P_GEOM_FORCED ? "F" : "",
-		t->properties & P_FOCUS_GROUP ? "G" : "",
-		t->properties & P_INTERACTIVE ? "I" : "",
-		t->properties & P_DECORATED ? "D" : "",
-		t->name
-	);
-
-	// find a possibly free space to print
-	x = t->w - strlen(buf);
-	if (x < 0) x = 0;
-	// no decoration space
-	if (!t->ncdeco) {
-		y = t->h - 1;
-		win = t->ncwin;
-	// bottom decoration
-	} else if (t->mb) {
-		y = t->dh - 1;
-		win = t->ncdeco;
-	// top decoration
-	} else if (t->mt) {
-		y = 0;
-		win = t->ncdeco;
-	// only left or right decoration
-	} else {
-		y = t->h - 1;
-		win = t->ncwin;
-	}
-
-	wattr_get(win, &attr_old, &colorpair_old, NULL);
-	wattrset(win, emui_style_get(S_DEBUG));
-	mvwprintw(win, y, x, "%s", buf);
-	wattrset(win, colorpair_old | attr_old);
-
-	if (t->drv->debug) t->drv->debug(t);
-}
-
-// -----------------------------------------------------------------------
 int emui_tile_draw(struct emui_tile *t)
 {
 	// tile is hidden, nothing to do
@@ -216,11 +150,6 @@ int emui_tile_draw(struct emui_tile *t)
 
 	// draw the tile
 	t->drv->draw(t);
-
-	// print debug information
-	if (emui_tile_debug_mode) {
-		emui_tile_debug(t);
-	}
 
 	// update ncurses windows, but don't refresh
 	// (we'll do the update in emui_loop())
@@ -452,12 +381,6 @@ void emui_tile_unhide(struct emui_tile *t)
 		emui_tile_unhide(t);
 		t = t->next;
 	}
-}
-
-// -----------------------------------------------------------------------
-void emui_tile_debug_set(int i)
-{
-	emui_tile_debug_mode = i;
 }
 
 // -----------------------------------------------------------------------

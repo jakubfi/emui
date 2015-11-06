@@ -34,11 +34,6 @@ void emui_W_NAME_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_W_NAME_debug(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 int emui_W_NAME_update_geometry(struct emui_tile *t)
 {
 	return 0;
@@ -60,7 +55,6 @@ void emui_W_NAME_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_W_NAME_drv = {
 	.draw = emui_W_NAME_draw,
-	.debug = emui_W_NAME_debug,
 	.update_geometry = emui_W_NAME_update_geometry,
 	.event_handler = emui_W_NAME_event_handler,
 	.destroy_priv_data = emui_W_NAME_destroy_priv_data,

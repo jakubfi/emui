@@ -40,11 +40,6 @@ void emui_line_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_line_debug(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 int emui_line_update_geometry(struct emui_tile *t)
 {
 	return 0;
@@ -66,7 +61,6 @@ void emui_line_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_line_drv = {
 	.draw = emui_line_draw,
-	.debug = emui_line_debug,
 	.update_geometry = emui_line_update_geometry,
 	.event_handler = emui_line_event_handler,
 	.destroy_priv_data = emui_line_destroy_priv_data,

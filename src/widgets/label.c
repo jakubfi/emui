@@ -54,16 +54,6 @@ void emui_label_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_label_debug(struct emui_tile *t)
-{
-	if (emui_is_focused(t)) {
-		emuixyprt(t, 0, 0, S_DEBUG, "*");
-	} else if (emui_has_focus(t)) {
-		emuixyprt(t, 0, 0, S_DEBUG, "+");
-	}
-}
-
-// -----------------------------------------------------------------------
 int emui_label_update_geometry(struct emui_tile *t)
 {
 	return 0;
@@ -87,7 +77,6 @@ void emui_label_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_label_drv = {
 	.draw = emui_label_draw,
-	.debug = emui_label_debug,
 	.update_geometry = emui_label_update_geometry,
 	.event_handler = emui_label_event_handler,
 	.destroy_priv_data = emui_label_destroy_priv_data,

@@ -93,7 +93,6 @@ typedef int (*emui_key_handler_f)(struct emui_tile *t, int key);
 
 struct emui_tile_drv {
 	emui_draw_f draw;
-	emui_draw_f debug;
 	emui_update_geometry_f update_geometry;
 	emui_event_handler_f event_handler;
 	emui_destroy_priv_data_f destroy_priv_data;
@@ -150,7 +149,6 @@ struct emui_tile {
 
 struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
 void emui_tile_destroy(struct emui_tile *t);
-void emui_tile_debug_set(int i);
 
 void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t);
 void emui_tile_child_remove(struct emui_tile *parent, struct emui_tile *t);

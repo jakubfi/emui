@@ -460,7 +460,6 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 // -----------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-	//emui_tile_debug_set(1);
 	for (int seg=0 ; seg<16 ; seg++) {
 
 	}
