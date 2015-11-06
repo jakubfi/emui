@@ -241,7 +241,7 @@ void emui_lineedit_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_lineedit_drv = {
 	.draw = emui_lineedit_draw,
-	.update_geometry = NULL,
+	.update_children_geometry = NULL,
 	.event_handler = emui_lineedit_event_handler,
 	.destroy_priv_data = emui_lineedit_destroy_priv_data,
 };

@@ -69,7 +69,7 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_justifier_drv = {
 	.draw = NULL,
-	.update_geometry = emui_justifier_update_geometry,
+	.update_children_geometry = emui_justifier_update_geometry,
 	.event_handler = NULL,
 	.destroy_priv_data = NULL,
 };

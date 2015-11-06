@@ -33,7 +33,7 @@ void emui_framecounter_draw(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_framecounter_drv = {
 	.draw = emui_framecounter_draw,
-	.update_geometry = NULL,
+	.update_children_geometry = NULL,
 	.event_handler = NULL,
 	.destroy_priv_data = NULL,
 };

@@ -64,7 +64,7 @@ void emui_label_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_label_drv = {
 	.draw = emui_label_draw,
-	.update_geometry = NULL,
+	.update_children_geometry = NULL,
 	.event_handler = NULL,
 	.destroy_priv_data = emui_label_destroy_priv_data,
 };

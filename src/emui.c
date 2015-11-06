@@ -137,10 +137,10 @@ static void emui_draw(struct emui_tile *t, int force)
 	// do we need to update tile geometry?
 	int geometry_update = (t->geometry_changed || force);
 	if (geometry_update) {
-		// update common tile geometry stuff
+		// update tile geometry
 		emui_tile_update_geometry(t);
-		// do tile-specific geometry updates
-		if (t->drv->update_geometry) t->drv->update_geometry(t);
+		// do tile-specific children geometry updates
+		if (t->drv->update_children_geometry) t->drv->update_children_geometry(t);
 		t->geometry_changed = 0;
 	}
 

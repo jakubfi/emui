@@ -23,7 +23,7 @@
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_dummy_cont_drv = {
 	.draw = NULL,
-	.update_geometry = NULL,
+	.update_children_geometry = NULL,
 	.event_handler = NULL,
 	.destroy_priv_data = NULL,
 };

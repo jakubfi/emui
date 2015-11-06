@@ -76,7 +76,7 @@ void emui_grid_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_grid_drv = {
 	.draw = NULL,
-	.update_geometry = emui_grid_update_geometry,
+	.update_children_geometry = emui_grid_update_geometry,
 	.event_handler = NULL,
 	.destroy_priv_data = emui_grid_destroy_priv_data,
 };

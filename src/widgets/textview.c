@@ -133,7 +133,7 @@ void emui_textview_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_textview_drv = {
 	.draw = emui_textview_draw,
-	.update_geometry = NULL,
+	.update_children_geometry = NULL,
 	.event_handler = emui_textview_event_handler,
 	.destroy_priv_data = emui_textview_destroy_priv_data,
 };

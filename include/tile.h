@@ -90,7 +90,7 @@ typedef int (*emui_key_handler_f)(struct emui_tile *t, int key);
 
 struct emui_tile_drv {
 	emui_draw_f draw;
-	emui_update_geometry_f update_geometry;
+	emui_update_geometry_f update_children_geometry;
 	emui_event_handler_f event_handler;
 	emui_destroy_priv_data_f destroy_priv_data;
 };

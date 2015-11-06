@@ -49,7 +49,7 @@ int emui_screen_event_handler(struct emui_tile *t, struct emui_event *ev)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_screen_drv = {
 	.draw = NULL,
-	.update_geometry = NULL,
+	.update_children_geometry = NULL,
 	.event_handler = emui_screen_event_handler,
 	.destroy_priv_data = NULL,
 };

@@ -41,7 +41,7 @@ void emui_tabs_draw(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_tabs_drv = {
 	.draw = emui_tabs_draw,
-	.update_geometry = NULL,
+	.update_children_geometry = NULL,
 	.event_handler = NULL,
 	.destroy_priv_data = NULL,
 };
