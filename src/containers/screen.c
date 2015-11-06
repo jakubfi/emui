@@ -23,31 +23,22 @@
 #include "event.h"
 
 // -----------------------------------------------------------------------
-int emui_screen_update_geometry(struct emui_tile *t)
+static void _screen_update_geometry(struct emui_tile *t)
 {
-	// handle resize here, because if terminal is resized quickly enough,
-	// window size may change more during resize event, leaving UI
-	// not fully scaled to the terminal size
-	t->x = t->rx = t->dx = 0;
-	t->y = t->ry = t->dy = 0;
-	t->mr = t->ml = t->mt = t->mb = 0;
 	// it seems that getmaxyx() without preceding wrefresh() can sometimes
 	// spit wrong numbers after screen resize
 	wrefresh(t->ncwin);
 	getmaxyx(t->ncwin, t->dh, t->dw);
 	t->h = t->rh = t->dh;
 	t->w = t->rw = t->dw;
-
-	return 0;
+	t->geometry_changed = 1;
 }
 
 // -----------------------------------------------------------------------
 int emui_screen_event_handler(struct emui_tile *t, struct emui_event *ev)
 {
 	if (ev->type == EV_RESIZE) {
-		// handle resize here, so if terminal is resized when fps is low,
-		// UI reacts quickly
-		t->geometry_changed = 1;
+		_screen_update_geometry(t);
 		return 0;
 	}
 
@@ -58,7 +49,7 @@ int emui_screen_event_handler(struct emui_tile *t, struct emui_event *ev)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_screen_drv = {
 	.draw = NULL,
-	.update_geometry = emui_screen_update_geometry,
+	.update_geometry = NULL,
 	.event_handler = emui_screen_event_handler,
 	.destroy_priv_data = NULL,
 };
@@ -73,8 +64,10 @@ struct emui_tile * emui_screen()
 	t->name = strdup("SCREEN");
 	t->properties = P_FOCUS_GROUP;
 	t->id = -1;
-
-	emui_screen_update_geometry(t);
+	t->x = t->rx = t->dx = 0;
+	t->y = t->ry = t->dy = 0;
+	t->mr = t->ml = t->mt = t->mb = 0;
+	_screen_update_geometry(t);
 
 	return t;
 }
