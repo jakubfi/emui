@@ -124,7 +124,7 @@ int emui_tile_draw(struct emui_tile *t)
 	}
 
 	// draw the tile
-	t->drv->draw(t);
+	if (t->drv->draw) t->drv->draw(t);
 
 	// update ncurses windows, but don't refresh
 	// (we'll do the update in emui_loop())
@@ -283,7 +283,7 @@ void emui_tile_child_unlink(struct emui_tile *t)
 // -----------------------------------------------------------------------
 static void emui_tile_free(struct emui_tile *t)
 {
-	t->drv->destroy_priv_data(t);
+	if (t->drv->destroy_priv_data) t->drv->destroy_priv_data(t);
 	free(t->name);
 
 	// free ncurses windows

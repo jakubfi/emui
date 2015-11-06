@@ -30,11 +30,6 @@ struct splitter {
 };
 
 // -----------------------------------------------------------------------
-void emui_splitter_draw(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 static inline void fit(int space, int min1, int max1, int min2, int *size1, int *size2)
 {
 	// translate "special" requirements to actual lengths
@@ -144,13 +139,6 @@ int emui_splitter_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_splitter_event_handler(struct emui_tile *t, struct emui_event *ev)
-{
-	// event has not been handled
-	return 1;
-}
-
-// -----------------------------------------------------------------------
 void emui_splitter_destroy_priv_data(struct emui_tile *t)
 {
 	free(t->priv_data);
@@ -158,9 +146,9 @@ void emui_splitter_destroy_priv_data(struct emui_tile *t)
 
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_splitter_drv = {
-	.draw = emui_splitter_draw,
+	.draw = NULL,
 	.update_geometry = emui_splitter_update_geometry,
-	.event_handler = emui_splitter_event_handler,
+	.event_handler = NULL,
 	.destroy_priv_data = emui_splitter_destroy_priv_data,
 };
 

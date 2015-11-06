@@ -140,7 +140,7 @@ static void emui_draw(struct emui_tile *t, int force)
 		// update common tile geometry stuff
 		emui_tile_update_geometry(t);
 		// do tile-specific geometry updates
-		t->drv->update_geometry(t);
+		if (t->drv->update_geometry) t->drv->update_geometry(t);
 		t->geometry_changed = 0;
 	}
 
@@ -301,7 +301,7 @@ static int emui_process_event(struct emui_event *ev)
 	struct emui_tile *t = emui_focus_get();
 
 	// resize goes straight to the top tile
-	if ((ev->type == EV_RESIZE) && !layout->drv->event_handler(layout, ev)) {
+	if ((ev->type == EV_RESIZE) && layout->drv->event_handler && !layout->drv->event_handler(layout, ev)) {
 		return 0;
 	}
 
@@ -319,7 +319,7 @@ static int emui_process_event(struct emui_event *ev)
 	}
 
 	// run tile's own event handler
-	if (!t->drv->event_handler(t, ev)) {
+	if (layout->drv->event_handler && !t->drv->event_handler(t, ev)) {
 		return 0;
 	}
 

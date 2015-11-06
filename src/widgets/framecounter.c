@@ -31,29 +31,11 @@ void emui_framecounter_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_framecounter_update_geometry(struct emui_tile *t)
-{
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int emui_framecounter_event_handler(struct emui_tile *t, struct emui_event *ev)
-{
-	// event has not been handled
-	return 1;
-}
-
-// -----------------------------------------------------------------------
-void emui_framecounter_destroy_priv_data(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 struct emui_tile_drv emui_framecounter_drv = {
 	.draw = emui_framecounter_draw,
-	.update_geometry = emui_framecounter_update_geometry,
-	.event_handler = emui_framecounter_event_handler,
-	.destroy_priv_data = emui_framecounter_destroy_priv_data,
+	.update_geometry = NULL,
+	.event_handler = NULL,
+	.destroy_priv_data = NULL,
 };
 
 // -----------------------------------------------------------------------

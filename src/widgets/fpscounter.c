@@ -49,19 +49,6 @@ void emui_fpscounter_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_fpscounter_update_geometry(struct emui_tile *t)
-{
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int emui_fpscounter_event_handler(struct emui_tile *t, struct emui_event *ev)
-{
-	// event has not been handled
-	return 1;
-}
-
-// -----------------------------------------------------------------------
 void emui_fpscounter_destroy_priv_data(struct emui_tile *t)
 {
 	free(t->priv_data);
@@ -70,8 +57,8 @@ void emui_fpscounter_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_fpscounter_drv = {
 	.draw = emui_fpscounter_draw,
-	.update_geometry = emui_fpscounter_update_geometry,
-	.event_handler = emui_fpscounter_event_handler,
+	.update_geometry = NULL,
+	.event_handler = NULL,
 	.destroy_priv_data = emui_fpscounter_destroy_priv_data,
 };
 

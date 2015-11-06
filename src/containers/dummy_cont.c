@@ -21,34 +21,11 @@
 #include "event.h"
 
 // -----------------------------------------------------------------------
-void emui_dummy_cont_draw(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
-int emui_dummy_cont_update_geometry(struct emui_tile *t)
-{
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int emui_dummy_cont_event_handler(struct emui_tile *t, struct emui_event *ev)
-{   
-	// event has not been handled
-	return 1;
-}
-
-// -----------------------------------------------------------------------
-void emui_dummy_cont_destroy_priv_data(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 struct emui_tile_drv emui_dummy_cont_drv = {
-	.draw = emui_dummy_cont_draw,
-	.update_geometry = emui_dummy_cont_update_geometry,
-	.event_handler = emui_dummy_cont_event_handler,
-	.destroy_priv_data = emui_dummy_cont_destroy_priv_data,
+	.draw = NULL,
+	.update_geometry = NULL,
+	.event_handler = NULL,
+	.destroy_priv_data = NULL,
 };
 
 // -----------------------------------------------------------------------

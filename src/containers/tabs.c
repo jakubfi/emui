@@ -39,29 +39,11 @@ void emui_tabs_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_tabs_update_geometry(struct emui_tile *t)
-{
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int emui_tabs_event_handler(struct emui_tile *t, struct emui_event *ev)
-{
-	// event has not been handled
-	return 1;
-}
-
-// -----------------------------------------------------------------------
-void emui_tabs_destroy_priv_data(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 struct emui_tile_drv emui_tabs_drv = {
 	.draw = emui_tabs_draw,
-	.update_geometry = emui_tabs_update_geometry,
-	.event_handler = emui_tabs_event_handler,
-	.destroy_priv_data = emui_tabs_destroy_priv_data,
+	.update_geometry = NULL,
+	.event_handler = NULL,
+	.destroy_priv_data = NULL,
 };
 
 // -----------------------------------------------------------------------

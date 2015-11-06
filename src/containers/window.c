@@ -40,29 +40,11 @@ void emui_window_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_window_update_geometry(struct emui_tile *t)
-{
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int emui_window_event_handler(struct emui_tile *t, struct emui_event *ev)
-{
-	// event has not been handled
-	return 1;
-}
-
-// -----------------------------------------------------------------------
-void emui_window_destroy_priv_data(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 struct emui_tile_drv emui_window_drv = {
 	.draw = emui_window_draw,
-	.update_geometry = emui_window_update_geometry,
-	.event_handler = emui_window_event_handler,
-	.destroy_priv_data = emui_window_destroy_priv_data,
+	.update_geometry = NULL,
+	.event_handler = NULL,
+	.destroy_priv_data = NULL,
 };
 
 // -----------------------------------------------------------------------

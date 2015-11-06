@@ -85,12 +85,6 @@ void emui_lineedit_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_lineedit_update_geometry(struct emui_tile *t)
-{
-	return 0;
-}
-
-// -----------------------------------------------------------------------
 void emui_lineedit_mode(struct emui_tile *t, int mode)
 {
 	struct lineedit *le = t->priv_data;
@@ -247,7 +241,7 @@ void emui_lineedit_destroy_priv_data(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_lineedit_drv = {
 	.draw = emui_lineedit_draw,
-	.update_geometry = emui_lineedit_update_geometry,
+	.update_geometry = NULL,
 	.event_handler = emui_lineedit_event_handler,
 	.destroy_priv_data = emui_lineedit_destroy_priv_data,
 };

@@ -29,11 +29,6 @@ struct grid {
 };
 
 // -----------------------------------------------------------------------
-void emui_grid_draw(struct emui_tile *t)
-{
-}
-
-// -----------------------------------------------------------------------
 int emui_grid_update_geometry(struct emui_tile *t)
 {
 	struct grid *d = t->priv_data;
@@ -73,13 +68,6 @@ int emui_grid_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_grid_event_handler(struct emui_tile *t, struct emui_event *ev)
-{
-	// event has not been handled
-	return 1;
-}
-
-// -----------------------------------------------------------------------
 void emui_grid_destroy_priv_data(struct emui_tile *t)
 {
 	free(t->priv_data);
@@ -87,9 +75,9 @@ void emui_grid_destroy_priv_data(struct emui_tile *t)
 
 // -----------------------------------------------------------------------
 struct emui_tile_drv emui_grid_drv = {
-	.draw = emui_grid_draw,
+	.draw = NULL,
 	.update_geometry = emui_grid_update_geometry,
-	.event_handler = emui_grid_event_handler,
+	.event_handler = NULL,
 	.destroy_priv_data = emui_grid_destroy_priv_data,
 };
 
