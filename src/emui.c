@@ -38,7 +38,7 @@ SCREEN *s;
 static struct emui_tile *layout;
 
 static int emui_fps;
-static long emui_frame;
+static long emui_frame_no;
 long emui_ft;
 
 // -----------------------------------------------------------------------
@@ -222,7 +222,7 @@ static void emui_update_screen()
 {
 	emui_draw(layout, 0);
 	doupdate();
-	emui_frame++;
+	emui_frame_no++;
 }
 
 // -----------------------------------------------------------------------
@@ -394,7 +394,7 @@ unsigned emui_get_fps()
 // -----------------------------------------------------------------------
 long emui_get_frame()
 {
-	return emui_frame;
+	return emui_frame_no;
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent

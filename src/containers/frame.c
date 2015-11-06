@@ -25,7 +25,7 @@
 #include "focus.h"
 
 // -----------------------------------------------------------------------
-void emui_window_draw(struct emui_tile *t)
+void emui_frame_draw(struct emui_tile *t)
 {
 	int title_style = S_TITLE_NN;
 	int frame_style = S_FRAME_NN;
@@ -40,19 +40,19 @@ void emui_window_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_window_drv = {
-	.draw = emui_window_draw,
+struct emui_tile_drv emui_frame_drv = {
+	.draw = emui_frame_draw,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
 	.destroy_priv_data = NULL,
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_window(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties)
+struct emui_tile * emui_frame(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties)
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, -1, &emui_window_drv, F_WINDOW, x, y, w, h, 1, 1, 1, 1, name, P_FOCUS_GROUP);
+	t = emui_tile_create(parent, -1, &emui_frame_drv, F_WINDOW, x, y, w, h, 1, 1, 1, 1, name, P_FOCUS_GROUP);
 
 	emui_tile_set_properties(t, properties);
 

@@ -1,7 +1,7 @@
 add_library(containers
 	screen.c
 	dummy_cont.c
-	window.c
+	frame.c
 	tabs.c
 	splitter.c
 	justifier.c
