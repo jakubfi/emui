@@ -27,11 +27,18 @@
 // -----------------------------------------------------------------------
 void emui_tile_update_geometry(struct emui_tile *t)
 {
-	struct emui_tile *parent = t->parent;
+	struct emui_geom pg;
 
-	if (!parent) {
+	if (!t->parent) {
 		// nothing to do for the root tile (screen)
 		return;
+	}
+
+	// select which parent geometry (external or internal) to use
+	if (t->properties & P_IGNORE_MARGINS) {
+		pg = t->parent->e;
+	} else {
+		pg = t->parent->i;
 	}
 
 	// set external tile geometry
@@ -41,36 +48,32 @@ void emui_tile_update_geometry(struct emui_tile *t)
 			return;
 		} else {
 			// nothing to do here
-			// dx, dy, dw, dh should be set by the parent already
+			// e->* should be set by the parent already
 		}
 	} else if (t->properties & P_MAXIMIZED) {
 		// tile is maximized - use all available parent's area
-		t->dx = parent->x;
-		t->dy = parent->y;
-		t->dw = parent->w;
-		t->dh = parent->h;
+		t->e = pg;
 	} else {
-		t->dx = parent->x + t->rx;
-		t->dy = parent->y + t->ry;
-		t->dw = t->rw;
-		t->dh = t->rh;
+		t->e = t->r;
+		t->e.x += pg.x;
+		t->e.y += pg.y;
 	}
 
 	// fit tile width to parent's width
-	if (t->dw + t->dx > parent->w + parent->x) {
-		t->dw = parent->w - (t->dx - parent->x);
+	if (t->e.w + t->e.x > pg.w + pg.x) {
+		t->e.w = pg.w - (t->e.x - pg.x);
 	}
 
 	// fit tile to parent's height
-	if (t->dh + t->dy > parent->h + parent->y) {
-		t->dh = parent->h - (t->dy - parent->y);
+	if (t->e.h + t->e.y > pg.h + pg.y) {
+		t->e.h = pg.h - (t->e.y - pg.y);
 	}
 
 	if (
 		// hide if no space for contents
-		((t->dw <= t->ml+t->mr) || (t->dh <= t->mt+t->mb))
+		((t->e.w <= t->ml+t->mr) || (t->e.h <= t->mt+t->mb))
 		// hide tile if outside parent's area
-		|| ((t->dx >= parent->x + parent->w) || (t->dy >= parent->y + parent->h))
+		|| ((t->e.x >= pg.x + pg.w) || (t->e.y >= pg.y + pg.h))
 	) {
 		emui_tile_hide(t);
 		return;
@@ -79,17 +82,17 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	}
 
 	// set internal tile geometry
-	t->x = t->dx + t->ml;
-	t->y = t->dy + t->mt;
-	t->w = t->dw - t->ml - t->mr;
-	t->h = t->dh - t->mt - t->mb;
+	t->i.x = t->e.x + t->ml;
+	t->i.y = t->e.y + t->mt;
+	t->i.w = t->e.w - t->ml - t->mr;
+	t->i.h = t->e.h - t->mt - t->mb;
 
-	// prepare ncurses widow
+	// prepare ncurses window
 	if (!t->ncwin) {
-		t->ncwin = newwin(t->dh, t->dw, t->dy, t->dx);
+		t->ncwin = newwin(t->e.h, t->e.w, t->e.y, t->e.x);
 	} else {
-		wresize(t->ncwin, t->dh, t->dw);
-		mvwin(t->ncwin, t->dy, t->dx);
+		wresize(t->ncwin, t->e.h, t->e.w);
+		mvwin(t->ncwin, t->e.y, t->e.x);
 	}
 }
 
@@ -166,10 +169,10 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 	t->id = id;
 	t->accept_updates = 1;
 
-	t->rx = x;
-	t->ry = y;
-	t->rh = h;
-	t->rw = w;
+	t->r.x = x;
+	t->r.y = y;
+	t->r.h = h;
+	t->r.w = w;
 
 	t->mt = mt;
 	t->mb = mb;

@@ -64,24 +64,24 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 	while (f) {
 		if (IS_FOCUSABLE(f)) {
 
-			dist = _distance(t->x+t->w/2, t->y+t->h/2, f->x+f->w/2, f->y+f->h/2);
+			dist = _distance(t->i.x+t->i.w/2, t->i.y+t->i.h/2, f->i.x+f->i.w/2, f->i.y+f->i.h/2);
 
 			switch (dir) {
 				case FC_UP:
-					dd = t->y - f->y - f->h;
-					ovrl = _overlap(t->x, t->x + t->w, f->x, f->x + f->w);
+					dd = t->i.y - f->i.y - f->i.h;
+					ovrl = _overlap(t->i.x, t->i.x + t->i.w, f->i.x, f->i.x + f->i.w);
 					break;
 				case FC_DOWN:
-					dd = f->y - t->y - t->h;
-					ovrl = _overlap(t->x, t->x + t->w, f->x, f->x + f->w);
+					dd = f->i.y - t->i.y - t->i.h;
+					ovrl = _overlap(t->i.x, t->i.x + t->i.w, f->i.x, f->i.x + f->i.w);
 					break;
 				case FC_LEFT:
-					dd = t->x - f->x - f->w;
-					ovrl = _overlap(t->y, t->y + t->h, f->y, f->y + f->h);
+					dd = t->i.x - f->i.x - f->i.w;
+					ovrl = _overlap(t->i.y, t->i.y + t->i.h, f->i.y, f->i.y + f->i.h);
 					break;
 				case FC_RIGHT:
-					dd = f->x - t->x - t->w;
-					ovrl = _overlap(t->y, t->y + t->h, f->y, f->y + f->h);
+					dd = f->i.x - t->i.x - t->i.w;
+					ovrl = _overlap(t->i.y, t->i.y + t->i.h, f->i.y, f->i.y + f->i.h);
 					break;
 				default:
 					return 0; // unknown or incompatibile direction

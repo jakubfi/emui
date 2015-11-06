@@ -28,9 +28,9 @@ static void _screen_update_geometry(struct emui_tile *t)
 	// it seems that getmaxyx() without preceding wrefresh() can sometimes
 	// spit wrong numbers after screen resize
 	wrefresh(t->ncwin);
-	getmaxyx(t->ncwin, t->dh, t->dw);
-	t->h = t->rh = t->dh;
-	t->w = t->rw = t->dw;
+	getmaxyx(t->ncwin, t->e.h, t->e.w);
+	t->i.h = t->r.h = t->e.h;
+	t->i.w = t->r.w = t->e.w;
 	t->geometry_changed = 1;
 }
 
@@ -64,8 +64,8 @@ struct emui_tile * emui_screen()
 	t->name = strdup("SCREEN");
 	t->properties = P_FOCUS_GROUP;
 	t->id = -1;
-	t->x = t->rx = t->dx = 0;
-	t->y = t->ry = t->dy = 0;
+	t->i.x = t->r.x = t->e.x = 0;
+	t->i.y = t->r.y = t->e.y = 0;
 	t->mr = t->ml = t->mt = t->mb = 0;
 	_screen_update_geometry(t);
 

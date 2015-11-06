@@ -33,9 +33,9 @@ void emui_line_draw(struct emui_tile *t)
 	struct line *d = t->priv_data;
 
 	if (d->align == AL_HORIZONTAL) {
-		emuihline(t, 0, 0, t->w, t->style);
+		emuihline(t, 0, 0, t->i.w, t->style);
 	} else if (d->align == AL_VERTICAL) {
-		emuivline(t, 0, 0, t->h, t->style);
+		emuivline(t, 0, 0, t->i.h, t->style);
 	}
 }
 

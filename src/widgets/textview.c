@@ -44,7 +44,7 @@ void emui_textview_draw(struct emui_tile *t)
 	int lines = 0;
 	emuixy(t, 0, 0);
 
-	while (c && lines < t->h) {
+	while (c && lines < t->i.h) {
 		lines += c->lines;
 		emuiprt(t, c->style, "%s", c->txt);
 		c = c->next;
@@ -90,7 +90,7 @@ int emui_textview_event_handler(struct emui_tile *t, struct emui_event *ev)
 				return 0;
 			case KEY_PPAGE:
 				if (c) {
-					while (c && (lines < t->h-1)) {
+					while (c && (lines < t->i.h-1)) {
 						lines += c->lines;
 						c = c->prev;
 					}
@@ -103,7 +103,7 @@ int emui_textview_event_handler(struct emui_tile *t, struct emui_event *ev)
 				return 0;
 			case KEY_NPAGE:
 				if (c) {
-					while (c && (lines < t->h-1)) {
+					while (c && (lines < t->i.h-1)) {
 						lines += c->lines;
 						c = c->next;
 					}

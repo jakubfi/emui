@@ -49,7 +49,7 @@ struct emui_tile_drv emui_tabs_drv = {
 // -----------------------------------------------------------------------
 struct emui_tile * emui_tabs(struct emui_tile *parent)
 {
-	struct emui_tile *t = emui_tile_create(parent, -1, &emui_tabs_drv, F_CONTAINER, 0, 0, parent->w, parent->h, 1, 0, 0, 0, "Tabs", P_MAXIMIZED | P_FOCUS_GROUP);
+	struct emui_tile *t = emui_tile_create(parent, -1, &emui_tabs_drv, F_CONTAINER, 0, 0, parent->i.w, parent->i.h, 1, 0, 0, 0, "Tabs", P_MAXIMIZED | P_FOCUS_GROUP);
 
 	return t;
 }

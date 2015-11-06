@@ -38,9 +38,9 @@ void emui_label_draw(struct emui_tile *t)
 	int txt_offset = 0;
 
 	if (d->align == AL_RIGHT) {
-		loc_offset = t->w - strlen(d->txt);
+		loc_offset = t->i.w - strlen(d->txt);
 	} else if (d->align == AL_CENTER) {
-		loc_offset = (t->w - strlen(d->txt)) / 2;
+		loc_offset = (t->i.w - strlen(d->txt)) / 2;
 	} else { // AL_LEFT and unknown aligns
 		// nothing
 	}

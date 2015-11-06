@@ -69,6 +69,7 @@ enum emui_tile_properties {
 	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
 	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
 	P_INTERACTIVE	= 1 << 18,	// user can interact with the tile (thus it can be focused)
+	P_IGNORE_MARGINS= 1 << 19,	// tile will ignore parent's margins
 };
 
 #define P_USER_SETTABLE 0xffff
@@ -95,6 +96,10 @@ struct emui_tile_drv {
 	emui_destroy_priv_data_f destroy_priv_data;
 };
 
+struct emui_geom {
+	int x, y, w, h;
+};
+
 struct emui_tile {
 	// general
 	unsigned family;			// tile family (widget, container, ...)
@@ -109,10 +114,10 @@ struct emui_tile {
 	int content_invalid;		// tile contents are invalid after last edit
 
 	// geometry
-	unsigned rx, ry, rw, rh;	// user-requested tile geometry (relative to parent's internal work area)
 	unsigned mt, mb, ml, mr;	// tile-requested interior margins
-	unsigned dx, dy, dw, dh;	// actual external tile area
-	unsigned x, y, w, h;		// actual internal tile work area (d* minus m*)
+	struct emui_geom r;			// user-requested tile geometry (relative to parent's internal work area)
+	struct emui_geom e;			// actual external tile area
+	struct emui_geom i;			// actual internal tile work area (d* minus m*)
 
 	// ncurses data
 	WINDOW *ncwin;				// contents ncurses window

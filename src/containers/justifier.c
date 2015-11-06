@@ -32,7 +32,7 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 	ch = t->ch_first;
 	while (ch) {
 		emui_tile_unhide(ch);
-		ch_width += ch->rw + 1;
+		ch_width += ch->r.w + 1;
 		ch_count++;
 		ch->properties |= P_GEOM_FORCED;
 		ch = ch->next;
@@ -41,8 +41,8 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 	// hide children which won't fit (start from the end of ch list)
 	ch = t->ch_last;
 	while (ch) {
-		if (ch_width > t->w) {
-			ch_width -= ch->w + 1;
+		if (ch_width > t->i.w) {
+			ch_width -= ch->i.w + 1;
 			emui_tile_hide(ch);
 		} else {
 			emui_tile_unhide(ch);
@@ -52,14 +52,14 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 
 	// justify children
 	ch = t->ch_first;
-	float per_ch = (float) (t->w - ch_width) / (float) (ch_count-1);
+	float per_ch = (float) (t->i.w - ch_width) / (float) (ch_count-1);
 	float offset = 0;
 	while (ch) {
-		ch->dx = ch->parent->x + offset;
-		ch->dy = ch->parent->y;
-		ch->dw = ch->rw;
-		ch->dh = ch->parent->h;
-		offset += ch->rw + 1 + per_ch;
+		ch->e.x = ch->parent->i.x + offset;
+		ch->e.y = ch->parent->i.y;
+		ch->e.w = ch->r.w;
+		ch->e.h = ch->parent->i.h;
+		offset += ch->r.w + 1 + per_ch;
 		ch = ch->next;
 	}
 
@@ -79,7 +79,7 @@ struct emui_tile * emui_justifier(struct emui_tile *parent)
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, -1, &emui_justifier_drv, F_CONTAINER, 0, 0, parent->w, parent->h, 0, 0, 0, 0, "Justify", P_MAXIMIZED);
+	t = emui_tile_create(parent, -1, &emui_justifier_drv, F_CONTAINER, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Justify", P_MAXIMIZED);
 
 	return t;
 }

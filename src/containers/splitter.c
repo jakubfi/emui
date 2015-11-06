@@ -70,10 +70,10 @@ static inline void geom(struct emui_tile *ch, int x, int y, int w, int h)
 		emui_tile_hide(ch);
 	} else {
 		emui_tile_unhide(ch);
-		ch->dx = x;
-		ch->dy = y;
-		ch->dw = w;
-		ch->dh = h;
+		ch->e.x = x;
+		ch->e.y = y;
+		ch->e.w = w;
+		ch->e.h = h;
 	}
 }
 
@@ -101,11 +101,11 @@ int emui_splitter_update_geometry(struct emui_tile *t)
 	switch (d->edge) {
 		case AL_TOP:
 		case AL_BOTTOM:
-			space = t->h;
+			space = t->i.h;
 			break;
 		case AL_RIGHT:
 		case AL_LEFT:
-			space = t->w;
+			space = t->i.w;
 			break;
 		default:
 			// unknown/unhandled alignment
@@ -118,20 +118,20 @@ int emui_splitter_update_geometry(struct emui_tile *t)
 	// set children geometry
 	switch (d->edge) {
 		case AL_LEFT:
-			geom(ch1, t->x,         t->y, size1, t->h);
-			geom(ch2, t->x + size1, t->y, size2, t->h);
+			geom(ch1, t->i.x,         t->i.y, size1, t->i.h);
+			geom(ch2, t->i.x + size1, t->i.y, size2, t->i.h);
 			break;
 		case AL_RIGHT:
-			geom(ch1, t->x + t->w - size1, t->y, size1, t->h);
-			geom(ch2, t->x,                t->y, size2, t->h);
+			geom(ch1, t->i.x + t->i.w - size1, t->i.y, size1, t->i.h);
+			geom(ch2, t->i.x,                  t->i.y, size2, t->i.h);
 			break;
 		case AL_TOP:
-			geom(ch1, t->x, t->y,         t->w, size1);
-			geom(ch2, t->x, t->y + size1, t->w, size2);
+			geom(ch1, t->i.x, t->i.y,         t->i.w, size1);
+			geom(ch2, t->i.x, t->i.y + size1, t->i.w, size2);
 			break;
 		case AL_BOTTOM:
-			geom(ch1, t->x, t->y + t->h - size1, t->w, size1);
-			geom(ch2, t->x, t->y,                t->w, size2);
+			geom(ch1, t->i.x, t->i.y + t->i.h - size1, t->i.w, size1);
+			geom(ch2, t->i.x, t->i.y,                  t->i.w, size2);
 			break;
 	}
 
@@ -161,7 +161,7 @@ struct emui_tile * emui_splitter(struct emui_tile *parent, int edge, int min1, i
 		return NULL;
 	}
 
-	t = emui_tile_create(parent, -1, &emui_splitter_drv, F_CONTAINER, 0, 0, parent->w, parent->h, 0, 0, 0, 0, "Splitter", P_MAXIMIZED);
+	t = emui_tile_create(parent, -1, &emui_splitter_drv, F_CONTAINER, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Splitter", P_MAXIMIZED);
 
 	if (!t) return NULL;
 

@@ -70,8 +70,8 @@ void emui_lineedit_draw(struct emui_tile *t)
 	if (le->mode == M_OVR) margin = 0;
 
 	// scroll the string so it's within the window
-	if (le->pos >= t->w + le->txt_offset) {
-		le->txt_offset = le->pos - t->w + margin;
+	if (le->pos >= t->i.w + le->txt_offset) {
+		le->txt_offset = le->pos - t->i.w + margin;
 	} else if (le->pos < le->txt_offset) {
 		le->txt_offset = le->pos;
 	}

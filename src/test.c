@@ -291,7 +291,7 @@ struct emui_tile * ui_create_sreg(struct emui_tile *parent)
 // -----------------------------------------------------------------------
 static int dasm_update(struct emui_tile *t)
 {
-	char *buf = malloc(t->w + 1);
+	char *buf = malloc(t->i.w + 1);
 	char *dbuf;
 	int pos = 0;
 	uint16_t addr;
@@ -300,7 +300,7 @@ static int dasm_update(struct emui_tile *t)
 
 	emui_textview_clear(t);
 
-	while (pos < t->h) {
+	while (pos < t->i.h) {
 		addr = dasm_start + pos;
 		emdas_dasm(emd, dasm_segment, addr);
 		dbuf = emdas_get_buf(emd);
@@ -321,7 +321,7 @@ static int dasm_update(struct emui_tile *t)
 
 		sprintf(buf, "0x%04x: ", addr);
 		emui_textview_append(t, astyle, buf);
-		sprintf(buf, "%-*s", t->w-8, dbuf);
+		sprintf(buf, "%-*s", t->i.w-8, dbuf);
 		emui_textview_append(t, istyle, buf);
 
 		pos++;
@@ -341,16 +341,16 @@ int dasm_key_handler(struct emui_tile *t, int key)
 		dasm_start++;
 		return 0;
 	case KEY_PPAGE:
-		dasm_start -= t->h;
+		dasm_start -= t->i.h;
 		return 0;
 	case KEY_NPAGE:
-		dasm_start += t->h;
+		dasm_start += t->i.h;
 		return 0;
 	case KEY_HOME:
 		dasm_start = 0;
 		return 0;
 	case KEY_END:
-		dasm_start = 0x10000 - t->h;
+		dasm_start = 0x10000 - t->i.h;
 		return 0;
 	case 550: // ctrl-page up
 		dasm_start = (dasm_start & 0xf000) - 0x1000;

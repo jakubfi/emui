@@ -40,15 +40,15 @@ int emui_grid_update_geometry(struct emui_tile *t)
 	while (ch) {
 		ch->properties |= P_GEOM_FORCED;
 		// does a child fit y-wise?
-		if (((d->rows <= 0) && (y_offset + d->row_height <= t->h))
+		if (((d->rows <= 0) && (y_offset + d->row_height <= t->i.h))
 		|| ((d->rows > 0) && (y_offset < d->rows * d->row_height))) {
 			// does a child fit x-wise?
-			if (((d->cols <= 0) && (x_offset + d->col_width <= t->w))
+			if (((d->cols <= 0) && (x_offset + d->col_width <= t->i.w))
 			|| ((d->cols > 0) && (x_offset < d->cols * (d->col_width)))) {
-				ch->dx = ch->parent->x + x_offset;
-				ch->dy = ch->parent->y + y_offset;
-				ch->dw = d->col_width;
-				ch->dh = d->row_height;
+				ch->e.x = ch->parent->i.x + x_offset;
+				ch->e.y = ch->parent->i.y + y_offset;
+				ch->e.w = d->col_width;
+				ch->e.h = d->row_height;
 				emui_tile_unhide(ch);
 				x_offset += d->col_width + d->col_spacing;
 				ch = ch->next;
@@ -86,7 +86,7 @@ struct emui_tile * emui_grid(struct emui_tile *parent, int cols, int rows, int c
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, -1, &emui_grid_drv, F_CONTAINER, 0, 0, parent->w, parent->h, 0, 0, 0, 0, "Grid", P_MAXIMIZED);
+	t = emui_tile_create(parent, -1, &emui_grid_drv, F_CONTAINER, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Grid", P_MAXIMIZED);
 
 	t->priv_data = calloc(1, sizeof(struct grid));
 
