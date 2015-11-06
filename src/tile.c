@@ -56,24 +56,26 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		t->dh = t->rh;
 	}
 
-	// hide tile if outside parent's area
-	if ((t->dx >= parent->x + parent->w) || (t->dy >= parent->y + parent->h)) {
-		emui_tile_hide(t);
-		// give up on hidden tile
-		return;
-	// unhide and fit otherwise
-	} else {
-		emui_tile_unhide(t);
-	}
-
 	// fit tile width to parent's width
-	if (t->dw + t->dx > parent->dw + parent->dx) {
+	if (t->dw + t->dx > parent->w + parent->x) {
 		t->dw = parent->w - (t->dx - parent->x);
 	}
 
 	// fit tile to parent's height
-	if (t->dh + t->dy > parent->dh + parent->dy) {
+	if (t->dh + t->dy > parent->h + parent->y) {
 		t->dh = parent->h - (t->dy - parent->y);
+	}
+
+	if (
+		// hide if no space for contents
+		((t->dw <= t->ml+t->mr) || (t->dh <= t->mt+t->mb))
+		// hide tile if outside parent's area
+		|| ((t->dx >= parent->x + parent->w) || (t->dy >= parent->y + parent->h))
+	) {
+		emui_tile_hide(t);
+		return;
+	} else {
+		emui_tile_unhide(t);
 	}
 
 	// set internal tile geometry
@@ -81,14 +83,6 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	t->y = t->dy + t->mt;
 	t->w = t->dw - t->ml - t->mr;
 	t->h = t->dh - t->mt - t->mb;
-
-	// hide if no space for contents
-	if ((t->dw <= t->ml+t->mr) || (t->dh <= t->mt+t->mb)) {
-		emui_tile_hide(t);
-		return;
-	} else {
-		emui_tile_unhide(t);
-	}
 
 	// prepare ncurses widow
 	if (!t->ncwin) {
