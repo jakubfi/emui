@@ -31,6 +31,7 @@
 
 #define EMUI_FPS_DEFAULT 30
 #define EMUI_FPS_CAP 1000
+#define EMUI_WORK_COEFFICIENT 1.1
 
 #define EMUI_ESC_TIMEOUT 100
 #define EMUI_CURSOR 0
@@ -40,7 +41,6 @@ static struct emui_tile *layout;
 
 static int emui_fps;
 static long emui_frame_no;
-long emui_ft;
 volatile int terminal_resized;
 
 // -----------------------------------------------------------------------
@@ -177,72 +177,6 @@ static void emui_draw(struct emui_tile *t, int force)
 }
 
 // -----------------------------------------------------------------------
-static void emui_adjust_frametime(struct timeval *ft, unsigned fps)
-{
-	static struct timeval work_old;
-	static long correction = 0;
-	static const long resolution = 1000000;
-
-	struct timeval work;
-	long ft_actual;
-	long ft_requested;
-
-	// not much to do for framerate 0
-	if (!ft) {
-		return;
-	}
-
-	ft_requested = resolution/fps;
-
-	// get the actual work time
-	gettimeofday(&work, NULL);
-	ft_actual = work.tv_usec - work_old.tv_usec + resolution * (work.tv_sec - work_old.tv_sec);
-	work_old.tv_sec = work.tv_sec;
-	work_old.tv_usec = work.tv_usec;
-
-	// work took longer than expected
-	if (ft_actual > ft_requested) {
-		if (correction > -ft_requested/2) {
-			correction -= 13;
-		}
-	// work took shorter than expected
-	} else {
-		if (correction < ft_requested/2) {
-			correction += 14;
-		}
-	}
-
-	// set the frametime
-	ft->tv_sec = 0;
-	ft->tv_usec = ft_requested + correction;
-	emui_ft = correction;
-}
-
-// -----------------------------------------------------------------------
-static inline int emui_need_screen_update(struct timeval *ft)
-{
-	// update is needed if:
-	//  - frametime is not being used (UI is event-driven only)
-	//  - or if frametime has expired
-	return (!ft) || ((ft->tv_sec <= 0) && (ft->tv_usec <= 0));
-}
-
-// -----------------------------------------------------------------------
-static void emui_update_screen()
-{
-	int force = 0;
-
-	if (terminal_resized) {
-		terminal_resized = 0;
-		force = 1;
-	}
-
-	emui_draw(layout, force);
-	doupdate();
-	emui_frame_no++;
-}
-
-// -----------------------------------------------------------------------
 static int emui_handle_user_focus_keys(struct emui_tile *fg, int key)
 {
 	struct emui_tile *t = fg->fg_first;
@@ -344,6 +278,37 @@ static int emui_process_event(struct emui_event *ev)
 }
 
 // -----------------------------------------------------------------------
+static void emui_update_screen(struct timeval *ft, unsigned fps)
+{
+	struct timeval work_start, work_end;
+	int force = 0;
+
+	if (ft) {
+		gettimeofday(&work_start, NULL);
+	}
+
+	if (terminal_resized) {
+		terminal_resized = 0;
+		force = 1;
+	}
+	emui_draw(layout, force);
+	doupdate();
+	emui_frame_no++;
+
+	if (ft) {
+		gettimeofday(&work_end, NULL);
+
+		long resolution = 1000000;
+		long ft_work = resolution * (work_end.tv_sec - work_start.tv_sec) + work_end.tv_usec - work_start.tv_usec;
+		long ft_requested = resolution / fps;
+
+		// set the frametime
+		ft->tv_sec = 0;
+		ft->tv_usec = ft_requested - (ft_work) * EMUI_WORK_COEFFICIENT;
+	}
+}
+
+// -----------------------------------------------------------------------
 void emui_loop()
 {
 	struct timeval *ft = NULL;
@@ -358,17 +323,9 @@ void emui_loop()
 	}
 
 	while (1) {
-		// update the screen if:
-		//  * loop has just started
-		//  * FPS = 0 (so we update as soon as event is processed)
-		//  * frame timeout reached (so we don't update more than FPS)
-		if ((emui_fps == 0) || emui_need_screen_update(ft)) {
-			emui_update_screen();
-			emui_adjust_frametime(ft, emui_fps);
-		}
+		emui_update_screen(ft, emui_fps);
 
 process_event:
-		// get event from the queue
 		ev = emui_evq_get();
 
 		if (ev) {
@@ -376,8 +333,6 @@ process_event:
 				free(ev);
 				break;
 			} else {
-				// process the event through the focus path
-				//emui_tile_handle_event(emui_focus_get(), ev);
 				emui_process_event(ev);
 				free(ev);
 			}
@@ -387,12 +342,10 @@ process_event:
 				// if there is an event waiting:
 				//  * we want to process it as soon as possible
 				//  * we want to process it before screen update in case of FPS=0
-				//  * there is no need for screen update (timeout not reached,
-				//    emui_need_screen_update() would skip the update anyway)
 				goto process_event;
 			}
 		}
-	};
+	}
 
 	free(ft);
 }

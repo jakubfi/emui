@@ -75,11 +75,8 @@ struct emui_tile * emui_fpscounter(struct emui_tile *parent, int x, int y, int s
 	struct fpscounter *d = t->priv_data;
 
 	unsigned fps = emui_get_fps();
-	if (fps >= 4) {
-		d->modulo = fps / 4;
-	} else if (fps >= 2) {
-		d->modulo = 2;
-	} else {
+	d->modulo = fps / 4;
+	if (d->modulo <= 0) {
 		d->modulo = 1;
 	}
 
