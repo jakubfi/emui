@@ -155,6 +155,21 @@ static void emui_draw(struct emui_tile *t, int force)
 		t->geometry_changed = 0;
 	}
 
+	// if the focused tile is now hidden, search for a unhidden tile:
+	// go up, then left, then from the beggining of focus group
+	struct emui_tile *f = emui_focus_get();
+	if (f->properties & P_HIDDEN) {
+		emui_focus_physical_neighbour(f, FC_UP);
+		f = emui_focus_get();
+		if (f->properties & P_HIDDEN) {
+			emui_focus_physical_neighbour(f, FC_LEFT);
+			f = emui_focus_get();
+			if (f->properties & P_HIDDEN) {
+				emui_focus_list_neighbour(f, FC_BEG);
+			}
+		}
+	}
+
 	// draw the tile
 	if (emui_tile_draw(t)) {
 		// nothing drawn, tile is hidden, give up on children too
