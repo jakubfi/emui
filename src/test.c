@@ -102,6 +102,19 @@ uint16_t dasm_start;
 int dasm_segment;
 int dasm_follow;
 
+enum app_styles {
+	S_INV = S_FIRST_USER_STYLE,
+	S_INV_BOLD,
+	S_YELLOW,
+};
+
+static struct emui_style_def app_scheme[] = {
+	{ S_INV,			COLOR_BLACK,	COLOR_WHITE,	A_NORMAL | A_REVERSE },
+	{ S_INV_BOLD,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD | A_REVERSE },
+	{ S_YELLOW,			COLOR_BLACK,	COLOR_YELLOW,	A_BOLD },
+	{ -1, 0, 0, 0 }
+};
+
 // -----------------------------------------------------------------------
 int mem_get(int nb, uint16_t addr, uint16_t *dest)
 {
@@ -486,6 +499,7 @@ int main(int argc, char **argv)
 	emdas_set_tabs(emd, 0, 0, 4, 4);
 
 	struct emui_tile *layout = emui_init(30);
+	emui_scheme_set(app_scheme);
 
 	// status
 	struct emui_tile *status_split = emui_splitter(layout, AL_BOTTOM, 1, 1, FIT_FILL);

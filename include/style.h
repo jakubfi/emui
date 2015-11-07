@@ -18,12 +18,11 @@
 #ifndef STYLE_H
 #define STYLE_H
 
-#define EMUI_MIN_STYLE 0
-#define EMUI_MAX_STYLE (64-2)
-#define EMUI_FIRST_UI_STYLE (EMUI_MAX_STYLE-32)
+#define EMUI_COLORS 8
+#define EMUI_STYLES 256
 
 enum emui_styles {
-	S_DEFAULT = EMUI_FIRST_UI_STYLE,
+	S_DEFAULT = 0,
 	S_DEBUG,
 
 	S_FRAME_NN,
@@ -44,23 +43,20 @@ enum emui_styles {
 	S_TEXT_EN,
 	S_TEXT_EI,
 
-	S_INV,
-	S_INV_BOLD,
-	S_YELLOW,
+	S_FIRST_USER_STYLE
 };
 
-struct emui_style {
+struct emui_style_def {
 	int id;
 	int bg;
 	int fg;
 	int attr;
 };
 
-void emui_style_set(unsigned id, int bg, int fg, int attr);
-int emui_style_add(unsigned id, int bg, int fg, int attr);
+void emui_style_init(struct emui_style_def *scheme);
+int emui_style_set(unsigned id, int bg, int fg, int attr);
 int emui_style_get(unsigned id);
-void emui_scheme_set(struct emui_style *s);
-void emui_scheme_default();
+int emui_scheme_set(struct emui_style_def *s);
 
 #endif
 

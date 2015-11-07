@@ -19,10 +19,11 @@
 
 #include "style.h"
 
-static int emui_style[EMUI_MAX_STYLE];
+static int emui_color[EMUI_COLORS][EMUI_COLORS];
+static int emui_style[EMUI_STYLES];
 
 // -----------------------------------------------------------------------
-static struct emui_style _emui_scheme_default[] = {
+static struct emui_style_def _emui_scheme_default[] = {
 	{ S_DEFAULT,		COLOR_BLACK,	COLOR_WHITE,	A_NORMAL },
 	{ S_DEBUG,			COLOR_RED,		COLOR_YELLOW,	A_BOLD },
 
@@ -44,47 +45,62 @@ static struct emui_style _emui_scheme_default[] = {
 	{ S_TEXT_EN,		COLOR_CYAN,		COLOR_BLACK,	A_NORMAL },
 	{ S_TEXT_EI,		COLOR_CYAN,		COLOR_RED,		A_NORMAL },
 
-	{ S_INV,			COLOR_BLACK,	COLOR_WHITE,	A_NORMAL|A_REVERSE },
-	{ S_INV_BOLD,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD|A_REVERSE },
-	{ S_YELLOW,			COLOR_BLACK,	COLOR_YELLOW,	A_BOLD },
-
 	{ -1, 0, 0, 0 }
 };
 
 // -----------------------------------------------------------------------
-void emui_style_set(unsigned id, int bg, int fg, int attr)
+void emui_style_init(struct emui_style_def *scheme)
 {
-	init_pair(id+1, fg, bg);
-	emui_style[id] = COLOR_PAIR(id+1) | attr;
-}
+	for (int bg=0 ; bg<8 ; bg++) {
+		for (int fg=0 ; fg<8 ; fg++) {
+			int pair = bg*8 + fg;
+			if (pair == 0) {
+				emui_color[bg][fg] = 0;
+			} else {
+				init_pair(pair, fg, bg);
+				emui_color[bg][fg] = COLOR_PAIR(pair);
+			}
+		}
+	}
 
-// -----------------------------------------------------------------------
-int emui_style_add(unsigned id, int bg, int fg, int attr)
-{
-	if (id >= EMUI_FIRST_UI_STYLE) return 1;
-	emui_style_set(id, bg, fg, attr);
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-void emui_scheme_set(struct emui_style *s)
-{
-	while (s->id >= 0) {
-		emui_style_set(s->id, s->bg, s->fg, s->attr);
-		s++;
+	emui_scheme_set(_emui_scheme_default);
+	if (scheme) {
+		emui_scheme_set(scheme);
 	}
 }
 
 // -----------------------------------------------------------------------
-void emui_scheme_default()
+int emui_style_set(unsigned id, int bg, int fg, int attr)
 {
-	emui_scheme_set(_emui_scheme_default);
+	if (id >= EMUI_STYLES) {
+		return 1;
+	}
+
+	emui_style[id] = emui_color[bg][fg] | (attr);
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_scheme_set(struct emui_style_def *s)
+{
+	while (s->id >= 0) {
+		if (emui_style_set(s->id, s->bg, s->fg, s->attr)) {
+			return 1;
+		}
+		s++;
+	}
+	return 0;
 }
 
 // -----------------------------------------------------------------------
 int emui_style_get(unsigned id)
 {
-	return emui_style[id];
+	if (id < EMUI_STYLES) {
+		return emui_style[id];
+	} else {
+		return 0;
+	}
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent

@@ -75,6 +75,7 @@ struct emui_tile * emui_init(unsigned fps)
 	curs_set(EMUI_CURSOR);
 	set_escdelay(EMUI_ESC_TIMEOUT);
 	start_color();
+	emui_style_init(NULL);
 
 	// initialize emui
 	if (fps > EMUI_FPS_CAP) {
@@ -82,7 +83,7 @@ struct emui_tile * emui_init(unsigned fps)
 	} else {
 		emui_fps = fps;
 	}
-	emui_scheme_default();
+
 	layout = emui_screen();
 
 	if (signal(SIGWINCH, _aw_sigwinch_handler) == SIG_ERR) {
