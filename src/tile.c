@@ -88,26 +88,26 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	t->i.h = t->e.h - t->mt - t->mb;
 
 	// prepare ncurses window
-	if (!t->ncwin) {
-		t->ncwin = newwin(t->e.h, t->e.w, t->e.y, t->e.x);
-	} else {
-		wresize(t->ncwin, t->e.h, t->e.w);
-		mvwin(t->ncwin, t->e.y, t->e.x);
+	if (!(t->properties & P_NOCANVAS)) {
+		if (!t->ncwin) {
+			t->ncwin = newwin(t->e.h, t->e.w, t->e.y, t->e.x);
+		} else {
+			werase(t->ncwin);
+			wresize(t->ncwin, t->e.h, t->e.w);
+			mvwin(t->ncwin, t->e.y, t->e.x);
+		}
 	}
+	emuifillbg(t, t->style);
 }
 
 // -----------------------------------------------------------------------
 int emui_tile_draw(struct emui_tile *t)
 {
 	// tile is hidden, nothing to do
-	if ((t->properties & P_HIDDEN) || !t->ncwin) {
+	if (t->properties & P_HIDDEN) {
 		return 1;
-	}
-
-	// clear ncurses window
-	werase(t->ncwin);
-	if (t->style) {
-		emuifillbg(t, t->style);
+	} else if (!t->ncwin) {
+		return 0;
 	}
 
 	// if tile accepts content updates and user specified a handler,
@@ -119,8 +119,8 @@ int emui_tile_draw(struct emui_tile *t)
 	// draw the tile
 	if (t->drv->draw) t->drv->draw(t);
 
-	// update ncurses windows, but don't output
-	// (we will doupdate() in emui_loop())
+	// update ncurses windows, but don't output,
+	// we will doupdate() in the main loop
 	wnoutrefresh(t->ncwin);
 
 	return 0;
@@ -164,6 +164,9 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 	t->geometry_changed = 1;
 	t->id = id;
 	t->accept_updates = 1;
+	if (!t->drv->draw) {
+		t->properties |= P_NOCANVAS;
+	}
 
 	t->r.x = x;
 	t->r.y = y;

@@ -45,7 +45,7 @@ void emui_fpscounter_draw(struct emui_tile *t)
 		d->fps = d->modulo * 1000000.0 / frame_time;
 	}
 
-	emuixyprt(t, 0, 0, t->style, "%.02f", d->fps);
+	emuixyprt(t, 0, 0, t->style, "%2.3f", d->fps);
 }
 
 // -----------------------------------------------------------------------

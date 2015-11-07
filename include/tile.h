@@ -70,6 +70,7 @@ enum emui_tile_properties {
 	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
 	P_INTERACTIVE	= 1 << 18,	// user can interact with the tile (thus it can be focused)
 	P_IGNORE_MARGINS= 1 << 19,	// tile will ignore parent's margins
+	P_NOCANVAS		= 1 << 20,	// tile has no canvas to draw on
 };
 
 #define P_USER_SETTABLE 0xffff

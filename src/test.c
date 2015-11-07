@@ -120,16 +120,15 @@ struct emui_tile * ui_create_status(struct emui_tile *parent)
 
 	// left side
 	struct emui_tile *status_left = emui_dummy_cont(split, 0, 0, 1, 1);
-	emui_tile_set_style(status_left, S_INV);
 	struct emui_tile *misc = emui_label(status_left, 1, 0, 50, AL_LEFT, S_INV, "MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
+	emui_tile_set_properties(misc, P_MAXIMIZED);
 
 	// right side
 	struct emui_tile *status_right = emui_dummy_cont(split, 0, 0, 1, 1);
-	emui_tile_set_style(status_right, S_INV);
-	struct emui_tile *lfps = emui_label(status_right, 1, 0, 5, AL_RIGHT, S_INV, "FPS:");
-	struct emui_tile *fps = emui_fpscounter(status_right, 7, 0, S_INV_BOLD);
-	struct emui_tile *lframe = emui_label(status_right, 13, 0, 7, AL_RIGHT, S_INV, "Frame:");
-	struct emui_tile *frame = emui_framecounter(status_right, 21, 0, S_INV_BOLD);
+	struct emui_tile *lfps = emui_label(status_right, 0, 0, 5, AL_LEFT, S_INV, "FPS:");
+	struct emui_tile *fps = emui_fpscounter(status_right, 5, 0, S_INV_BOLD);
+	struct emui_tile *lframe = emui_label(status_right, 11, 0, 9, AL_LEFT, S_INV, "  Frame: ");
+	struct emui_tile *frame = emui_framecounter(status_right, 20, 0, S_INV_BOLD);
 
 	return split;
 }
