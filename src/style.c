@@ -23,28 +23,59 @@ static int emui_color[EMUI_COLORS][EMUI_COLORS];
 static int emui_style[EMUI_STYLES];
 
 // -----------------------------------------------------------------------
-static struct emui_style_def _emui_scheme_default[] = {
-	{ S_DEFAULT,		COLOR_BLACK,	COLOR_WHITE,	A_NORMAL },
-	{ S_DEBUG,			COLOR_RED,		COLOR_YELLOW,	A_BOLD },
+struct emui_style_def _emui_scheme_inv[] = {
+	{ S_DEFAULT,		COLOR_WHITE,	COLOR_BLACK,	A_NORMAL },
+	{ S_FRAME_NN,		COLOR_WHITE,	COLOR_BLACK,	A_NORMAL },
+	{ S_FRAME_FN,		COLOR_WHITE,	COLOR_BLACK,	A_BOLD },
+	{ S_TITLE_NN,		COLOR_WHITE,	COLOR_BLACK,	A_NORMAL },
+	{ S_TITLE_FN,		COLOR_WHITE,	COLOR_BLACK,	A_BOLD|A_REVERSE },
+	{ S_TAB_NN,			COLOR_WHITE,	COLOR_BLACK,	A_BOLD },
+	{ S_TAB_FN,			COLOR_WHITE,	COLOR_BLACK,	A_BOLD|A_REVERSE },
+	{ S_EDIT_NN,		COLOR_WHITE,	COLOR_BLACK,	A_BOLD },
+	{ S_TEXT_NN,		COLOR_WHITE,	COLOR_BLACK,	A_NORMAL },
+	{ S_TEXT_NI,		COLOR_WHITE,	COLOR_RED,		A_BOLD },
+	{ S_TEXT_FN,		COLOR_CYAN,		COLOR_BLACK,	A_BOLD },
+	{ S_TEXT_FI,		COLOR_CYAN,		COLOR_RED,		A_BOLD },
+	{ S_TEXT_EN,		COLOR_CYAN,		COLOR_BLACK,	A_NORMAL },
+	{ S_TEXT_EI,		COLOR_CYAN,		COLOR_RED,		A_NORMAL },
+	{ -1, 0, 0, 0 }
+};
 
+// -----------------------------------------------------------------------
+struct emui_style_def _emui_scheme_blue[] = {
+	{ S_DEFAULT,		COLOR_BLUE,		COLOR_WHITE,	A_NORMAL },
+	{ S_FRAME_NN,		COLOR_BLUE,		COLOR_WHITE,	A_NORMAL },
+	{ S_FRAME_FN,		COLOR_BLUE,		COLOR_WHITE,	A_BOLD },
+	{ S_TITLE_NN,		COLOR_BLUE,		COLOR_WHITE,	A_NORMAL },
+	{ S_TITLE_FN,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD|A_REVERSE },
+	{ S_TAB_NN,			COLOR_BLUE,		COLOR_WHITE,	A_BOLD },
+	{ S_TAB_FN,			COLOR_BLACK,	COLOR_WHITE,	A_BOLD|A_REVERSE },
+	{ S_EDIT_NN,		COLOR_BLUE,		COLOR_WHITE,	A_BOLD },
+	{ S_TEXT_NN,		COLOR_BLUE,		COLOR_WHITE,	A_NORMAL },
+	{ S_TEXT_NI,		COLOR_BLUE,		COLOR_RED,		A_BOLD },
+	{ S_TEXT_FN,		COLOR_CYAN,		COLOR_BLACK,	A_BOLD },
+	{ S_TEXT_FI,		COLOR_CYAN,		COLOR_RED,		A_BOLD },
+	{ S_TEXT_EN,		COLOR_CYAN,		COLOR_BLACK,	A_NORMAL },
+	{ S_TEXT_EI,		COLOR_CYAN,		COLOR_RED,		A_NORMAL },
+	{ -1, 0, 0, 0 }
+};
+
+// -----------------------------------------------------------------------
+struct emui_style_def _emui_scheme_default[] = {
+	{ S_DEFAULT,		COLOR_BLACK,	COLOR_WHITE,	A_NORMAL },
 	{ S_FRAME_NN,		COLOR_BLACK,	COLOR_WHITE,	A_NORMAL },
 	{ S_FRAME_FN,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD },
-
 	{ S_TITLE_NN,		COLOR_BLACK,	COLOR_WHITE,	A_NORMAL },
 	{ S_TITLE_FN,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD|A_REVERSE },
-
 	{ S_TAB_NN,			COLOR_BLACK,	COLOR_WHITE,	A_BOLD },
 	{ S_TAB_FN,			COLOR_BLACK,	COLOR_WHITE,	A_BOLD|A_REVERSE },
-
 	{ S_EDIT_NN,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD },
-
 	{ S_TEXT_NN,		COLOR_BLACK,	COLOR_WHITE,	A_NORMAL },
 	{ S_TEXT_NI,		COLOR_BLACK,	COLOR_RED,		A_BOLD },
 	{ S_TEXT_FN,		COLOR_CYAN,		COLOR_BLACK,	A_BOLD },
 	{ S_TEXT_FI,		COLOR_CYAN,		COLOR_RED,		A_BOLD },
 	{ S_TEXT_EN,		COLOR_CYAN,		COLOR_BLACK,	A_NORMAL },
 	{ S_TEXT_EI,		COLOR_CYAN,		COLOR_RED,		A_NORMAL },
-
 	{ -1, 0, 0, 0 }
 };
 
@@ -63,7 +94,7 @@ void emui_style_init(struct emui_style_def *scheme)
 		}
 	}
 
-	emui_scheme_set(_emui_scheme_default);
+	emui_scheme_set(_emui_scheme_blue);
 	if (scheme) {
 		emui_scheme_set(scheme);
 	}

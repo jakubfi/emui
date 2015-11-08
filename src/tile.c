@@ -357,6 +357,15 @@ int emui_tile_get_id(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
+void emui_tile_set_margins(struct emui_tile *t, int mt, int mb, int ml, int mr)
+{
+	t->mr = mr;
+	t->ml = ml;
+	t->mt = mt;
+	t->mb = mb;
+}
+
+// -----------------------------------------------------------------------
 int emui_tile_changed(struct emui_tile *t)
 {
 	if (t->user_change_handler && t->user_change_handler(t)) {

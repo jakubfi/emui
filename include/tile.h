@@ -65,12 +65,12 @@ enum emui_tile_properties {
 	// user-settable
 	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
 	P_FOCUS_GROUP	= 1 << 1,	// tile is a root of focus group
+	P_IGNORE_MARGINS= 1 << 2,	// tile will ignore parent's margins
 	// internal
 	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
 	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
 	P_INTERACTIVE	= 1 << 18,	// user can interact with the tile (thus it can be focused)
-	P_IGNORE_MARGINS= 1 << 19,	// tile will ignore parent's margins
-	P_NOCANVAS		= 1 << 20,	// tile has no canvas to draw on
+	P_NOCANVAS		= 1 << 19,	// tile has no canvas to draw on
 };
 
 #define P_USER_SETTABLE 0xffff
@@ -167,6 +167,7 @@ void emui_tile_hide(struct emui_tile *t);
 void emui_tile_unhide(struct emui_tile *t);
 void emui_tile_set_id(struct emui_tile *t, int id);
 int emui_tile_get_id(struct emui_tile *t);
+void emui_tile_set_margins(struct emui_tile *t, int mt, int mb, int ml, int mr);
 int emui_tile_changed(struct emui_tile *t);
 
 #endif

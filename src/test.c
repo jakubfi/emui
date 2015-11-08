@@ -129,16 +129,15 @@ int mem_get(int nb, uint16_t addr, uint16_t *dest)
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_status(struct emui_tile *parent)
 {
-	struct emui_tile *split = emui_splitter(parent, AL_LEFT, 1, FIT_FILL, 30);
+	struct emui_tile *split = emui_splitter(parent, AL_LEFT, 1, FIT_FILL, 25);
 
 	// left side
 	struct emui_tile *status_left = emui_dummy_cont(split, 0, 0, 1, 1);
-	struct emui_tile *misc = emui_label(status_left, 1, 0, 50, AL_LEFT, S_INV, "MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
-	emui_tile_set_properties(misc, P_MAXIMIZED);
+	struct emui_tile *misc = emui_label(status_left, 0, 0, 50, AL_LEFT, S_INV, "  MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
 
 	// right side
 	struct emui_tile *status_right = emui_dummy_cont(split, 0, 0, 1, 1);
-	struct emui_tile *lfps = emui_label(status_right, 0, 0, 5, AL_LEFT, S_INV, "FPS:");
+	struct emui_tile *lfps = emui_label(status_right, 0, 0, 5, AL_LEFT, S_INV, "FPS: ");
 	struct emui_tile *fps = emui_fpscounter(status_right, 5, 0, S_INV_BOLD);
 	struct emui_tile *lframe = emui_label(status_right, 11, 0, 9, AL_LEFT, S_INV, "  Frame: ");
 	struct emui_tile *frame = emui_framecounter(status_right, 20, 0, S_INV_BOLD);
@@ -404,6 +403,14 @@ int dasm_key_handler(struct emui_tile *t, int key)
 }
 
 // -----------------------------------------------------------------------
+static int dasm_status_update(struct emui_tile *t)
+{
+	char buf[64];
+	sprintf(buf, "[ %sseg:%i ]", dasm_follow ? "IC follow, " : "", dasm_segment);
+	emui_label_set_text(t, buf);
+}
+
+// -----------------------------------------------------------------------
 struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 {
 	// ASM
@@ -418,6 +425,14 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	emui_tile_set_key_handler(asmv, dasm_key_handler);
 	emui_tile_set_update_handler(asmv, dasm_update);
 
+	// asm status
+	struct emui_tile *dasm_status_split = emui_splitter(dasm, AL_BOTTOM, 1, 1, 0);
+	emui_tile_set_properties(dasm_status_split, P_IGNORE_MARGINS);
+	struct emui_tile *dasm_status_cont = emui_splitter(dasm_status_split, AL_RIGHT, 25, 25, 0);
+	emui_tile_set_margins(dasm_status_cont, 0, 0, 2, 2);
+	struct emui_tile *dasm_status = emui_label(dasm_status_cont, 0, 0, 20, AL_RIGHT, S_DEFAULT, "");
+	emui_tile_set_update_handler(dasm_status, dasm_status_update);
+
 	// registers
 	struct emui_tile *reg_split = emui_splitter(dasm_split, AL_TOP, 11, 11, FIT_FILL);
 	struct emui_tile *sreg_split = emui_splitter(reg_split, AL_LEFT, 10, FIT_DIV2, 55);
@@ -428,6 +443,13 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	struct emui_tile *mem_split = emui_splitter(reg_split, AL_TOP, 10, FIT_DIV2, 6);
 	struct emui_tile *mem = emui_frame(mem_split, 0, 0, 80, 20, "Memory", P_NONE);
 	emui_tile_set_focus_key(mem, 'm');
+
+	// memory status
+	struct emui_tile *mem_status_split = emui_splitter(mem, AL_BOTTOM, 1, 1, 0);
+	emui_tile_set_properties(mem_status_split, P_IGNORE_MARGINS);
+	struct emui_tile *mem_status_cont = emui_splitter(mem_status_split, AL_RIGHT, 30, 30, 0);
+	emui_tile_set_margins(mem_status_cont, 0, 0, 2, 2);
+	emui_label(mem_status_cont, 0, 0, 10, AL_RIGHT, S_DEFAULT, "[ disp:HEX, cols:FIX16 ]");
 
 	emui_label(mem, 1, 0, 6, AL_LEFT, S_DEFAULT, "seg 2");
 
@@ -474,9 +496,6 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 // -----------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-	for (int seg=0 ; seg<16 ; seg++) {
-
-	}
 
 	for (int seg=0 ; seg<16 ; seg++) {
 		mem[seg] = malloc(sizeof(uint16_t) * MAX_MEM);
