@@ -50,6 +50,7 @@ void emui_label_draw(struct emui_tile *t)
 		loc_offset = 0;
 	}
 
+	emuifillbg(t, t->style);
 	emuixyprt(t, 0 + loc_offset, 0, t->style, d->txt + txt_offset);
 }
 

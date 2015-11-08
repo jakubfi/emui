@@ -111,7 +111,7 @@ enum app_styles {
 static struct emui_style_def app_scheme[] = {
 	{ S_INV,			COLOR_BLACK,	COLOR_WHITE,	A_NORMAL | A_REVERSE },
 	{ S_INV_BOLD,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD | A_REVERSE },
-	{ S_YELLOW,			COLOR_BLACK,	COLOR_YELLOW,	A_BOLD },
+	{ S_YELLOW,			COLOR_BLUE,	COLOR_YELLOW,	A_BOLD },
 	{ -1, 0, 0, 0 }
 };
 
@@ -134,6 +134,7 @@ struct emui_tile * ui_create_status(struct emui_tile *parent)
 	// left side
 	struct emui_tile *status_left = emui_dummy_cont(split, 0, 0, 1, 1);
 	struct emui_tile *misc = emui_label(status_left, 0, 0, 50, AL_LEFT, S_INV, "  MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
+	emui_tile_set_properties(misc, P_MAXIMIZED);
 
 	// right side
 	struct emui_tile *status_right = emui_dummy_cont(split, 0, 0, 1, 1);
@@ -405,8 +406,8 @@ int dasm_key_handler(struct emui_tile *t, int key)
 // -----------------------------------------------------------------------
 static int dasm_status_update(struct emui_tile *t)
 {
-	char buf[64];
-	sprintf(buf, "[ %sseg:%i ]", dasm_follow ? "IC follow, " : "", dasm_segment);
+	char buf[32];
+	sprintf(buf, "[ IC follow:%s seg:%-2i ]", dasm_follow ? "ON " : "OFF", dasm_segment);
 	emui_label_set_text(t, buf);
 }
 
@@ -428,9 +429,9 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	// asm status
 	struct emui_tile *dasm_status_split = emui_splitter(dasm, AL_BOTTOM, 1, 1, 0);
 	emui_tile_set_properties(dasm_status_split, P_IGNORE_MARGINS);
-	struct emui_tile *dasm_status_cont = emui_splitter(dasm_status_split, AL_RIGHT, 25, 25, 0);
+	struct emui_tile *dasm_status_cont = emui_splitter(dasm_status_split, AL_RIGHT, 24, 24, 0);
 	emui_tile_set_margins(dasm_status_cont, 0, 0, 2, 2);
-	struct emui_tile *dasm_status = emui_label(dasm_status_cont, 0, 0, 20, AL_RIGHT, S_DEFAULT, "");
+	struct emui_tile *dasm_status = emui_label(dasm_status_cont, 0, 0, 24, AL_RIGHT, S_DEFAULT, "");
 	emui_tile_set_update_handler(dasm_status, dasm_status_update);
 
 	// registers
@@ -447,9 +448,9 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	// memory status
 	struct emui_tile *mem_status_split = emui_splitter(mem, AL_BOTTOM, 1, 1, 0);
 	emui_tile_set_properties(mem_status_split, P_IGNORE_MARGINS);
-	struct emui_tile *mem_status_cont = emui_splitter(mem_status_split, AL_RIGHT, 30, 30, 0);
+	struct emui_tile *mem_status_cont = emui_splitter(mem_status_split, AL_RIGHT, 24, 24, 0);
 	emui_tile_set_margins(mem_status_cont, 0, 0, 2, 2);
-	emui_label(mem_status_cont, 0, 0, 10, AL_RIGHT, S_DEFAULT, "[ disp:HEX, cols:FIX16 ]");
+	emui_label(mem_status_cont, 0, 0, 24, AL_RIGHT, S_DEFAULT, "[ disp:HEX, cols:FIX16 ]");
 
 	emui_label(mem, 1, 0, 6, AL_LEFT, S_DEFAULT, "seg 2");
 
