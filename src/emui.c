@@ -311,16 +311,23 @@ static void emui_update_screen(struct timeval *ft, unsigned fps)
 	doupdate();
 	emui_frame_no++;
 
+	// set frametime
+	long resolution = 1000000;
+	long ft_requested = resolution / fps;
+	ft->tv_sec = 0;
+	ft->tv_usec = ft_requested;
+
 	if (ft) {
 		gettimeofday(&work_end, NULL);
 
-		long resolution = 1000000;
-		long ft_work = resolution * (work_end.tv_sec - work_start.tv_sec) + work_end.tv_usec - work_start.tv_usec;
-		long ft_requested = resolution / fps;
+		long ft_work = resolution * (work_end.tv_sec - work_start.tv_sec);
+		ft_work += work_end.tv_usec - work_start.tv_usec;
+		ft_work *= EMUI_WORK_COEFFICIENT;
 
-		// set the frametime
-		ft->tv_sec = 0;
-		ft->tv_usec = ft_requested - (ft_work) * EMUI_WORK_COEFFICIENT;
+		// adjust frametime
+		if (ft_work < ft_requested) {
+			ft->tv_usec -= ft_work;
+		}
 	}
 }
 
