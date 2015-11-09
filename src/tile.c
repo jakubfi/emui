@@ -34,15 +34,23 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		return;
 	}
 
-	// select which parent geometry (external or internal) to use
-	if (t->properties & P_IGNORE_MARGINS) {
+	// select which geometry (screen, parent's external or internal) to use
+	if (t->properties & P_FLOAT) {
+		pg.x = 0;
+		pg.y = 0;
+		pg.h = LINES;
+		pg.w = COLS;
+	} else if (t->properties & P_IGNORE_MARGINS) {
 		pg = t->parent->e;
 	} else {
 		pg = t->parent->i;
 	}
 
 	// set external tile geometry
-	if (t->properties & P_GEOM_FORCED) {
+	if (t->properties & P_FLOAT) {
+		t->e.x = (pg.w - t->e.w) / 2;
+		t->e.y = (pg.h - t->e.h) / 2;
+	} else if (t->properties & P_GEOM_FORCED) {
 		if (t->properties & P_HIDDEN) {
 			// just leave, don't even try to unhide it
 			return;
@@ -225,6 +233,17 @@ int emui_tile_set_properties(struct emui_tile *t, unsigned properties)
 }
 
 // -----------------------------------------------------------------------
+int emui_tile_clear_properties(struct emui_tile *t, unsigned properties)
+{
+	if (properties & ~P_USER_SETTABLE) {
+		return -1;
+	}
+
+	t->properties &= ~properties;
+
+	return 0;
+}
+// -----------------------------------------------------------------------
 int emui_tile_set_name(struct emui_tile *t, char *name)
 {
 	free(t->name);
@@ -319,29 +338,49 @@ void emui_tile_destroy(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
+void emui_tree_set_properties(struct emui_tile *t, int property)
+{
+	t->properties |= property;
+	t = t->ch_first;
+	while (t) {
+		emui_tree_set_properties(t, property);
+		t = t->next;
+	}
+}
+
+// -----------------------------------------------------------------------
+void emui_tree_clear_properties(struct emui_tile *t, int property)
+{
+	t->properties &= ~property;
+	t = t->ch_first;
+	while (t) {
+		emui_tree_clear_properties(t, property);
+		t = t->next;
+	}
+}
+
+// -----------------------------------------------------------------------
+void emui_tile_inverse(struct emui_tile *t, int inv)
+{
+	if (inv) {
+		emui_tree_set_properties(t, P_INVERSE);
+	} else {
+		emui_tree_clear_properties(t, P_INVERSE);
+	}
+}
+
+// -----------------------------------------------------------------------
 void emui_tile_hide(struct emui_tile *t)
 {
 	if (t->properties & P_HIDDEN) return;
-
-	t->properties |= P_HIDDEN;
-	t = t->ch_first;
-	while (t) {
-		emui_tile_hide(t);
-		t = t->next;
-	}
+	emui_tree_set_properties(t, P_HIDDEN);
 }
 
 // -----------------------------------------------------------------------
 void emui_tile_unhide(struct emui_tile *t)
 {
 	if (!(t->properties & P_HIDDEN)) return;
-
-	t->properties &= ~P_HIDDEN;
-	t = t->ch_first;
-	while (t) {
-		emui_tile_unhide(t);
-		t = t->next;
-	}
+	emui_tree_clear_properties(t, P_HIDDEN);
 }
 
 // -----------------------------------------------------------------------

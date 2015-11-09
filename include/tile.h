@@ -66,6 +66,8 @@ enum emui_tile_properties {
 	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
 	P_FOCUS_GROUP	= 1 << 1,	// tile is a root of focus group
 	P_IGNORE_MARGINS= 1 << 2,	// tile will ignore parent's margins
+	P_FLOAT			= 1 << 3,	// floating tile (detached from parent's geometry)
+	P_INVERSE		= 1 << 4,	// tile is drawn in inversed colors
 	// internal
 	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
 	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
@@ -161,10 +163,12 @@ int emui_tile_set_change_handler(struct emui_tile *t, emui_handler_f handler);
 int emui_tile_set_key_handler(struct emui_tile *t, emui_key_handler_f handler);
 int emui_tile_set_focus_key(struct emui_tile *t, int key);
 int emui_tile_set_properties(struct emui_tile *t, unsigned properties);
+int emui_tile_clear_properties(struct emui_tile *t, unsigned properties);
 int emui_tile_set_name(struct emui_tile *t, char *name);
 int emui_tile_set_style(struct emui_tile *t, int style);
 void emui_tile_hide(struct emui_tile *t);
 void emui_tile_unhide(struct emui_tile *t);
+void emui_tile_inverse(struct emui_tile *t, int inv);
 void emui_tile_set_id(struct emui_tile *t, int id);
 int emui_tile_get_id(struct emui_tile *t);
 void emui_tile_set_margins(struct emui_tile *t, int mt, int mb, int ml, int mr);

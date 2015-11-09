@@ -216,7 +216,7 @@ int reg_int_changed(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 {
-	struct emui_tile *ureg = emui_frame(parent, 0, 0, 55, 11, "Registers", P_NONE);
+	struct emui_tile *ureg = emui_frame(parent, 0, 0, 55, 11, "Registers", P_FLOAT);
 	emui_tile_set_focus_key(ureg, 'r');
 
 	struct emui_tile *ureg_just = emui_justifier(ureg);
@@ -409,6 +409,8 @@ static int dasm_status_update(struct emui_tile *t)
 	char buf[32];
 	sprintf(buf, "[ IC follow:%s seg:%-2i ]", dasm_follow ? "ON " : "OFF", dasm_segment);
 	emui_label_set_text(t, buf);
+
+	return 1;
 }
 
 // -----------------------------------------------------------------------
@@ -557,3 +559,4 @@ int main(int argc, char **argv)
 // vim: tabstop=4 shiftwidth=4 autoindent
 
 
+;
