@@ -64,8 +64,6 @@ void emui_lineedit_draw(struct emui_tile *t)
 		}
 	}
 
-	emuifillbg(t, style);
-
 	int margin = 1;
 	if (le->mode == M_OVR) margin = 0;
 
@@ -77,10 +75,10 @@ void emui_lineedit_draw(struct emui_tile *t)
 	}
 
 	if (le->in_edit) {
-		emuixyprt(t, 0, 0, style, "%s", cbuf + le->txt_offset);
-		wmove(t->ncwin, 0, le->pos - le->txt_offset);
+		emuixyprt(t, 0, 0, style, "%-*s", t->i.w, cbuf + le->txt_offset);
+		emuixy(t, le->pos - le->txt_offset, 0);
 	} else {
-		emuixyprt(t, 0, 0, style, "%s", cbuf);
+		emuixyprt(t, 0, 0, style, "%-*s", t->i.w, cbuf);
 	}
 }
 

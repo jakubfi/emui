@@ -111,7 +111,7 @@ enum app_styles {
 static struct emui_style_def app_scheme[] = {
 	{ S_INV,			COLOR_BLACK,	COLOR_WHITE,	A_NORMAL | A_REVERSE },
 	{ S_INV_BOLD,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD | A_REVERSE },
-	{ S_YELLOW,			COLOR_BLUE,	COLOR_YELLOW,	A_BOLD },
+	{ S_YELLOW,			COLOR_BLACK,	COLOR_YELLOW,	A_BOLD },
 	{ -1, 0, 0, 0 }
 };
 
