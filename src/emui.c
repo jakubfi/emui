@@ -40,7 +40,7 @@ SCREEN *s;
 static struct emui_tile *layout;
 
 static int emui_fps;
-static long emui_frame_no;
+static unsigned long emui_frame_no;
 volatile int terminal_resized;
 
 // -----------------------------------------------------------------------
@@ -380,7 +380,7 @@ unsigned emui_get_fps()
 }
 
 // -----------------------------------------------------------------------
-long emui_get_frame()
+unsigned long emui_get_frame()
 {
 	return emui_frame_no;
 }

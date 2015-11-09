@@ -27,7 +27,7 @@
 // -----------------------------------------------------------------------
 void emui_framecounter_draw(struct emui_tile *t)
 {
-	emuixyprt(t, 0, 0, t->style, "%i", emui_get_frame());
+	emuixyprt(t, 0, 0, t->style, "%lu", emui_get_frame());
 }
 
 // -----------------------------------------------------------------------

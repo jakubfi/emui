@@ -28,7 +28,7 @@ struct emui_tile * emui_init(unsigned fps);
 void emui_loop();
 
 unsigned emui_get_fps();
-long emui_get_frame();
+unsigned long emui_get_frame();
 long emui_get_current_frametime();
 
 #endif
