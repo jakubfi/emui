@@ -62,7 +62,7 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 	int dist, dist_min = INT_MAX;
 
 	while (f) {
-		if (IS_FOCUSABLE(f)) {
+		if (IS_INTERACTIVE(f)) {
 
 			dist = _distance(t->i.x+t->i.w/2, t->i.y+t->i.h/2, f->i.x+f->i.w/2, f->i.y+f->i.h/2);
 
@@ -128,7 +128,7 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 		}
 
 		if (next) {
-			if (IS_FOCUSABLE(next)) {
+			if (IS_INTERACTIVE(next)) {
 				// got a tile that can be focused
 				_focus_up(next);
 				break;
@@ -150,37 +150,40 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 }
 
 // -----------------------------------------------------------------------
+struct emui_tile * _focus_down(struct emui_tile *t)
+{
+	// try to follow old focus first
+	if (t->focus) {
+		return _focus_down(t->focus);
+	// then go for a first focusable tile
+	} else if (IS_INTERACTIVE(t)) {
+		return t;
+	// then if this is a focus group...
+	} else if (t->properties & P_FOCUS_GROUP) {
+		// ...that has members, start searching the focus group
+		if (t->fg_first) {
+			return _focus_down(t->fg_first);
+		// ... with no members, stop here
+		} else {
+			return t;
+		}
+	// continue searching the focus group
+	} else if (t->fg_next) {
+		return _focus_down(t->fg_next);
+	// lastly, return anything
+	} else {
+		return t;
+	}
+}
+
+// -----------------------------------------------------------------------
 void emui_focus(struct emui_tile *t)
 {
-	// first, if the subtree had a focus previously, use it
-	while (t->focus) {
-		t = t->focus;
-	}
-
-	// if we're at an interactive leaf
-	if (IS_FOCUSABLE(t)) {
-		// search is done
-		_focus_up(t);
-
-	// if we're at a non-interactive widget
-	} else if (t->family == F_WIDGET) {
-		// we may only try to find something interactive in this focus group
-		// if this fails - bummer, but that's the best we can do
-		emui_focus_list_neighbour(t, FC_BEG);
-
-	// User wants to focus on something non-interactive, non-widgety,
-	// without a previous focus (the layout, in an extreme case).
-	// Because focus needs to cover full path from a leaf to the root,
-	// we need to find something
-	} else {
-		while (t->ch_first) {
-			t = t->ch_first;
-		}
-		// focus here, if there is nothing better
-		_focus_up(t);
-		// try to focus something better
-		emui_focus_list_neighbour(t, FC_BEG);
-	}
+	if (!t) return;
+	// search for a focus path down to the (possibly) interactive tile
+	struct emui_tile *f = _focus_down(t);
+	// fill the focus path to the root
+	_focus_up(f);
 }
 
 // -----------------------------------------------------------------------

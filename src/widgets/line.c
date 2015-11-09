@@ -69,7 +69,7 @@ struct emui_tile * emui_line(struct emui_tile *parent, int align, int x, int y, 
 		return NULL;
 	}
 
-	t = emui_tile_create(parent, -1, &emui_line_drv, F_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
+	t = emui_tile_create(parent, -1, &emui_line_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->priv_data = calloc(1, sizeof(struct line));
 	struct line *d = t->priv_data;

@@ -246,8 +246,8 @@ static int emui_handle_focus(struct emui_tile *t, int key)
 		if (!emui_handle_user_focus_keys(t, key)) {
 			return 0;
 		}
-	// if tile is a widget, handle neighbourhood focus change
-	} else if (t->family == F_WIDGET) {
+	// otherwise, search for a neighbour in current focus group
+	} else {
 		if (!emui_handle_neighbour_focus(t, key)) {
 			return 0;
 		}
@@ -267,14 +267,6 @@ static int emui_process_event(struct emui_event *ev)
 {
 	struct emui_tile *t = emui_focus_get();
 
-	// TODO: temporary
-	if ((ev->type == EV_KEY) && (ev->sender == 'q')) {
-		struct emui_event *ev = malloc(sizeof(struct emui_event));
-		ev->type = EV_QUIT;
-		emui_evq_prepend(ev);
-		return 0;
-	}
-
 	// try running user key handler
 	if ((ev->type == EV_KEY) && t->user_key_handler && !t->user_key_handler(t, ev->sender)) {
 		return 0;
@@ -287,6 +279,14 @@ static int emui_process_event(struct emui_event *ev)
 
 	// try the key to change focus
 	if ((ev->type == EV_KEY) && !emui_handle_focus(t, ev->sender)) {
+		return 0;
+	}
+
+	// TODO: temporary
+	if ((ev->type == EV_KEY) && (ev->sender == 'q')) {
+		struct emui_event *ev = malloc(sizeof(struct emui_event));
+		ev->type = EV_QUIT;
+		emui_evq_prepend(ev);
 		return 0;
 	}
 

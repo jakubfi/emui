@@ -51,10 +51,9 @@ struct emui_tile * emui_screen()
 {
 	struct emui_tile *t = calloc(1, sizeof(struct emui_tile));
 	t->ncwin = stdscr;
-	t->family = F_CONTAINER;
 	t->drv = &emui_screen_drv;
 	t->name = strdup("SCREEN");
-	t->properties = P_FOCUS_GROUP;
+	t->properties = P_CONTAINER | P_FOCUS_GROUP;
 	t->id = -1;
 	t->i.x = t->r.x = t->e.x = 0;
 	t->i.y = t->r.y = t->e.y = 0;

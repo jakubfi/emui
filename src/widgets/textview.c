@@ -143,7 +143,7 @@ struct emui_tile * emui_textview(struct emui_tile *parent, int x, int y, int w, 
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, -1, &emui_textview_drv, F_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emui_tile_create(parent, -1, &emui_textview_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_INTERACTIVE);
 
 	t->priv_data = calloc(1, sizeof(struct textview));
 

@@ -86,7 +86,7 @@ struct emui_tile * emui_grid(struct emui_tile *parent, int cols, int rows, int c
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, -1, &emui_grid_drv, F_CONTAINER, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Grid", P_MAXIMIZED);
+	t = emui_tile_create(parent, -1, &emui_grid_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Grid", P_CONTAINER | P_MAXIMIZED);
 
 	t->priv_data = calloc(1, sizeof(struct grid));
 

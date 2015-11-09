@@ -251,7 +251,7 @@ struct emui_tile * emui_lineedit(struct emui_tile *parent, int id, int x, int y,
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, id, &emui_lineedit_drv, F_WIDGET, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emui_tile_create(parent, id, &emui_lineedit_drv, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
 	emui_tile_set_style(t, S_EDIT_NN);
 
 	t->priv_data = calloc(1, sizeof(struct lineedit));

@@ -52,7 +52,7 @@ struct emui_tile * emui_frame(struct emui_tile *parent, int x, int y, int w, int
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, -1, &emui_frame_drv, F_WINDOW, x, y, w, h, 1, 1, 1, 1, name, P_FOCUS_GROUP);
+	t = emui_tile_create(parent, -1, &emui_frame_drv, x, y, w, h, 1, 1, 1, 1, name, P_CONTAINER | P_FOCUS_GROUP);
 
 	emui_tile_set_properties(t, properties);
 

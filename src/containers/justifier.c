@@ -79,7 +79,7 @@ struct emui_tile * emui_justifier(struct emui_tile *parent)
 {
 	struct emui_tile *t;
 
-	t = emui_tile_create(parent, -1, &emui_justifier_drv, F_CONTAINER, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Justify", P_MAXIMIZED);
+	t = emui_tile_create(parent, -1, &emui_justifier_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Justify", P_CONTAINER | P_MAXIMIZED);
 
 	return t;
 }

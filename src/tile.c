@@ -135,28 +135,14 @@ int emui_tile_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-static const int emui_tile_compatibile(struct emui_tile *parent, int child_family)
+struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emui_tile_drv *drv, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
 {
-	static const int tile_compat[F_NUMFAMILIES][F_NUMFAMILIES] = {
-	/*					child:								*/
-	/* parent:			F_CONTAINER	F_WINDOW	F_WIDGET	*/
-	/* F_CONTAINER */	{1,			1,			1 },
-	/* F_WINDOW */		{1,			0,			1 },
-	/* F_WIDGET */		{0,			0,			0 },
-	};
-
-	return tile_compat[parent->family][child_family];
-}
-
-// -----------------------------------------------------------------------
-struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emui_tile_drv *drv, int family, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
-{
-	if (!emui_tile_compatibile(parent, family)) {
-		return NULL;
-	}
-
 	struct emui_tile *t = calloc(1, sizeof(struct emui_tile));
 	if (!t) return NULL;
+
+	if (!(parent->properties & P_CONTAINER)) {
+		return NULL;
+	}
 
 	if (name) {
 		t->name = strdup(name);
@@ -166,7 +152,6 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 		}
 	}
 
-	t->family = family;
 	t->properties = properties;
 	t->drv = drv;
 	t->geometry_changed = 1;
