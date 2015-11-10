@@ -48,15 +48,17 @@ void emui_tile_update_geometry(struct emui_tile *t)
 
 	// set external tile geometry
 	if (t->properties & P_FLOAT) {
-		t->e.x = (pg.w - t->e.w) / 2;
-		t->e.y = (pg.h - t->e.h) / 2;
+		t->e.w = t->r.w;
+		t->e.h = t->r.h;
+		t->e.x = (pg.w - t->r.w) / 2;
+		t->e.y = (pg.h - t->r.h) / 2;
 	} else if (t->properties & P_GEOM_FORCED) {
 		if (t->properties & P_HIDDEN) {
 			// just leave, don't even try to unhide it
 			return;
 		} else {
 			// nothing to do here
-			// e->* should be set by the parent already
+			// t->e.* should be set by the parent already
 		}
 	} else if (t->properties & P_MAXIMIZED) {
 		// tile is maximized - use all available parent's area
@@ -387,6 +389,15 @@ void emui_tile_set_margins(struct emui_tile *t, int mt, int mb, int ml, int mr)
 	t->ml = ml;
 	t->mt = mt;
 	t->mb = mb;
+}
+
+// -----------------------------------------------------------------------
+void emui_tile_geometry_changed(struct emui_tile *t)
+{
+	t->geometry_changed = 1;
+	if (t->properties & P_GEOM_FORCED) {
+		emui_tile_geometry_changed(t->parent);
+	}
 }
 
 // -----------------------------------------------------------------------

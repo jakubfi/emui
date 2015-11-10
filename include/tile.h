@@ -164,6 +164,7 @@ void emui_tile_set_margins(struct emui_tile *t, int mt, int mb, int ml, int mr);
 void emui_tile_hide(struct emui_tile *t);
 void emui_tile_unhide(struct emui_tile *t);
 void emui_tile_inverse(struct emui_tile *t, int inv);
+void emui_tile_geometry_changed(struct emui_tile *t);
 int emui_tile_changed(struct emui_tile *t);
 
 #endif

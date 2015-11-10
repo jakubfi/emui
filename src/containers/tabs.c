@@ -39,9 +39,26 @@ void emui_tabs_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
+int emui_tabs_update_geometry(struct emui_tile *t)
+{
+	struct emui_tile *ch = t->ch_first;
+	while (ch) {
+		ch->properties |= P_GEOM_FORCED;
+		ch->e = t->i;
+		if (emui_has_focus(ch)) {
+			emui_tile_unhide(ch);
+		} else {
+			emui_tile_hide(ch);
+		}
+		ch = ch->next;
+	}
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 struct emui_tile_drv emui_tabs_drv = {
 	.draw = emui_tabs_draw,
-	.update_children_geometry = NULL,
+	.update_children_geometry = emui_tabs_update_geometry,
 	.event_handler = NULL,
 	.destroy_priv_data = NULL,
 };

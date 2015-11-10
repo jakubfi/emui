@@ -216,7 +216,7 @@ int reg_int_changed(struct emui_tile *t)
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 {
-	struct emui_tile *ureg = emui_frame(parent, 0, 0, 55, 11, "Registers", P_FLOAT);
+	struct emui_tile *ureg = emui_frame(parent, 0, 0, 55, 11, "Registers", P_NONE);
 	emui_tile_set_focus_key(ureg, 'r');
 
 	struct emui_tile *ureg_just = emui_justifier(ureg);
@@ -557,6 +557,3 @@ int main(int argc, char **argv)
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent
-
-
-;
