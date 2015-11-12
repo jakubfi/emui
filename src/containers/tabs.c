@@ -46,9 +46,9 @@ int emui_tabs_update_geometry(struct emui_tile *t)
 		ch->properties |= P_GEOM_FORCED;
 		ch->e = t->i;
 		if (emui_has_focus(ch)) {
-			emui_tile_unhide(ch);
+			ch->properties &= ~P_HIDDEN;
 		} else {
-			emui_tile_hide(ch);
+			ch->properties |= P_HIDDEN;
 		}
 		ch = ch->next;
 	}

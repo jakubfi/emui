@@ -31,7 +31,7 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 	// calculate total children width
 	ch = t->ch_first;
 	while (ch) {
-		emui_tile_unhide(ch);
+		ch->properties &= ~P_HIDDEN;
 		ch_width += ch->r.w + 1;
 		ch_count++;
 		ch->properties |= P_GEOM_FORCED;
@@ -43,9 +43,9 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 	while (ch) {
 		if (ch_width > t->i.w) {
 			ch_width -= ch->i.w + 1;
-			emui_tile_hide(ch);
+			ch->properties |= P_HIDDEN;
 		} else {
-			emui_tile_unhide(ch);
+			ch->properties &= ~P_HIDDEN;
 		}
 		ch = ch->prev;
 	}

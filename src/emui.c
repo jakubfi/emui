@@ -139,23 +139,18 @@ static int emui_evq_update(struct timeval *tv)
 }
 
 // -----------------------------------------------------------------------
-static void emui_draw(struct emui_tile *t, int force)
+static void emui_draw(struct emui_tile *t)
 {
 	struct emui_tile *focused_child = NULL;
 
-	if (!t) return;
-
-	// do we need to update tile geometry?
-	int geometry_update = (t->geometry_changed || force);
-	if (geometry_update) {
-		// update tile geometry
+	// update tile geometry
+	int geometry_changed = t->geometry_changed;
+	if (geometry_changed) {
 		emui_tile_update_geometry(t);
-		// do tile-specific children geometry updates
-		if (t->drv->update_children_geometry) t->drv->update_children_geometry(t);
-		t->geometry_changed = 0;
 	}
 
-	// if the focused tile is now hidden, search for an unhidden tile:
+	// if the focused tile is hidden after geometry change,
+	// search for a new unhidden tile:
 	// go up, then left, then from the beggining of focus group
 	struct emui_tile *f = emui_focus_get();
 	if (f->properties & P_HIDDEN) {
@@ -171,25 +166,25 @@ static void emui_draw(struct emui_tile *t, int force)
 	}
 
 	// draw the tile
-	if (emui_tile_draw(t)) {
-		// nothing drawn, tile is hidden, give up on children too
-		return;
-	}
+	emui_tile_draw(t);
 
-	// draw children
+	// draw tile's children
 	struct emui_tile *child = t->ch_first;
 	while (child) {
-		// draw non-focused tiles first, store focused
+		child->geometry_changed |= geometry_changed;
+		// store focused tile to draw it later
 		if (!emui_has_focus(child)) {
-			emui_draw(child, geometry_update);
+			emui_draw(child);
 		} else {
 			focused_child = child;
 		}
 		child = child->next;
 	}
 
-	// finally, draw focused tile
-	emui_draw(focused_child, geometry_update);
+	// draw focused tile last, so it's always on top
+	if (focused_child) {
+		emui_draw(focused_child);
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -297,7 +292,6 @@ static int emui_process_event(struct emui_event *ev)
 static void emui_update_screen(struct timeval *ft, unsigned fps)
 {
 	struct timeval work_start, work_end;
-	int force = 0;
 
 	if (ft) {
 		gettimeofday(&work_start, NULL);
@@ -305,9 +299,9 @@ static void emui_update_screen(struct timeval *ft, unsigned fps)
 
 	if (terminal_resized) {
 		terminal_resized = 0;
-		force = 1;
+		layout->geometry_changed = 1;
 	}
-	emui_draw(layout, force);
+	emui_draw(layout);
 	doupdate();
 	emui_frame_no++;
 

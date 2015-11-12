@@ -184,6 +184,7 @@ void emui_focus(struct emui_tile *t)
 	struct emui_tile *f = _focus_down(t);
 	// fill the focus path to the root
 	_focus_up(f);
+	// getting focus may change tile's geometry (P_FLOAT)
 	emui_tile_geometry_changed(t);
 }
 

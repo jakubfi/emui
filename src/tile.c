@@ -25,16 +25,11 @@
 #include "print.h"
 
 // -----------------------------------------------------------------------
-void emui_tile_update_geometry(struct emui_tile *t)
+void emui_tile_update_external_geometry(struct emui_tile *t)
 {
+	// select which parent's geometry tile's gonna use:
+	// screen, parent's external or parent's internal
 	struct emui_geom pg;
-
-	if (!t->parent) {
-		// nothing to do for the root tile (screen)
-		return;
-	}
-
-	// select which geometry (screen, parent's external or internal) to use
 	if (t->properties & P_FLOAT) {
 		pg.x = 0;
 		pg.y = 0;
@@ -46,23 +41,37 @@ void emui_tile_update_geometry(struct emui_tile *t)
 		pg = t->parent->i;
 	}
 
-	// set external tile geometry
+	// (1) 'floating' property overrides everything
 	if (t->properties & P_FLOAT) {
 		t->e.w = t->r.w;
 		t->e.h = t->r.h;
 		t->e.x = (pg.w - t->r.w) / 2;
 		t->e.y = (pg.h - t->r.h) / 2;
+		if (t->e.x < 0) {
+			t->e.x = 0;
+		}
+		if (t->e.y < 0) {
+			t->e.y = 0;
+		}
+		t->properties &= ~P_HIDDEN;
+	// (2) respect parent's choice to hide the child
 	} else if (t->properties & P_GEOM_FORCED) {
 		if (t->properties & P_HIDDEN) {
-			// just leave, don't even try to unhide it
 			return;
-		} else {
-			// nothing to do here
-			// t->e.* should be set by the parent already
+		// (2.5) but also hide the child if parent is hidden
+		} else if (t->parent->properties & P_HIDDEN) {
+			t->properties |= P_HIDDEN;
+			return;
 		}
+	// (3) hide the child if parent is hidden
+	} else if (t->parent->properties & P_HIDDEN) {
+		t->properties |= P_HIDDEN;
+		return;
+	// (4) respect P_MAXIMIZE
 	} else if (t->properties & P_MAXIMIZED) {
-		// tile is maximized - use all available parent's area
 		t->e = pg;
+		t->properties &= ~P_HIDDEN;
+	// (5) calculate own external geometry
 	} else {
 		t->e = t->r;
 		t->e.x += pg.x;
@@ -73,22 +82,27 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	if (t->e.w + t->e.x > pg.w + pg.x) {
 		t->e.w = pg.w - (t->e.x - pg.x);
 	}
-
 	// fit tile to parent's height
 	if (t->e.h + t->e.y > pg.h + pg.y) {
 		t->e.h = pg.h - (t->e.y - pg.y);
 	}
+	// hide tile if outside parent's area
+	if ((t->e.x >= pg.x + pg.w) || (t->e.y >= pg.y + pg.h)) {
+		t->properties |= P_HIDDEN;
+	} else {
+		t->properties &= ~P_HIDDEN;
+	}
+}
 
-	if (
-		// hide if no space for contents
-		((t->e.w <= t->ml+t->mr) || (t->e.h <= t->mt+t->mb))
-		// hide tile if outside parent's area
-		|| ((t->e.x >= pg.x + pg.w) || (t->e.y >= pg.y + pg.h))
-	) {
-		emui_tile_hide(t);
+// -----------------------------------------------------------------------
+void emui_tile_update_internal_geometry(struct emui_tile *t)
+{
+	// hide if no space for internal geometry
+	if ((t->e.w <= t->ml+t->mr) || (t->e.h <= t->mt+t->mb)) {
+		t->properties |= P_HIDDEN;
 		return;
 	} else {
-		emui_tile_unhide(t);
+		t->properties &= ~P_HIDDEN;
 	}
 
 	// set internal tile geometry
@@ -96,28 +110,48 @@ void emui_tile_update_geometry(struct emui_tile *t)
 	t->i.y = t->e.y + t->mt;
 	t->i.w = t->e.w - t->ml - t->mr;
 	t->i.h = t->e.h - t->mt - t->mb;
+}
 
-	// prepare ncurses window
-	if (!(t->properties & P_NOCANVAS)) {
-		if (!t->ncwin) {
-			t->ncwin = newwin(t->e.h, t->e.w, t->e.y, t->e.x);
-		} else {
-			werase(t->ncwin);
-			wresize(t->ncwin, t->e.h, t->e.w);
-			mvwin(t->ncwin, t->e.y, t->e.x);
+// -----------------------------------------------------------------------
+void emui_tile_update_geometry(struct emui_tile *t)
+{
+	if (t->parent) {
+		// set external geometry
+		emui_tile_update_external_geometry(t);
+
+		// if tile is still visible, set internal geometry
+		if (!(t->properties & P_HIDDEN)) {
+			emui_tile_update_internal_geometry(t);
+
+			// if tile is visible, prepare ncurses window
+			if (!(t->properties & P_HIDDEN)) {
+				// prepare ncurses window
+				if (!(t->properties & P_NOCANVAS)) {
+					if (!t->ncwin) {
+						t->ncwin = newwin(t->e.h, t->e.w, t->e.y, t->e.x);
+					} else {
+						werase(t->ncwin);
+						wresize(t->ncwin, t->e.h, t->e.w);
+						mvwin(t->ncwin, t->e.y, t->e.x);
+					}
+				}
+				emuifillbg(t, t->style);
+			}
 		}
 	}
-	emuifillbg(t, t->style);
+
+	// do tile-specific geometry updates
+	if (t->drv->update_children_geometry) t->drv->update_children_geometry(t);
+
+	t->geometry_changed = 0;
 }
 
 // -----------------------------------------------------------------------
 int emui_tile_draw(struct emui_tile *t)
 {
-	// tile is hidden, nothing to do
-	if (t->properties & P_HIDDEN) {
+	// tile is hidden or has no canvas, nothing to do
+	if (t->properties & (P_HIDDEN | P_NOCANVAS)) {
 		return 1;
-	} else if (!t->ncwin) {
-		return 0;
 	}
 
 	// if tile accepts content updates and user specified a handler,
@@ -129,7 +163,7 @@ int emui_tile_draw(struct emui_tile *t)
 	// draw the tile
 	if (t->drv->draw) t->drv->draw(t);
 
-	// update ncurses windows, but don't output,
+	// update ncurses window, but don't output,
 	// we will doupdate() in the main loop
 	wnoutrefresh(t->ncwin);
 
@@ -174,6 +208,7 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 	t->mr = mr;
 
 	emui_tile_child_append(parent, t);
+	emui_focus_group_add(parent, t);
 	emui_tile_update_geometry(t);
 
 	return t;
@@ -249,7 +284,6 @@ int emui_tile_set_style(struct emui_tile *t, int style)
 // -----------------------------------------------------------------------
 void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t)
 {
-	// lint into children list
 	t->parent = parent;
 	t->prev = parent->ch_last;
 	if (parent->ch_last) {
@@ -258,9 +292,6 @@ void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t)
 		parent->ch_first = t;
 	}
 	parent->ch_last = t;
-
-	// link into focus group list
-	emui_focus_group_add(parent, t);
 }
 
 // -----------------------------------------------------------------------
@@ -325,7 +356,7 @@ void emui_tile_destroy(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_tree_set_properties(struct emui_tile *t, int property)
+static void emui_tree_set_properties(struct emui_tile *t, int property)
 {
 	t->properties |= property;
 	t = t->ch_first;
@@ -336,7 +367,7 @@ void emui_tree_set_properties(struct emui_tile *t, int property)
 }
 
 // -----------------------------------------------------------------------
-void emui_tree_clear_properties(struct emui_tile *t, int property)
+static void emui_tree_clear_properties(struct emui_tile *t, int property)
 {
 	t->properties &= ~property;
 	t = t->ch_first;
@@ -354,20 +385,6 @@ void emui_tile_inverse(struct emui_tile *t, int inv)
 	} else {
 		emui_tree_clear_properties(t, P_INVERSE);
 	}
-}
-
-// -----------------------------------------------------------------------
-void emui_tile_hide(struct emui_tile *t)
-{
-	if (t->properties & P_HIDDEN) return;
-	emui_tree_set_properties(t, P_HIDDEN);
-}
-
-// -----------------------------------------------------------------------
-void emui_tile_unhide(struct emui_tile *t)
-{
-	if (!(t->properties & P_HIDDEN)) return;
-	emui_tree_clear_properties(t, P_HIDDEN);
 }
 
 // -----------------------------------------------------------------------

@@ -49,7 +49,7 @@ int emui_grid_update_geometry(struct emui_tile *t)
 				ch->e.y = ch->parent->i.y + y_offset;
 				ch->e.w = d->col_width;
 				ch->e.h = d->row_height;
-				emui_tile_unhide(ch);
+				ch->properties &= ~P_HIDDEN;
 				x_offset += d->col_width + d->col_spacing;
 				ch = ch->next;
 			// doesn't fit x-wise, skip to next row and repeat fitting
@@ -59,7 +59,7 @@ int emui_grid_update_geometry(struct emui_tile *t)
 			}
 		// doesn't fit y-wise, nothing to do but hide it
 		} else {
-			emui_tile_hide(ch);
+			ch->properties |= P_HIDDEN;
 			ch = ch->next;
 		}
 	}
