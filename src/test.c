@@ -214,10 +214,24 @@ int reg_int_changed(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
+int float_focus(struct emui_tile *t, int focus)
+{
+	if (focus) {
+		if (t->properties & P_HIDDEN) {
+			t->properties |= P_FLOAT;
+		}
+	} else {
+		t->properties &= ~P_FLOAT;
+	}
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 {
 	struct emui_tile *ureg = emui_frame(parent, 0, 0, 55, 11, "Registers", P_NONE);
 	emui_tile_set_focus_key(ureg, 'r');
+	emui_tile_set_focus_handler(ureg, float_focus);
 
 	struct emui_tile *ureg_just = emui_justifier(ureg);
 	struct emui_tile *ureg_r = emui_dummy_cont(ureg_just, 0, 0, 4, 11);
@@ -276,6 +290,7 @@ struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 struct emui_tile * ui_create_sreg(struct emui_tile *parent)
 {
 	struct emui_tile *sreg = emui_frame(parent, 0, 0, 55, 11, "Sys Registers", P_NONE);
+	emui_tile_set_focus_handler(sreg, float_focus);
 	emui_label(sreg, 0, 0, 55, AL_LEFT, S_TEXT_NN, "    hex  opcode D A   B   C");
 	emui_label(sreg, 0, 1, 55, AL_LEFT, S_TEXT_NN, "IR:");
 	emui_lineedit(sreg, -1, 4, 1, 4, 4, TT_HEX, M_OVR);
@@ -423,6 +438,7 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	emui_tile_set_focus_key(dasm_split, KEY_F(12));
 	struct emui_tile *dasm = emui_frame(dasm_split, 0, 0, 30, 20, "ASM", P_NONE);
 	emui_tile_set_focus_key(dasm, 'a');
+	emui_tile_set_focus_handler(dasm, float_focus);
 	struct emui_tile *asmv = emui_textview(dasm, 0, 0, 30, 20);
 	emui_tile_set_properties(asmv, P_MAXIMIZED);
 	emui_tile_set_key_handler(asmv, dasm_key_handler);
@@ -444,8 +460,9 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 
 	// memory
 	struct emui_tile *mem_split = emui_splitter(reg_split, AL_TOP, 10, FIT_DIV2, 6);
-	struct emui_tile *mem = emui_frame(mem_split, 0, 0, 80, 20, "Memory", P_NONE);
+	struct emui_tile *mem = emui_frame(mem_split, 0, 0, 80, 20, "Memory", P_MAXIMIZED);
 	emui_tile_set_focus_key(mem, 'm');
+	emui_tile_set_focus_handler(mem, float_focus);
 
 	// memory status
 	struct emui_tile *mem_status_split = emui_splitter(mem, AL_BOTTOM, 1, 1, 0);
@@ -481,15 +498,18 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	struct emui_tile *eval_split = emui_splitter(mem_split, AL_BOTTOM, 3, 3, 10);
 	struct emui_tile *eval = emui_frame(eval_split, 0, 0, 80, 3, "Evaluator", P_NONE);
 	emui_tile_set_focus_key(eval, 'e');
+	emui_tile_set_focus_handler(eval, float_focus);
 
 	// stack, watch, brk
 	struct emui_tile *stack_split = emui_splitter(eval_split, AL_LEFT, 18, 18, 20);
 	struct emui_tile *stack = emui_frame(stack_split, 0, 0, 18, 10, "Stack", P_NONE);
 	struct emui_tile *watch_split = emui_splitter(stack_split, AL_LEFT, 10, FIT_DIV2, 10);
-	struct emui_tile *brk = emui_frame(watch_split, 0, 0, 30, 10, "Watches", P_NONE);
-	emui_tile_set_focus_key(brk, 'w');
-	struct emui_tile *watch = emui_frame(watch_split, 0, 0, 30, 10, "Breakpoints", P_NONE);
-	emui_tile_set_focus_key(watch, 'b');
+	struct emui_tile *brk = emui_frame(watch_split, 0, 0, 25, 10, "Breakpoints", P_NONE);
+	emui_tile_set_focus_key(brk, 'b');
+	emui_tile_set_focus_handler(brk, float_focus);
+	struct emui_tile *watch = emui_frame(watch_split, 0, 0, 30, 10, "Watches", P_NONE);
+	emui_tile_set_focus_key(watch, 'w');
+	emui_tile_set_focus_handler(watch, float_focus);
 
 	// memory
 

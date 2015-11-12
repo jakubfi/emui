@@ -43,15 +43,21 @@ void emui_tile_update_external_geometry(struct emui_tile *t)
 
 	// (1) 'floating' property overrides everything
 	if (t->properties & P_FLOAT) {
-		t->e.w = t->r.w;
-		t->e.h = t->r.h;
-		t->e.x = (pg.w - t->r.w) / 2;
-		t->e.y = (pg.h - t->r.h) / 2;
-		if (t->e.x < 0) {
-			t->e.x = 0;
-		}
-		if (t->e.y < 0) {
-			t->e.y = 0;
+		// (1.1) still, respect P_MAXIMIZE
+		if (t->properties & P_MAXIMIZED) {
+			t->e = pg;
+		// (1.2) or just set the geometry by centering the floating window
+		} else {
+			t->e.w = t->r.w;
+			t->e.h = t->r.h;
+			t->e.x = (pg.w - t->r.w) / 2;
+			t->e.y = (pg.h - t->r.h) / 2;
+			if (t->e.x < 0) {
+				t->e.x = 0;
+			}
+			if (t->e.y < 0) {
+				t->e.y = 0;
+			}
 		}
 		t->properties &= ~P_HIDDEN;
 	// (2) respect parent's choice to hide the child
@@ -232,6 +238,13 @@ int emui_tile_set_update_handler(struct emui_tile *t, emui_handler_f handler)
 int emui_tile_set_change_handler(struct emui_tile *t, emui_handler_f handler)
 {
 	t->user_change_handler = handler;
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emui_tile_set_focus_handler(struct emui_tile *t, emui_focus_handler_f handler)
+{
+	t->user_focus_handler = handler;
 	return 0;
 }
 

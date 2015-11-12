@@ -83,6 +83,7 @@ typedef int (*emui_event_handler_f)(struct emui_tile *t, struct emui_event *ev);
 
 // user-provided handlers
 typedef int (*emui_handler_f)(struct emui_tile *t);
+typedef int (*emui_focus_handler_f)(struct emui_tile *t, int focus);
 typedef int (*emui_key_handler_f)(struct emui_tile *t, int key);
 
 struct emui_tile_drv {
@@ -139,6 +140,7 @@ struct emui_tile {
 	// user-provided handlers
 	emui_handler_f user_update_handler;
 	emui_handler_f user_change_handler;
+	emui_focus_handler_f user_focus_handler;
 	emui_key_handler_f user_key_handler;
 };
 
@@ -151,6 +153,7 @@ int emui_tile_draw(struct emui_tile *t);
 
 int emui_tile_set_update_handler(struct emui_tile *t, emui_handler_f handler);
 int emui_tile_set_change_handler(struct emui_tile *t, emui_handler_f handler);
+int emui_tile_set_focus_handler(struct emui_tile *t, emui_focus_handler_f handler);
 int emui_tile_set_key_handler(struct emui_tile *t, emui_key_handler_f handler);
 int emui_tile_set_focus_key(struct emui_tile *t, int key);
 int emui_tile_set_properties(struct emui_tile *t, unsigned properties);

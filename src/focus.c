@@ -179,13 +179,28 @@ struct emui_tile * _focus_down(struct emui_tile *t)
 // -----------------------------------------------------------------------
 void emui_focus(struct emui_tile *t)
 {
+	static struct emui_tile *last_focus;
 	if (!t) return;
+
 	// search for a focus path down to the (possibly) interactive tile
 	struct emui_tile *f = _focus_down(t);
 	// fill the focus path to the root
 	_focus_up(f);
+
+	// call focus handlers
+	if (last_focus && last_focus->user_focus_handler) {
+		last_focus->user_focus_handler(last_focus, 0);
+	}
+	if (t->user_focus_handler) {
+		t->user_focus_handler(t, 1);
+	}
+
 	// getting focus may change tile's geometry (P_FLOAT)
 	emui_tile_geometry_changed(t);
+	if (last_focus) {
+		emui_tile_geometry_changed(last_focus);
+	}
+	last_focus = t;
 }
 
 // -----------------------------------------------------------------------
