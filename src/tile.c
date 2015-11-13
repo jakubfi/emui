@@ -364,7 +364,18 @@ void emui_tile_destroy(struct emui_tile *t)
 	// destroy all child tiles
 	emui_tile_destroy_children(t);
 
-	// remove the tile itself
+	// remove from focus stack
+	emui_focus_stack_delete_tile(t);
+
+	// remove from focus path
+	if (t->parent && (t->parent->focus == t)) {
+		t->parent->focus = NULL;
+	}
+
+	// refocus (there may be a deleted tile on focus path)
+	emui_focus_refocus();
+
+	// delete the tile itself
 	emui_tile_free(t);
 }
 

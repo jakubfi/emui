@@ -277,6 +277,14 @@ static int emui_process_event(struct emui_event *ev)
 		return 0;
 	}
 
+	struct emui_tile *p = t->parent;
+	while (p) {
+		if ((ev->type == EV_KEY) && p->user_key_handler && !p->user_key_handler(p, ev->sender)) {
+				return 0;
+			}
+		p = p->parent;
+	}
+
 	// TODO: temporary
 	if ((ev->type == EV_KEY) && (ev->sender == 'q')) {
 		struct emui_event *ev = malloc(sizeof(struct emui_event));

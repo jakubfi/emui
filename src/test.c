@@ -23,7 +23,7 @@
 
 #include "emui.h"
 
-char *help = "\
+char *help_text = "\
 UI shortcuts:\n\
  * m, r, s, a, w, b - switch window\n\
  * h,? - help\n\
@@ -515,6 +515,33 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 
 	return dasm_split;
 }
+struct emui_tile *help;
+
+// -----------------------------------------------------------------------
+int help_key_handler(struct emui_tile *t, int key)
+{
+	switch (key) {
+	case '\n':
+		emui_tile_destroy(help);
+		return 0;
+	}
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int top_key_handler(struct emui_tile *t, int key)
+{
+	switch (key) {
+	case 'h':
+		help = emui_frame(t, 1, 1, 40, 20, "Help", P_FLOAT);
+		emui_tile_set_key_handler(help, help_key_handler);
+		emui_focus(help);
+		return 0;
+	}
+
+	return 1;
+}
 
 // -----------------------------------------------------------------------
 int main(int argc, char **argv)
@@ -542,6 +569,7 @@ int main(int argc, char **argv)
 
 	struct emui_tile *layout = emui_init(30);
 	emui_scheme_set(app_scheme);
+	emui_tile_set_key_handler(layout, top_key_handler);
 
 	// status
 	struct emui_tile *status_split = emui_splitter(layout, AL_BOTTOM, 1, 1, FIT_FILL);

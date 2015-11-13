@@ -39,6 +39,9 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir);
 int emui_focus_physical_neighbour(struct emui_tile *t, int dir);
 int emui_focus_group_add(struct emui_tile *parent, struct emui_tile *t);
 void emui_focus_group_unlink(struct emui_tile *t);
+void emui_focus_stack_delete_tile(struct emui_tile *t);
+void emui_focus_stack_drop();
+void emui_focus_refocus();
 
 #endif
 

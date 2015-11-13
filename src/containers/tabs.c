@@ -24,6 +24,10 @@
 #include "style.h"
 #include "print.h"
 
+struct tabs {
+	struct emui_tile *last_selected;
+};
+
 // -----------------------------------------------------------------------
 void emui_tabs_draw(struct emui_tile *t)
 {
@@ -41,18 +45,34 @@ void emui_tabs_draw(struct emui_tile *t)
 // -----------------------------------------------------------------------
 int emui_tabs_update_geometry(struct emui_tile *t)
 {
+	struct tabs *d = t->priv_data;
+	int tab_selected = 0;
+
 	struct emui_tile *ch = t->ch_first;
 	while (ch) {
 		ch->properties |= P_GEOM_FORCED;
 		ch->e = t->i;
 		if (emui_has_focus(ch)) {
 			ch->properties &= ~P_HIDDEN;
+			d->last_selected = ch;
+			tab_selected = 1;
 		} else {
 			ch->properties |= P_HIDDEN;
 		}
 		ch = ch->next;
 	}
+
+	// always leave the last selected tab unhidden
+	if (!tab_selected && d && d->last_selected) {
+		d->last_selected->properties &= ~P_HIDDEN;
+	}
 	return 0;
+}
+
+// -----------------------------------------------------------------------
+void emui_tabs_destroy_priv_data(struct emui_tile *t)
+{
+	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
@@ -60,13 +80,15 @@ struct emui_tile_drv emui_tabs_drv = {
 	.draw = emui_tabs_draw,
 	.update_children_geometry = emui_tabs_update_geometry,
 	.event_handler = NULL,
-	.destroy_priv_data = NULL,
+	.destroy_priv_data = emui_tabs_destroy_priv_data,
 };
 
 // -----------------------------------------------------------------------
 struct emui_tile * emui_tabs(struct emui_tile *parent)
 {
 	struct emui_tile *t = emui_tile_create(parent, -1, &emui_tabs_drv, 0, 0, parent->i.w, parent->i.h, 1, 0, 0, 0, "Tabs", P_CONTAINER | P_MAXIMIZED | P_FOCUS_GROUP);
+
+	t->priv_data = calloc(1, sizeof(struct tabs));
 
 	return t;
 }

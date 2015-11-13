@@ -23,7 +23,79 @@
 #include "tile.h"
 #include "focus.h"
 
+struct focus_item {
+	struct emui_tile *t;
+	struct focus_item *prev;
+};
+
+struct focus_item *focus_stack;
 static struct emui_tile *focus;
+
+// -----------------------------------------------------------------------
+static void _focus_stack_put(struct emui_tile *t)
+{
+	struct focus_item *fi = focus_stack;
+	struct focus_item *nfi = NULL;
+	struct focus_item *next = NULL;
+
+	// check if tile is already on stack
+	while (fi) {
+		if (fi->t == t) {
+			nfi = fi;
+			if (next) {
+				next->prev = fi->prev;
+			}
+			break;
+		}
+		next = fi;
+		fi = fi->prev;
+	}
+
+	// if not, create new focus item
+	if (!nfi) {
+		nfi = malloc(sizeof(struct focus_item));
+		nfi->t = t;
+	}
+
+	// put on stack
+	if (nfi != focus_stack) {
+		nfi->prev = focus_stack;
+		focus_stack = nfi;
+	}
+}
+
+// -----------------------------------------------------------------------
+void emui_focus_stack_delete_tile(struct emui_tile *t)
+{
+	struct focus_item *fi = focus_stack;
+	struct focus_item *next = NULL;
+
+	while (fi) {
+		if (fi->t == t) {
+			if (next) {
+				next->prev = fi->prev;
+			} else {
+				focus_stack = fi->prev;
+			}
+			free(fi);
+			return;
+		}
+		next = fi;
+		fi = fi->prev;
+	}
+}
+
+// -----------------------------------------------------------------------
+void emui_focus_stack_drop()
+{
+	struct focus_item *fi = focus_stack;
+	struct focus_item *fi_prev = NULL;
+	while (fi){
+		fi_prev = fi->prev;
+		free(fi);
+		fi = fi_prev;
+	}
+}
 
 // -----------------------------------------------------------------------
 static int _overlap(int b1, int e1, int b2, int e2)
@@ -179,13 +251,15 @@ struct emui_tile * _focus_down(struct emui_tile *t)
 // -----------------------------------------------------------------------
 void emui_focus(struct emui_tile *t)
 {
-	static struct emui_tile *last_focus;
 	if (!t) return;
+
+	struct emui_tile *last_focus = focus_stack ? focus_stack->t : NULL;
 
 	// search for a focus path down to the (possibly) interactive tile
 	struct emui_tile *f = _focus_down(t);
 	// fill the focus path to the root
 	_focus_up(f);
+	_focus_stack_put(t);
 
 	// call focus handlers
 	if (last_focus && last_focus->user_focus_handler) {
@@ -200,7 +274,14 @@ void emui_focus(struct emui_tile *t)
 	if (last_focus) {
 		emui_tile_geometry_changed(last_focus);
 	}
-	last_focus = t;
+}
+
+// -----------------------------------------------------------------------
+void emui_focus_refocus()
+{
+	if (focus_stack) {
+		emui_focus(focus_stack->t);
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -230,7 +311,7 @@ struct emui_tile * emui_focus_get()
 // -----------------------------------------------------------------------
 int emui_focus_group_add(struct emui_tile *parent, struct emui_tile *t)
 {
-	struct emui_tile *fg = NULL;;
+	struct emui_tile *fg = NULL;
 
 	// if parent is a focus group
 	if (parent->properties & P_FOCUS_GROUP) {
