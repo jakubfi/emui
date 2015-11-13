@@ -27,73 +27,59 @@
 // -----------------------------------------------------------------------
 void emui_tile_update_external_geometry(struct emui_tile *t)
 {
-	// select which parent's geometry tile's gonna use:
-	// screen, parent's external or parent's internal
-	struct emui_geom pg;
-	if (t->properties & P_FLOAT) {
-		pg.x = 0;
-		pg.y = 0;
-		pg.h = LINES;
-		pg.w = COLS;
-	} else if (t->properties & P_IGNORE_MARGINS) {
-		pg = t->parent->e;
-	} else {
-		pg = t->parent->i;
-	}
-
 	// (1) 'floating' property overrides everything
 	if (t->properties & P_FLOAT) {
-		// (1.1) still, respect P_MAXIMIZE
-		if (t->properties & P_MAXIMIZED) {
-			t->e = pg;
-		// (1.2) or just set the geometry by centering the floating window
-		} else {
-			t->e.w = t->r.w;
-			t->e.h = t->r.h;
-			t->e.x = (pg.w - t->r.w) / 2;
-			t->e.y = (pg.h - t->r.h) / 2;
-			if (t->e.x < 0) {
-				t->e.x = 0;
-			}
-			if (t->e.y < 0) {
-				t->e.y = 0;
-			}
-		}
 		t->properties &= ~P_HIDDEN;
-	// (2) respect parent's choice to hide the child
-	} else if (t->properties & P_GEOM_FORCED) {
-		if (t->properties & P_HIDDEN) {
-			return;
-		// (2.5) but also hide the child if parent is hidden
-		} else if (t->parent->properties & P_HIDDEN) {
-			t->properties |= P_HIDDEN;
-			return;
-		}
-	// (3) hide the child if parent is hidden
+	// (2) hide the child if parent is hidden
 	} else if (t->parent->properties & P_HIDDEN) {
 		t->properties |= P_HIDDEN;
 		return;
-	// (4) respect P_MAXIMIZE
-	} else if (t->properties & P_MAXIMIZED) {
-		t->e = pg;
-		t->properties &= ~P_HIDDEN;
-	// (5) calculate own external geometry
-	} else {
-		t->e = t->r;
-		t->e.x += pg.x;
-		t->e.y += pg.y;
+	// (3) respect parent's choice regarding children geometry and visibility
+	} else if (t->properties & P_GEOM_FORCED) {
+		return;
+	}
+
+	// calculate own external geometry
+	t->e = t->r;
+	t->e.x += t->pg->x;
+	t->e.y += t->pg->y;
+
+	// respect centering
+	if (t->properties & P_HCENTER) {
+		t->e.w = t->r.w;
+		t->e.x = (t->pg->w - t->r.w) / 2;
+		if (t->e.x < 0) {
+			t->e.x = 0;
+		}
+	}
+	if (t->properties & P_VCENTER) {
+		t->e.h = t->r.h;
+		t->e.y = (t->pg->h - t->r.h) / 2;
+		if (t->e.y < 0) {
+			t->e.y = 0;
+		}
+	}
+
+	// respect maximization
+	if (t->properties & P_HMAXIMIZED) {
+		t->e.x = t->pg->x;
+		t->e.w = t->pg->w;
+	}
+	if (t->properties & P_VMAXIMIZED) {
+		t->e.y = t->pg->y;
+		t->e.h = t->pg->h;
 	}
 
 	// fit tile width to parent's width
-	if (t->e.w + t->e.x > pg.w + pg.x) {
-		t->e.w = pg.w - (t->e.x - pg.x);
+	if (t->e.w + t->e.x > t->pg->w + t->pg->x) {
+		t->e.w = t->pg->w - (t->e.x - t->pg->x);
 	}
 	// fit tile to parent's height
-	if (t->e.h + t->e.y > pg.h + pg.y) {
-		t->e.h = pg.h - (t->e.y - pg.y);
+	if (t->e.h + t->e.y > t->pg->h + t->pg->y) {
+		t->e.h = t->pg->h - (t->e.y - t->pg->y);
 	}
 	// hide tile if outside parent's area
-	if ((t->e.x >= pg.x + pg.w) || (t->e.y >= pg.y + pg.h)) {
+	if ((t->e.x >= t->pg->x + t->pg->w) || (t->e.y >= t->pg->y + t->pg->h)) {
 		t->properties |= P_HIDDEN;
 	} else {
 		t->properties &= ~P_HIDDEN;
@@ -112,10 +98,11 @@ void emui_tile_update_internal_geometry(struct emui_tile *t)
 	}
 
 	// set internal tile geometry
-	t->i.x = t->e.x + t->ml;
-	t->i.y = t->e.y + t->mt;
-	t->i.w = t->e.w - t->ml - t->mr;
-	t->i.h = t->e.h - t->mt - t->mb;
+	t->i = t->e;
+	t->i.x += t->ml;
+	t->i.y += t->mt;
+	t->i.w -= t->ml + t->mr;
+	t->i.h -= t->mt + t->mb;
 }
 
 // -----------------------------------------------------------------------
@@ -199,6 +186,8 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 	t->geometry_changed = 1;
 	t->id = id;
 	t->accept_updates = 1;
+	t->pg = &(parent->i);
+
 	if (!t->drv->draw) {
 		t->properties |= P_NOCANVAS;
 	}
@@ -218,6 +207,16 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 	emui_tile_update_geometry(t);
 
 	return t;
+}
+
+// -----------------------------------------------------------------------
+void emui_tile_set_geometry_parent(struct emui_tile *t, struct emui_tile *pg, int geom_type)
+{
+	if (geom_type == GEOM_EXTERNAL) {
+		t->pg = &(pg->e);
+	} else {
+		t->pg = &(pg->i);
+	}
 }
 
 // -----------------------------------------------------------------------

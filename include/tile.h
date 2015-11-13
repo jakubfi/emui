@@ -52,14 +52,23 @@ enum emui_align_types {
 	AL_VERTICAL,
 };
 
+enum emui_geometries {
+	GEOM_INTERNAL,
+	GEOM_EXTERNAL
+};
+
 enum emui_tile_properties {
 	P_NONE			= 0,
 	// user-settable
-	P_MAXIMIZED		= 1 << 0,	// tile is maximized within parent's geometry
-	P_FOCUS_GROUP	= 1 << 1,	// tile is a root of focus group
-	P_IGNORE_MARGINS= 1 << 2,	// tile will ignore parent's margins
-	P_FLOAT			= 1 << 3,	// floating tile (detached from parent's geometry)
-	P_INVERSE		= 1 << 4,	// tile is drawn in inversed colors
+	P_HMAXIMIZED	= 1 << 0,	// tile is maximized horizontally
+	P_VMAXIMIZED	= 1 << 1,	// tile is maximized vertically
+	P_MAXIMIZED		= P_HMAXIMIZED | P_VMAXIMIZED, // tile is maximized
+	P_VCENTER		= 1 << 2,	// tile is centered vertically
+	P_HCENTER		= 1 << 3,	// tile is centered horizontally
+	P_CENTER		= P_HCENTER | P_VCENTER, // tile is centered
+	P_FLOAT			= 1 << 4,	// floating tile (detached from parent's geometry)
+	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
+	P_INVERSE		= 1 << 6,	// tile is drawn in inversed colors
 	// internal
 	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
 	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
@@ -110,6 +119,7 @@ struct emui_tile {
 	int content_invalid;		// tile contents are invalid after last edit
 
 	// geometry
+	struct emui_geom *pg;		// geometry used for calculating tile geometry (parent->i by default)
 	unsigned mt, mb, ml, mr;	// tile-requested interior margins
 	struct emui_geom r;			// user-requested tile geometry (relative to parent's internal work area)
 	struct emui_geom e;			// actual external tile area
@@ -163,6 +173,7 @@ int emui_tile_set_style(struct emui_tile *t, int style);
 void emui_tile_set_id(struct emui_tile *t, int id);
 int emui_tile_get_id(struct emui_tile *t);
 void emui_tile_set_margins(struct emui_tile *t, int mt, int mb, int ml, int mr);
+void emui_tile_set_geometry_parent(struct emui_tile *t, struct emui_tile *pg, int geom_type);
 
 void emui_tile_inverse(struct emui_tile *t, int inv);
 void emui_tile_geometry_changed(struct emui_tile *t);

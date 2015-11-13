@@ -95,6 +95,8 @@ Status bar indicators:\n\
 
 #define MAX_MEM 1024*32
 
+struct emui_tile *tabs;
+
 uint16_t treg[8];
 struct emdas *emd;
 uint16_t *mem[16];
@@ -218,9 +220,11 @@ int float_focus(struct emui_tile *t, int focus)
 {
 	if (focus) {
 		if (t->properties & P_HIDDEN) {
+			emui_tile_set_geometry_parent(t, tabs, GEOM_INTERNAL);
 			t->properties |= P_FLOAT;
 		}
 	} else {
+		emui_tile_set_geometry_parent(t, t->parent, GEOM_INTERNAL);
 		t->properties &= ~P_FLOAT;
 	}
 	return 0;
@@ -229,7 +233,7 @@ int float_focus(struct emui_tile *t, int focus)
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 {
-	struct emui_tile *ureg = emui_frame(parent, 0, 0, 55, 11, "Registers", P_NONE);
+	struct emui_tile *ureg = emui_frame(parent, 0, 0, 55, 11, "Registers", P_CENTER);
 	emui_tile_set_focus_key(ureg, 'r');
 	emui_tile_set_focus_handler(ureg, float_focus);
 
@@ -289,7 +293,7 @@ struct emui_tile * ui_create_ureg(struct emui_tile *parent)
 // -----------------------------------------------------------------------
 struct emui_tile * ui_create_sreg(struct emui_tile *parent)
 {
-	struct emui_tile *sreg = emui_frame(parent, 0, 0, 55, 11, "Sys Registers", P_NONE);
+	struct emui_tile *sreg = emui_frame(parent, 0, 0, 55, 11, "Sys Registers", P_CENTER);
 	emui_tile_set_focus_handler(sreg, float_focus);
 	emui_label(sreg, 0, 0, 55, AL_LEFT, S_TEXT_NN, "    hex  opcode D A   B   C");
 	emui_label(sreg, 0, 1, 55, AL_LEFT, S_TEXT_NN, "IR:");
@@ -436,7 +440,7 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 	emui_tile_set_properties(dasm_split, P_FOCUS_GROUP);
 	emui_tile_set_name(dasm_split, "Debugger");
 	emui_tile_set_focus_key(dasm_split, KEY_F(12));
-	struct emui_tile *dasm = emui_frame(dasm_split, 0, 0, 30, 20, "ASM", P_NONE);
+	struct emui_tile *dasm = emui_frame(dasm_split, 0, 0, 30, 20, "ASM", P_HCENTER|P_VMAXIMIZED);
 	emui_tile_set_focus_key(dasm, 'a');
 	emui_tile_set_focus_handler(dasm, float_focus);
 	struct emui_tile *asmv = emui_textview(dasm, 0, 0, 30, 20);
@@ -446,7 +450,7 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 
 	// asm status
 	struct emui_tile *dasm_status_split = emui_splitter(dasm, AL_BOTTOM, 1, 1, 0);
-	emui_tile_set_properties(dasm_status_split, P_IGNORE_MARGINS);
+	emui_tile_set_geometry_parent(dasm_status_split, dasm_status_split->parent, GEOM_EXTERNAL);
 	struct emui_tile *dasm_status_cont = emui_splitter(dasm_status_split, AL_RIGHT, 24, 24, 0);
 	emui_tile_set_margins(dasm_status_cont, 0, 0, 2, 2);
 	struct emui_tile *dasm_status = emui_label(dasm_status_cont, 0, 0, 24, AL_RIGHT, S_DEFAULT, "");
@@ -466,7 +470,8 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 
 	// memory status
 	struct emui_tile *mem_status_split = emui_splitter(mem, AL_BOTTOM, 1, 1, 0);
-	emui_tile_set_properties(mem_status_split, P_IGNORE_MARGINS);
+	emui_tile_set_geometry_parent(mem_status_split, mem_status_split->parent, GEOM_EXTERNAL);
+
 	struct emui_tile *mem_status_cont = emui_splitter(mem_status_split, AL_RIGHT, 24, 24, 0);
 	emui_tile_set_margins(mem_status_cont, 0, 0, 2, 2);
 	emui_label(mem_status_cont, 0, 0, 24, AL_RIGHT, S_DEFAULT, "[ disp:HEX, cols:FIX16 ]");
@@ -496,18 +501,18 @@ struct emui_tile * ui_create_debugger(struct emui_tile *parent)
 
 	// eval
 	struct emui_tile *eval_split = emui_splitter(mem_split, AL_BOTTOM, 3, 3, 10);
-	struct emui_tile *eval = emui_frame(eval_split, 0, 0, 80, 3, "Evaluator", P_NONE);
+	struct emui_tile *eval = emui_frame(eval_split, 0, 0, 80, 3, "Evaluator", P_VCENTER|P_HMAXIMIZED);
 	emui_tile_set_focus_key(eval, 'e');
 	emui_tile_set_focus_handler(eval, float_focus);
 
 	// stack, watch, brk
 	struct emui_tile *stack_split = emui_splitter(eval_split, AL_LEFT, 18, 18, 20);
-	struct emui_tile *stack = emui_frame(stack_split, 0, 0, 18, 10, "Stack", P_NONE);
+	struct emui_tile *stack = emui_frame(stack_split, 0, 0, 18, 10, "Stack", P_CENTER);
 	struct emui_tile *watch_split = emui_splitter(stack_split, AL_LEFT, 10, FIT_DIV2, 10);
-	struct emui_tile *brk = emui_frame(watch_split, 0, 0, 25, 10, "Breakpoints", P_NONE);
+	struct emui_tile *brk = emui_frame(watch_split, 0, 0, 25, 10, "Breakpoints", P_CENTER);
 	emui_tile_set_focus_key(brk, 'b');
 	emui_tile_set_focus_handler(brk, float_focus);
-	struct emui_tile *watch = emui_frame(watch_split, 0, 0, 30, 10, "Watches", P_NONE);
+	struct emui_tile *watch = emui_frame(watch_split, 0, 0, 30, 10, "Watches", P_CENTER);
 	emui_tile_set_focus_key(watch, 'w');
 	emui_tile_set_focus_handler(watch, float_focus);
 
@@ -520,22 +525,26 @@ struct emui_tile *help;
 // -----------------------------------------------------------------------
 int help_key_handler(struct emui_tile *t, int key)
 {
-	switch (key) {
-	case '\n':
-		emui_tile_destroy(help);
-		return 0;
-	}
-
+	emui_tile_destroy(help);
 	return 0;
 }
 
 // -----------------------------------------------------------------------
 int top_key_handler(struct emui_tile *t, int key)
 {
+	struct emui_tile *help_tv;
+
 	switch (key) {
 	case 'h':
-		help = emui_frame(t, 1, 1, 40, 20, "Help", P_FLOAT);
+	case '?':
+	case 'H':
+		help = emui_frame(t, 1, 1, 60, 20, "Help", P_VMAXIMIZED | P_HCENTER);
+		emui_tile_set_geometry_parent(help, tabs, GEOM_INTERNAL);
 		emui_tile_set_key_handler(help, help_key_handler);
+		help_tv = emui_textview(help, 0, 0, 10, 10);
+		emui_tile_set_properties(help_tv, P_MAXIMIZED);
+		emui_textview_append(help_tv, S_DEFAULT, help_text);
+
 		emui_focus(help);
 		return 0;
 	}
@@ -576,7 +585,7 @@ int main(int argc, char **argv)
 	struct emui_tile *status = ui_create_status(status_split);
 
 	// tabs
-	struct emui_tile *tabs = emui_tabs(status_split);
+	tabs = emui_tabs(status_split);
 
 	// terminal windows
 	struct emui_tile *term1 = emui_frame(tabs, 0, 0, 80, 25, "Term 1", P_MAXIMIZED);
