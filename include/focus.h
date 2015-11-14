@@ -31,15 +31,15 @@ enum focus_change_direction {
 	FC_DOWN
 };
 
-void emui_focus(struct emui_tile *t);
-int emui_has_focus(struct emui_tile *t);
-int emui_is_focused(struct emui_tile *t);
-struct emui_tile * emui_focus_get();
-int emui_focus_list_neighbour(struct emui_tile *t, int dir);
-int emui_focus_physical_neighbour(struct emui_tile *t, int dir);
-int emui_focus_group_add(struct emui_tile *parent, struct emui_tile *t);
-void emui_focus_group_unlink(struct emui_tile *t);
-void emui_focus_stack_delete_tile(struct emui_tile *t);
+void emui_focus(EMTILE *t);
+int emui_has_focus(EMTILE *t);
+int emui_is_focused(EMTILE *t);
+EMTILE * emui_focus_get();
+int emui_focus_list_neighbour(EMTILE *t, int dir);
+int emui_focus_physical_neighbour(EMTILE *t, int dir);
+int emui_focus_group_add(EMTILE *parent, EMTILE *t);
+void emui_focus_group_unlink(EMTILE *t);
+void emui_focus_stack_delete_tile(EMTILE *t);
 void emui_focus_stack_drop();
 void emui_focus_refocus();
 

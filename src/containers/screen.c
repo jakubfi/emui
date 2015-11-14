@@ -25,7 +25,7 @@
 #include "event.h"
 
 // -----------------------------------------------------------------------
-int emui_screen_update_geometry(struct emui_tile *t)
+int emui_screen_update_geometry(EMTILE *t)
 {
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -39,7 +39,7 @@ int emui_screen_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_screen_drv = {
+struct emtile_drv emui_screen_drv = {
 	.draw = NULL,
 	.update_children_geometry = emui_screen_update_geometry,
 	.event_handler = NULL,
@@ -47,9 +47,9 @@ struct emui_tile_drv emui_screen_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_screen()
+EMTILE * emui_screen()
 {
-	struct emui_tile *t = calloc(1, sizeof(struct emui_tile));
+	EMTILE *t = calloc(1, sizeof(EMTILE));
 	t->ncwin = stdscr;
 	t->drv = &emui_screen_drv;
 	t->name = strdup("SCREEN");

@@ -18,7 +18,7 @@
 #ifndef EMUI_LABEL_H
 #define EMUI_LABEL_H
 
-struct emui_tile * emui_label(struct emui_tile *parent, int x, int y, int w, int align, int style, char *txt);
-int emui_label_set_text(struct emui_tile *t, char *txt);
+EMTILE * emui_label(EMTILE *parent, int x, int y, int w, int align, int style, char *txt);
+int emui_label_set_text(EMTILE *t, char *txt);
 
 #endif

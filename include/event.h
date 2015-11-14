@@ -19,16 +19,14 @@
 #define EMUI_EVENT_H
 
 enum event_types {
-	EV_QUIT,		// (queued) exit the main UI loop
-	EV_KEY,			// (queued) key pressed
-	EV_ERROR,		// (queued) error
+	EV_QUIT,		// exit the main UI loop
+	EV_KEY,			// key pressed
+	EV_ERROR,		// error
 };
 
 struct emui_event {
 	int type;		// event type
-	int sender;		// event sender (key, error, fd number)
-	void *data;		// event data
-	int size;		// data size (if any)
+	int sender;		// event sender (key, error)
 };
 
 struct emui_event * emui_evq_get();

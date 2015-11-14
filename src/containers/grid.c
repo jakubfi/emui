@@ -29,10 +29,10 @@ struct grid {
 };
 
 // -----------------------------------------------------------------------
-int emui_grid_update_geometry(struct emui_tile *t)
+int emui_grid_update_geometry(EMTILE *t)
 {
 	struct grid *d = t->priv_data;
-	struct emui_tile *ch;
+	EMTILE *ch;
 	int x_offset = 0;
 	int y_offset = 0;
 
@@ -51,7 +51,7 @@ int emui_grid_update_geometry(struct emui_tile *t)
 				ch->e.h = d->row_height;
 				ch->properties &= ~P_HIDDEN;
 				x_offset += d->col_width + d->col_spacing;
-				ch = ch->next;
+				ch = ch->ch_next;
 			// doesn't fit x-wise, skip to next row and repeat fitting
 			} else {
 				x_offset = 0;
@@ -60,7 +60,7 @@ int emui_grid_update_geometry(struct emui_tile *t)
 		// doesn't fit y-wise, nothing to do but hide it
 		} else {
 			ch->properties |= P_HIDDEN;
-			ch = ch->next;
+			ch = ch->ch_next;
 		}
 	}
 
@@ -68,13 +68,13 @@ int emui_grid_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_grid_destroy_priv_data(struct emui_tile *t)
+void emui_grid_destroy_priv_data(EMTILE *t)
 {
 	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_grid_drv = {
+struct emtile_drv emui_grid_drv = {
 	.draw = NULL,
 	.update_children_geometry = emui_grid_update_geometry,
 	.event_handler = NULL,
@@ -82,11 +82,11 @@ struct emui_tile_drv emui_grid_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_grid(struct emui_tile *parent, int cols, int rows, int col_width, int row_height, int col_spacing)
+EMTILE * emui_grid(EMTILE *parent, int cols, int rows, int col_width, int row_height, int col_spacing)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, -1, &emui_grid_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Grid", P_CONTAINER | P_MAXIMIZED);
+	t = emtile(parent, -1, &emui_grid_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Grid", P_CONTAINER | P_MAXIMIZED);
 
 	t->priv_data = calloc(1, sizeof(struct grid));
 

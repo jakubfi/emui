@@ -43,7 +43,7 @@ enum emui_styles {
 	S_TEXT_EN,
 	S_TEXT_EI,
 
-	S_FIRST_USER_STYLE
+	S_FIRST_APP_STYLE
 };
 
 struct emui_style_def {

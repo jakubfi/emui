@@ -18,8 +18,8 @@
 #ifndef EMUI_FCOUNTERS_H
 #define EMUI_FCOUNTERS_H
 
-struct emui_tile * emui_framecounter(struct emui_tile *parent, int x, int y, int style);
-struct emui_tile * emui_fpscounter(struct emui_tile *parent, int x, int y, int style);
-struct emui_tile * emui_line(struct emui_tile *parent, int align, int x, int y, int len);
+EMTILE * emui_framecounter(EMTILE *parent, int x, int y, int style);
+EMTILE * emui_fpscounter(EMTILE *parent, int x, int y, int style);
+EMTILE * emui_line(EMTILE *parent, int align, int x, int y, int len);
 
 #endif

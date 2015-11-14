@@ -25,7 +25,7 @@
 #include "focus.h"
 
 // -----------------------------------------------------------------------
-void emui_frame_draw(struct emui_tile *t)
+void emui_frame_draw(EMTILE *t)
 {
 	int title_style = S_TITLE_NN;
 	int frame_style = S_FRAME_NN;
@@ -40,7 +40,7 @@ void emui_frame_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_frame_drv = {
+struct emtile_drv emui_frame_drv = {
 	.draw = emui_frame_draw,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
@@ -48,13 +48,13 @@ struct emui_tile_drv emui_frame_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_frame(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties)
+EMTILE * emui_frame(EMTILE *parent, int x, int y, int w, int h, char *name, int properties)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, -1, &emui_frame_drv, x, y, w, h, 1, 1, 1, 1, name, P_CONTAINER | P_FOCUS_GROUP);
+	t = emtile(parent, -1, &emui_frame_drv, x, y, w, h, 1, 1, 1, 1, name, P_CONTAINER | P_FOCUS_GROUP);
 
-	emui_tile_set_properties(t, properties);
+	emtile_set_properties(t, properties);
 
 	return t;
 }

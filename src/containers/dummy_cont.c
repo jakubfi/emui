@@ -21,7 +21,7 @@
 #include "event.h"
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_dummy_cont_drv = {
+struct emtile_drv emui_dummy_cont_drv = {
 	.draw = NULL,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
@@ -29,11 +29,11 @@ struct emui_tile_drv emui_dummy_cont_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_dummy_cont(struct emui_tile *parent, int x, int y, int w, int h)
+EMTILE * emui_dummy_cont(EMTILE *parent, int x, int y, int w, int h)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, -1, &emui_dummy_cont_drv, x, y, w, h, 0, 0, 0, 0, "DummyCont", P_CONTAINER);
+	t = emtile(parent, -1, &emui_dummy_cont_drv, x, y, w, h, 0, 0, 0, 0, "DummyCont", P_CONTAINER);
 
 	return t;
 }

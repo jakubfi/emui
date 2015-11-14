@@ -21,17 +21,17 @@
 #include <ncurses.h>
 #include <stdarg.h>
 
-int emuixy(struct emui_tile *t, int x, int y);
+int emuixy(EMTILE *t, int x, int y);
 
-int emuiprt(struct emui_tile *t, int style, char *format, ...);
-int emuixyprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, ...);
-int vemuiprt(struct emui_tile *t, int style, char *format, va_list vl);
-int vemuixyprt(struct emui_tile *t, unsigned x, unsigned y, int style, char *format, va_list vl);
+int emuiprt(EMTILE *t, int style, char *format, ...);
+int emuixyprt(EMTILE *t, unsigned x, unsigned y, int style, char *format, ...);
+int vemuiprt(EMTILE *t, int style, char *format, va_list vl);
+int vemuixyprt(EMTILE *t, unsigned x, unsigned y, int style, char *format, va_list vl);
 
-int emuibox(struct emui_tile *t, int style);
-int emuifillbg(struct emui_tile *t, int style);
-int emuihline(struct emui_tile *t, int x, int y, int len, int style);
-int emuivline(struct emui_tile *t, int x, int y, int len, int style);
+int emuibox(EMTILE *t, int style);
+int emuifillbg(EMTILE *t, int style);
+int emuihline(EMTILE *t, int x, int y, int len, int style);
+int emuivline(EMTILE *t, int x, int y, int len, int style);
 
 
 #endif

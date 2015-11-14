@@ -24,15 +24,15 @@
 #include "focus.h"
 
 struct focus_item {
-	struct emui_tile *t;
+	EMTILE *t;
 	struct focus_item *prev;
 };
 
 struct focus_item *focus_stack;
-static struct emui_tile *focus;
+static EMTILE *focus;
 
 // -----------------------------------------------------------------------
-static void _focus_stack_put(struct emui_tile *t)
+static void _focus_stack_put(EMTILE *t)
 {
 	struct focus_item *fi = focus_stack;
 	struct focus_item *nfi = NULL;
@@ -65,7 +65,7 @@ static void _focus_stack_put(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_focus_stack_delete_tile(struct emui_tile *t)
+void emui_focus_stack_delete_tile(EMTILE *t)
 {
 	struct focus_item *fi = focus_stack;
 	struct focus_item *next = NULL;
@@ -113,7 +113,7 @@ static int _distance(int x1, int y1, int x2, int y2)
 }
 
 // -----------------------------------------------------------------------
-static void _focus_up(struct emui_tile *t)
+static void _focus_up(EMTILE *t)
 {
 	// set new focus path
 	focus = t;
@@ -124,10 +124,10 @@ static void _focus_up(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
+int emui_focus_physical_neighbour(EMTILE *t, int dir)
 {
-	struct emui_tile *f = t->fg->fg_first;
-	struct emui_tile *match = t;
+	EMTILE *f = t->fg->fg_first;
+	EMTILE *match = t;
 
 	int dd; // directional distance (distance in the move direction)
 	int ovrl, ovrl_max = 0; // overlap region
@@ -184,9 +184,9 @@ int emui_focus_physical_neighbour(struct emui_tile *t, int dir)
 }
 
 // -----------------------------------------------------------------------
-int emui_focus_list_neighbour(struct emui_tile *t, int dir)
+int emui_focus_list_neighbour(EMTILE *t, int dir)
 {
-	struct emui_tile *next = t;
+	EMTILE *next = t;
 	// for cases when we start searching at t = t->fg->fg_first
 	int first_item = 1;
 
@@ -222,7 +222,7 @@ int emui_focus_list_neighbour(struct emui_tile *t, int dir)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * _focus_down(struct emui_tile *t)
+static EMTILE * _focus_down(EMTILE *t)
 {
 	// try to follow old focus first
 	if (t->focus) {
@@ -249,30 +249,30 @@ struct emui_tile * _focus_down(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_focus(struct emui_tile *t)
+void emui_focus(EMTILE *t)
 {
 	if (!t) return;
 
-	struct emui_tile *last_focus = focus_stack ? focus_stack->t : NULL;
+	EMTILE *last_focus = focus_stack ? focus_stack->t : NULL;
 
 	// search for a focus path down to the (possibly) interactive tile
-	struct emui_tile *f = _focus_down(t);
+	EMTILE *f = _focus_down(t);
 	// fill the focus path to the root
 	_focus_up(f);
 	_focus_stack_put(t);
 
 	// call focus handlers
-	if (last_focus && last_focus->user_focus_handler) {
-		last_focus->user_focus_handler(last_focus, 0);
+	if (last_focus && last_focus->focus_handler) {
+		last_focus->focus_handler(last_focus, 0);
 	}
-	if (t->user_focus_handler) {
-		t->user_focus_handler(t, 1);
+	if (t->focus_handler) {
+		t->focus_handler(t, 1);
 	}
 
 	// getting focus may change tile's geometry (P_FLOAT)
-	emui_tile_geometry_changed(t);
+	emtile_geometry_changed(t);
 	if (last_focus) {
-		emui_tile_geometry_changed(last_focus);
+		emtile_geometry_changed(last_focus);
 	}
 }
 
@@ -285,16 +285,16 @@ void emui_focus_refocus()
 }
 
 // -----------------------------------------------------------------------
-int emui_is_focused(struct emui_tile *t)
+int emui_is_focused(EMTILE *t)
 {
 	if (t == focus) return 1;
 	else return 0;
 }
 
 // -----------------------------------------------------------------------
-int emui_has_focus(struct emui_tile *t)
+int emui_has_focus(EMTILE *t)
 {
-	struct emui_tile *f = focus;
+	EMTILE *f = focus;
 	while (f) {
 		if (t == f) return 1;
 		f = f->parent;
@@ -303,15 +303,15 @@ int emui_has_focus(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_focus_get()
+EMTILE * emui_focus_get()
 {
 	return focus;
 }
 
 // -----------------------------------------------------------------------
-int emui_focus_group_add(struct emui_tile *parent, struct emui_tile *t)
+int emui_focus_group_add(EMTILE *parent, EMTILE *t)
 {
-	struct emui_tile *fg = NULL;
+	EMTILE *fg = NULL;
 
 	// if parent is a focus group
 	if (parent->properties & P_FOCUS_GROUP) {
@@ -337,11 +337,11 @@ int emui_focus_group_add(struct emui_tile *parent, struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_focus_group_unlink(struct emui_tile *t)
+void emui_focus_group_unlink(EMTILE *t)
 {
 	if (!t) return;
 
-	struct emui_tile *fg = t->fg;
+	EMTILE *fg = t->fg;
 
 	if (!fg) return;
 

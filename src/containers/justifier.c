@@ -22,11 +22,11 @@
 #include "event.h"
 
 // -----------------------------------------------------------------------
-int emui_justifier_update_geometry(struct emui_tile *t)
+int emui_justifier_update_geometry(EMTILE *t)
 {
 	int ch_width = -1;
 	int ch_count = 0;
-	struct emui_tile *ch;
+	EMTILE *ch;
 
 	// calculate total children width
 	ch = t->ch_first;
@@ -35,7 +35,7 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 		ch_width += ch->r.w + 1;
 		ch_count++;
 		ch->properties |= P_GEOM_FORCED;
-		ch = ch->next;
+		ch = ch->ch_next;
 	}
 
 	// hide children which won't fit (start from the end of ch list)
@@ -47,7 +47,7 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 		} else {
 			ch->properties &= ~P_HIDDEN;
 		}
-		ch = ch->prev;
+		ch = ch->ch_prev;
 	}
 
 	// justify children
@@ -60,14 +60,14 @@ int emui_justifier_update_geometry(struct emui_tile *t)
 		ch->e.w = ch->r.w;
 		ch->e.h = ch->parent->i.h;
 		offset += ch->r.w + 1 + per_ch;
-		ch = ch->next;
+		ch = ch->ch_next;
 	}
 
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_justifier_drv = {
+struct emtile_drv emui_justifier_drv = {
 	.draw = NULL,
 	.update_children_geometry = emui_justifier_update_geometry,
 	.event_handler = NULL,
@@ -75,11 +75,11 @@ struct emui_tile_drv emui_justifier_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_justifier(struct emui_tile *parent)
+EMTILE * emui_justifier(EMTILE *parent)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, -1, &emui_justifier_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Justify", P_CONTAINER | P_MAXIMIZED);
+	t = emtile(parent, -1, &emui_justifier_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Justify", P_CONTAINER | P_MAXIMIZED);
 
 	return t;
 }

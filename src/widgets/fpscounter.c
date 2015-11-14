@@ -32,7 +32,7 @@ struct fpscounter {
 };
 
 // -----------------------------------------------------------------------
-void emui_fpscounter_draw(struct emui_tile *t)
+void emui_fpscounter_draw(EMTILE *t)
 {
 	struct fpscounter *d = t->priv_data;
 
@@ -49,13 +49,13 @@ void emui_fpscounter_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_fpscounter_destroy_priv_data(struct emui_tile *t)
+void emui_fpscounter_destroy_priv_data(EMTILE *t)
 {
 	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_fpscounter_drv = {
+struct emtile_drv emui_fpscounter_drv = {
 	.draw = emui_fpscounter_draw,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
@@ -63,11 +63,11 @@ struct emui_tile_drv emui_fpscounter_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_fpscounter(struct emui_tile *parent, int x, int y, int style)
+EMTILE * emui_fpscounter(EMTILE *parent, int x, int y, int style)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, -1, &emui_fpscounter_drv, x, y, 6, 1, 0, 0, 0, 0, NULL, P_NONE);
+	t = emtile(parent, -1, &emui_fpscounter_drv, x, y, 6, 1, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->style = style;
 	t->priv_data = calloc(1, sizeof(struct fpscounter));

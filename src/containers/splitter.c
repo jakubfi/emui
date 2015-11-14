@@ -61,7 +61,7 @@ static inline void fit(int space, int min1, int max1, int min2, int *size1, int 
 }
 
 // -----------------------------------------------------------------------
-static inline void geom(struct emui_tile *ch, int x, int y, int w, int h)
+static inline void geom(EMTILE *ch, int x, int y, int w, int h)
 {
 	if (!ch) return;
 
@@ -78,12 +78,12 @@ static inline void geom(struct emui_tile *ch, int x, int y, int w, int h)
 }
 
 // -----------------------------------------------------------------------
-int emui_splitter_update_geometry(struct emui_tile *t)
+int emui_splitter_update_geometry(EMTILE *t)
 {
 	struct splitter *d = t->priv_data;
 
-	struct emui_tile *ch1 = t->ch_first;
-	struct emui_tile *ch2 = ch1 ? t->ch_first->next : NULL;
+	EMTILE *ch1 = t->ch_first;
+	EMTILE *ch2 = ch1 ? t->ch_first->ch_next : NULL;
 	int space, size1, size2;
 
 	// set geometry to forced for first two children
@@ -139,13 +139,13 @@ int emui_splitter_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_splitter_destroy_priv_data(struct emui_tile *t)
+void emui_splitter_destroy_priv_data(EMTILE *t)
 {
 	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_splitter_drv = {
+struct emtile_drv emui_splitter_drv = {
 	.draw = NULL,
 	.update_children_geometry = emui_splitter_update_geometry,
 	.event_handler = NULL,
@@ -153,15 +153,15 @@ struct emui_tile_drv emui_splitter_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_splitter(struct emui_tile *parent, int edge, int min1, int max1, int min2)
+EMTILE * emui_splitter(EMTILE *parent, int edge, int min1, int max1, int min2)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
 	if ((edge != AL_TOP) && (edge != AL_BOTTOM) && (edge != AL_LEFT) && (edge != AL_RIGHT)) {
 		return NULL;
 	}
 
-	t = emui_tile_create(parent, -1, &emui_splitter_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Splitter", P_CONTAINER | P_MAXIMIZED);
+	t = emtile(parent, -1, &emui_splitter_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Splitter", P_CONTAINER | P_MAXIMIZED);
 
 	if (!t) return NULL;
 

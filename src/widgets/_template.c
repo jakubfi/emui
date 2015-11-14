@@ -28,32 +28,32 @@ struct W_NAME {
 };
 
 // -----------------------------------------------------------------------
-void emui_W_NAME_draw(struct emui_tile *t)
+void emui_W_NAME_draw(EMTILE *t)
 {
 	struct label *d = t->priv_data;
 }
 
 // -----------------------------------------------------------------------
-int emui_W_NAME_update_geometry(struct emui_tile *t)
+int emui_W_NAME_update_geometry(EMTILE *t)
 {
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emui_W_NAME_event_handler(struct emui_tile *t, struct emui_event *ev)
+int emui_W_NAME_event_handler(EMTILE *t, struct emui_event *ev)
 {
 	// event has not been handled
 	return 1;
 }
 
 // -----------------------------------------------------------------------
-void emui_W_NAME_destroy_priv_data(struct emui_tile *t)
+void emui_W_NAME_destroy_priv_data(EMTILE *t)
 {
 	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_W_NAME_drv = {
+struct emtile_drv emui_W_NAME_drv = {
 	.draw = emui_W_NAME_draw,
 	.update_geometry = emui_W_NAME_update_geometry,
 	.event_handler = emui_W_NAME_event_handler,
@@ -61,11 +61,11 @@ struct emui_tile_drv emui_W_NAME_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_W_NAME(struct emui_tile *parent, int x, int y, int w, int h)
+EMTILE * emui_W_NAME(EMTILE *parent, int x, int y, int w, int h)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, -1, &emui_W_NAME_drv, F_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emtile(parent, -1, &emui_W_NAME_drv, F_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_INTERACTIVE);
 
 	t->priv_data = calloc(1, sizeof(struct W_NAME));
 	struct W_NAME *d = t->priv_data;

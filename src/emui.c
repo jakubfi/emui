@@ -29,25 +29,21 @@
 #include "style.h"
 #include "focus.h"
 
-#define EMUI_FPS_DEFAULT 30
 #define EMUI_FPS_CAP 1000
 #define EMUI_WORK_COEFFICIENT 1.1
 
-#define EMUI_ESC_TIMEOUT 100
-#define EMUI_CURSOR 0
-
-SCREEN *s;
-static struct emui_tile *layout;
+static SCREEN *s;
+static EMTILE *layout;
 
 static int emui_fps;
 static unsigned long emui_frame_no;
-volatile int terminal_resized;
+static volatile int terminal_resized;
 
 // -----------------------------------------------------------------------
-static void _aw_sigwinch_handler(int signum)
+static void _emui_sigwinch_handler(int signum)
 {
 	terminal_resized = 1;
-	while (signal(SIGWINCH, _aw_sigwinch_handler));
+	while (signal(SIGWINCH, _emui_sigwinch_handler));
 }
 
 // -----------------------------------------------------------------------
@@ -62,7 +58,7 @@ void edbg(char *format, ...)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_init(unsigned fps)
+EMTILE * emui_init(unsigned fps)
 {
 	// initialize ncurses
 	s = newterm(NULL, stdout, stdin);
@@ -72,8 +68,8 @@ struct emui_tile * emui_init(unsigned fps)
 	keypad(stdscr, TRUE);
 	noecho();
 	timeout(0);
-	curs_set(EMUI_CURSOR);
-	set_escdelay(EMUI_ESC_TIMEOUT);
+	curs_set(0);
+	set_escdelay(100);
 	start_color();
 	emui_style_init(NULL);
 
@@ -86,7 +82,7 @@ struct emui_tile * emui_init(unsigned fps)
 
 	layout = emui_screen();
 
-	if (signal(SIGWINCH, _aw_sigwinch_handler) == SIG_ERR) {
+	if (signal(SIGWINCH, _emui_sigwinch_handler) == SIG_ERR) {
 		return NULL;
 	}
 
@@ -96,7 +92,7 @@ struct emui_tile * emui_init(unsigned fps)
 // -----------------------------------------------------------------------
 void emui_destroy()
 {
-	emui_tile_destroy(layout);
+	emtile_delete(layout);
 	endwin();
 	//_nc_free_and_exit();
 	delscreen(s);
@@ -139,20 +135,20 @@ static int emui_evq_update(struct timeval *tv)
 }
 
 // -----------------------------------------------------------------------
-static void emui_draw(struct emui_tile *t)
+static void emui_draw(EMTILE *t)
 {
-	struct emui_tile *focused_child = NULL;
+	EMTILE *focused_child = NULL;
 
 	// update tile geometry
 	int geometry_changed = t->geometry_changed;
 	if (geometry_changed) {
-		emui_tile_update_geometry(t);
+		emtile_fit(t);
 	}
 
 	// if the focused tile is hidden after geometry change,
 	// search for a new unhidden tile:
 	// go up, then left, then from the beggining of focus group
-	struct emui_tile *f = emui_focus_get();
+	EMTILE *f = emui_focus_get();
 	if (f->properties & P_HIDDEN) {
 		emui_focus_physical_neighbour(f, FC_UP);
 		f = emui_focus_get();
@@ -166,10 +162,10 @@ static void emui_draw(struct emui_tile *t)
 	}
 
 	// draw the tile
-	emui_tile_draw(t);
+	emtile_draw(t);
 
 	// draw tile's children
-	struct emui_tile *child = t->ch_first;
+	EMTILE *child = t->ch_first;
 	while (child) {
 		child->geometry_changed |= geometry_changed;
 		// store focused tile to draw it later
@@ -178,7 +174,7 @@ static void emui_draw(struct emui_tile *t)
 		} else {
 			focused_child = child;
 		}
-		child = child->next;
+		child = child->ch_next;
 	}
 
 	// draw focused tile last, so it's always on top
@@ -188,9 +184,9 @@ static void emui_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-static int emui_handle_user_focus_keys(struct emui_tile *fg, int key)
+static int emui_handle_app_focus_keys(EMTILE *fg, int key)
 {
-	struct emui_tile *t = fg->fg_first;
+	EMTILE *t = fg->fg_first;
 
 	while (t) {
 		if (t->key == key) {
@@ -205,7 +201,7 @@ static int emui_handle_user_focus_keys(struct emui_tile *fg, int key)
 }
 
 // -----------------------------------------------------------------------
-static int emui_handle_neighbour_focus(struct emui_tile *t, int key)
+static int emui_handle_neighbour_focus(EMTILE *t, int key)
 {
 	switch (key) {
 		case 9: // TAB
@@ -232,13 +228,13 @@ static int emui_handle_neighbour_focus(struct emui_tile *t, int key)
 }
 
 // -----------------------------------------------------------------------
-static int emui_handle_focus(struct emui_tile *t, int key)
+static int emui_handle_focus(EMTILE *t, int key)
 {
 	if (!t) return 1;
 
-	// if tile is a top of a focus group, search for user-set focus keys handled by it
+	// if tile is a top of a focus group, search for app-set focus keys handled by it
 	if (t->properties & P_FOCUS_GROUP) {
-		if (!emui_handle_user_focus_keys(t, key)) {
+		if (!emui_handle_app_focus_keys(t, key)) {
 			return 0;
 		}
 	// otherwise, search for a neighbour in current focus group
@@ -260,10 +256,10 @@ static int emui_handle_focus(struct emui_tile *t, int key)
 // -----------------------------------------------------------------------
 static int emui_process_event(struct emui_event *ev)
 {
-	struct emui_tile *t = emui_focus_get();
+	EMTILE *t = emui_focus_get();
 
-	// try running user key handler
-	if ((ev->type == EV_KEY) && t->user_key_handler && !t->user_key_handler(t, ev->sender)) {
+	// try running app key handler
+	if ((ev->type == EV_KEY) && t->key_handler && !t->key_handler(t, ev->sender)) {
 		return 0;
 	}
 
@@ -277,9 +273,9 @@ static int emui_process_event(struct emui_event *ev)
 		return 0;
 	}
 
-	struct emui_tile *p = t->parent;
+	EMTILE *p = t->parent;
 	while (p) {
-		if ((ev->type == EV_KEY) && p->user_key_handler && !p->user_key_handler(p, ev->sender)) {
+		if ((ev->type == EV_KEY) && p->key_handler && !p->key_handler(p, ev->sender)) {
 				return 0;
 			}
 		p = p->parent;
@@ -314,7 +310,7 @@ static void emui_update_screen(struct timeval *ft, unsigned fps)
 	emui_frame_no++;
 
 	// set frametime
-	long resolution = 1000000;
+	long resolution = 1000000L;
 	long ft_requested = resolution / fps;
 	ft->tv_sec = 0;
 	ft->tv_usec = ft_requested;

@@ -18,15 +18,15 @@
 #ifndef EMUI_LINEEDIT_H
 #define EMUI_LINEEDIT_H
 
-struct emui_tile * emui_lineedit(struct emui_tile *parent, int id, int x, int y, int w, int maxlen, int type, int mode);
-int emui_lineedit_set_text(struct emui_tile *t, char *text);
-char * emui_lineedit_get_text(struct emui_tile *t);
-void emui_lineedit_set_int(struct emui_tile *t, int v);
-int emui_lineedit_get_int(struct emui_tile *t);
-void emui_lineedit_set_mode(struct emui_tile *t, int mode);
-void emui_lineedit_set_pos(struct emui_tile *t, unsigned pos);
-void emui_lineedit_set_mode(struct emui_tile *t, int mode);
-void emui_lineedit_edit(struct emui_tile *t, int state);
-void emui_lineedit_invalid(struct emui_tile *t);
+EMTILE * emui_lineedit(EMTILE *parent, int id, int x, int y, int w, int maxlen, int type, int mode);
+int emui_lineedit_set_text(EMTILE *t, char *text);
+char * emui_lineedit_get_text(EMTILE *t);
+void emui_lineedit_set_int(EMTILE *t, int v);
+int emui_lineedit_get_int(EMTILE *t);
+void emui_lineedit_set_mode(EMTILE *t, int mode);
+void emui_lineedit_set_pos(EMTILE *t, unsigned pos);
+void emui_lineedit_set_mode(EMTILE *t, int mode);
+void emui_lineedit_edit(EMTILE *t, int state);
+void emui_lineedit_invalid(EMTILE *t);
 
 #endif

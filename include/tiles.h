@@ -18,6 +18,7 @@
 #ifndef EMUI_TILES_H
 #define EMUI_TILES_H
 
+#include "tile.h"
 #include "widgets/lineedit.h"
 #include "widgets/textview.h"
 #include "widgets/label.h"
@@ -25,13 +26,13 @@
 
 // containers
 
-struct emui_tile * emui_screen();
-struct emui_tile * emui_dummy_cont(struct emui_tile *parent, int x, int y, int w, int h);
-struct emui_tile * emui_splitter(struct emui_tile *parent, int edge, int min1, int max1, int min2);
-struct emui_tile * emui_tabs(struct emui_tile *parent);
-struct emui_tile * emui_frame(struct emui_tile *parent, int x, int y, int w, int h, char *name, int properties);
-struct emui_tile * emui_justifier(struct emui_tile *parent);
-struct emui_tile * emui_grid(struct emui_tile *parent, int cols, int rows, int col_width, int row_height, int col_spacing);
+EMTILE * emui_screen();
+EMTILE * emui_dummy_cont(EMTILE *parent, int x, int y, int w, int h);
+EMTILE * emui_splitter(EMTILE *parent, int edge, int min1, int max1, int min2);
+EMTILE * emui_tabs(EMTILE *parent);
+EMTILE * emui_frame(EMTILE *parent, int x, int y, int w, int h, char *name, int properties);
+EMTILE * emui_justifier(EMTILE *parent);
+EMTILE * emui_grid(EMTILE *parent, int cols, int rows, int col_width, int row_height, int col_spacing);
 
 #endif
 

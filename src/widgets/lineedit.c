@@ -39,7 +39,7 @@ struct lineedit {
 };
 
 // -----------------------------------------------------------------------
-void emui_lineedit_draw(struct emui_tile *t)
+void emui_lineedit_draw(EMTILE *t)
 {
 	struct lineedit *le = t->priv_data;
 	char *cbuf;
@@ -83,14 +83,14 @@ void emui_lineedit_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_lineedit_mode(struct emui_tile *t, int mode)
+void emui_lineedit_mode(EMTILE *t, int mode)
 {
 	struct lineedit *le = t->priv_data;
 	le->mode = mode;
 }
 
 // -----------------------------------------------------------------------
-static int le_handle_non_edit(struct emui_tile *t, struct emui_event *ev)
+static int le_handle_non_edit(EMTILE *t, struct emui_event *ev)
 {
 	switch (ev->sender) {
 		case '\n':
@@ -130,7 +130,7 @@ static int le_char_valid(int type, int ch, int pos)
 }
 
 // -----------------------------------------------------------------------
-static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
+static int le_handle_edit(EMTILE *t, struct emui_event *ev)
 {
 	struct lineedit *le = t->priv_data;
 
@@ -138,7 +138,7 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 		case KEY_ENTER:
 		case '\n':
 			emui_lineedit_edit(t, 0);
-			if (emui_tile_changed(t)) {
+			if (emtile_notify_change(t)) {
 				emui_lineedit_edit(t, 1);
 			} else {
 				emui_lineedit_set_pos(t, 0);
@@ -211,7 +211,7 @@ static int le_handle_edit(struct emui_tile *t, struct emui_event *ev)
 }
 
 // -----------------------------------------------------------------------
-int emui_lineedit_event_handler(struct emui_tile *t, struct emui_event *ev)
+int emui_lineedit_event_handler(EMTILE *t, struct emui_event *ev)
 {
 	struct lineedit *le = t->priv_data;
 
@@ -228,7 +228,7 @@ int emui_lineedit_event_handler(struct emui_tile *t, struct emui_event *ev)
 }
 
 // -----------------------------------------------------------------------
-void emui_lineedit_destroy_priv_data(struct emui_tile *t)
+void emui_lineedit_destroy_priv_data(EMTILE *t)
 {
 	struct lineedit *le = t->priv_data;
 	free(le->buf);
@@ -237,7 +237,7 @@ void emui_lineedit_destroy_priv_data(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_lineedit_drv = {
+struct emtile_drv emui_lineedit_drv = {
 	.draw = emui_lineedit_draw,
 	.update_children_geometry = NULL,
 	.event_handler = emui_lineedit_event_handler,
@@ -245,12 +245,12 @@ struct emui_tile_drv emui_lineedit_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_lineedit(struct emui_tile *parent, int id, int x, int y, int w, int maxlen, int type, int mode)
+EMTILE * emui_lineedit(EMTILE *parent, int id, int x, int y, int w, int maxlen, int type, int mode)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, id, &emui_lineedit_drv, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
-	emui_tile_set_style(t, S_EDIT_NN);
+	t = emtile(parent, id, &emui_lineedit_drv, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	emtile_set_style(t, S_EDIT_NN);
 
 	t->priv_data = calloc(1, sizeof(struct lineedit));
 
@@ -265,7 +265,7 @@ struct emui_tile * emui_lineedit(struct emui_tile *parent, int id, int x, int y,
 }
 
 // -----------------------------------------------------------------------
-char * emui_lineedit_get_text(struct emui_tile *t)
+char * emui_lineedit_get_text(EMTILE *t)
 {
 	struct lineedit *le = t->priv_data;
 
@@ -273,7 +273,7 @@ char * emui_lineedit_get_text(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_lineedit_set_text(struct emui_tile *t, char *text)
+int emui_lineedit_set_text(EMTILE *t, char *text)
 {
 	struct lineedit *le = t->priv_data;
 
@@ -286,7 +286,7 @@ int emui_lineedit_set_text(struct emui_tile *t, char *text)
 }
 
 // -----------------------------------------------------------------------
-int emui_lineedit_get_int(struct emui_tile *t)
+int emui_lineedit_get_int(EMTILE *t)
 {
 	struct lineedit *le = t->priv_data;
 	switch (le->type) {
@@ -322,7 +322,7 @@ static void int2bin(char *o, int size, unsigned value)
 }
 
 // -----------------------------------------------------------------------
-void emui_lineedit_set_int(struct emui_tile *t, int v)
+void emui_lineedit_set_int(EMTILE *t, int v)
 {
 	struct lineedit *le = t->priv_data;
 	switch (le->type) {
@@ -344,7 +344,7 @@ void emui_lineedit_set_int(struct emui_tile *t, int v)
 }
 
 // -----------------------------------------------------------------------
-void emui_lineedit_set_mode(struct emui_tile *t, int mode)
+void emui_lineedit_set_mode(EMTILE *t, int mode)
 {
 	struct lineedit *le = t->priv_data;
 
@@ -352,7 +352,7 @@ void emui_lineedit_set_mode(struct emui_tile *t, int mode)
 }
 
 // -----------------------------------------------------------------------
-void emui_lineedit_set_pos(struct emui_tile *t, unsigned pos)
+void emui_lineedit_set_pos(EMTILE *t, unsigned pos)
 {
 	struct lineedit *le = t->priv_data;
 	if (pos <= le->maxlen) {
@@ -363,7 +363,7 @@ void emui_lineedit_set_pos(struct emui_tile *t, unsigned pos)
 }
 
 // -----------------------------------------------------------------------
-void emui_lineedit_edit(struct emui_tile *t, int state)
+void emui_lineedit_edit(EMTILE *t, int state)
 {
 	struct lineedit *le = t->priv_data;
 	le->in_edit = state;

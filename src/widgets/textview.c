@@ -36,7 +36,7 @@ struct textview {
 };
 
 // -----------------------------------------------------------------------
-void emui_textview_draw(struct emui_tile *t)
+void emui_textview_draw(EMTILE *t)
 {
 	struct textview *d = t->priv_data;
 	struct tchunk *c = d->cur;
@@ -52,7 +52,7 @@ void emui_textview_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_textview_event_handler(struct emui_tile *t, struct emui_event *ev)
+int emui_textview_event_handler(EMTILE *t, struct emui_event *ev)
 {
 	struct textview *d = t->priv_data;
 	struct tchunk *c = d->cur;
@@ -124,14 +124,14 @@ int emui_textview_event_handler(struct emui_tile *t, struct emui_event *ev)
 }
 
 // -----------------------------------------------------------------------
-void emui_textview_destroy_priv_data(struct emui_tile *t)
+void emui_textview_destroy_priv_data(EMTILE *t)
 {
 	emui_textview_clear(t);
 	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_textview_drv = {
+struct emtile_drv emui_textview_drv = {
 	.draw = emui_textview_draw,
 	.update_children_geometry = NULL,
 	.event_handler = emui_textview_event_handler,
@@ -139,11 +139,11 @@ struct emui_tile_drv emui_textview_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_textview(struct emui_tile *parent, int x, int y, int w, int h)
+EMTILE * emui_textview(EMTILE *parent, int x, int y, int w, int h)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, -1, &emui_textview_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emtile(parent, -1, &emui_textview_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_INTERACTIVE);
 
 	t->priv_data = calloc(1, sizeof(struct textview));
 
@@ -170,7 +170,7 @@ static void _chunks_destroy(struct tchunk *c)
 }
 
 // -----------------------------------------------------------------------
-void emui_textview_clear(struct emui_tile *t)
+void emui_textview_clear(EMTILE *t)
 {
 	struct textview *d = t->priv_data;
 	_chunks_destroy(d->beg);
@@ -194,7 +194,7 @@ static void _tv_append(struct textview *d, struct tchunk *chunk)
 }
 
 // -----------------------------------------------------------------------
-int emui_textview_append(struct emui_tile *t, int style, char *str)
+int emui_textview_append(EMTILE *t, int style, char *str)
 {
 	struct textview *d = t->priv_data;
 	struct tchunk *chunk;

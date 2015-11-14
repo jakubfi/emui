@@ -25,30 +25,30 @@
 #include "print.h"
 
 struct tabs {
-	struct emui_tile *last_selected;
+	EMTILE *last_selected;
 };
 
 // -----------------------------------------------------------------------
-void emui_tabs_draw(struct emui_tile *t)
+void emui_tabs_draw(EMTILE *t)
 {
-	struct emui_tile *ch = t->ch_first;
+	EMTILE *ch = t->ch_first;
 	emuixy(t, 0, 0);
 	while (ch) {
 		int style = S_TAB_NN;
 		if (emui_has_focus(ch)) style = S_TAB_FN;
 		// TODO: check if we have enough sapce
 		emuiprt(t, style, " %s ", ch->name);
-		ch = ch->next;
+		ch = ch->ch_next;
 	}
 }
 
 // -----------------------------------------------------------------------
-int emui_tabs_update_geometry(struct emui_tile *t)
+int emui_tabs_update_geometry(EMTILE *t)
 {
 	struct tabs *d = t->priv_data;
 	int tab_selected = 0;
 
-	struct emui_tile *ch = t->ch_first;
+	EMTILE *ch = t->ch_first;
 	while (ch) {
 		ch->properties |= P_GEOM_FORCED;
 		ch->e = t->i;
@@ -59,7 +59,7 @@ int emui_tabs_update_geometry(struct emui_tile *t)
 		} else {
 			ch->properties |= P_HIDDEN;
 		}
-		ch = ch->next;
+		ch = ch->ch_next;
 	}
 
 	// always leave the last selected tab unhidden
@@ -70,13 +70,13 @@ int emui_tabs_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_tabs_destroy_priv_data(struct emui_tile *t)
+void emui_tabs_destroy_priv_data(EMTILE *t)
 {
 	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_tabs_drv = {
+struct emtile_drv emui_tabs_drv = {
 	.draw = emui_tabs_draw,
 	.update_children_geometry = emui_tabs_update_geometry,
 	.event_handler = NULL,
@@ -84,9 +84,9 @@ struct emui_tile_drv emui_tabs_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_tabs(struct emui_tile *parent)
+EMTILE * emui_tabs(EMTILE *parent)
 {
-	struct emui_tile *t = emui_tile_create(parent, -1, &emui_tabs_drv, 0, 0, parent->i.w, parent->i.h, 1, 0, 0, 0, "Tabs", P_CONTAINER | P_MAXIMIZED | P_FOCUS_GROUP);
+	EMTILE *t = emtile(parent, -1, &emui_tabs_drv, 0, 0, parent->i.w, parent->i.h, 1, 0, 0, 0, "Tabs", P_CONTAINER | P_MAXIMIZED | P_FOCUS_GROUP);
 
 	t->priv_data = calloc(1, sizeof(struct tabs));
 

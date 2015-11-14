@@ -28,7 +28,7 @@ struct line {
 };
 
 // -----------------------------------------------------------------------
-void emui_line_draw(struct emui_tile *t)
+void emui_line_draw(EMTILE *t)
 {
 	struct line *d = t->priv_data;
 
@@ -40,13 +40,13 @@ void emui_line_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_line_destroy_priv_data(struct emui_tile *t)
+void emui_line_destroy_priv_data(EMTILE *t)
 {
 	free(t->priv_data);
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_line_drv = {
+struct emtile_drv emui_line_drv = {
 	.draw = emui_line_draw,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
@@ -54,9 +54,9 @@ struct emui_tile_drv emui_line_drv = {
 };
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_line(struct emui_tile *parent, int align, int x, int y, int len)
+EMTILE * emui_line(EMTILE *parent, int align, int x, int y, int len)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 	int w, h;
 
 	if (align == AL_HORIZONTAL) {
@@ -69,7 +69,7 @@ struct emui_tile * emui_line(struct emui_tile *parent, int align, int x, int y, 
 		return NULL;
 	}
 
-	t = emui_tile_create(parent, -1, &emui_line_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
+	t = emtile(parent, -1, &emui_line_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->priv_data = calloc(1, sizeof(struct line));
 	struct line *d = t->priv_data;

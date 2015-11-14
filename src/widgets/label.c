@@ -30,7 +30,7 @@ struct label {
 };
 
 // -----------------------------------------------------------------------
-void emui_label_draw(struct emui_tile *t)
+void emui_label_draw(EMTILE *t)
 {
 	struct label *d = t->priv_data;
 
@@ -54,7 +54,7 @@ void emui_label_draw(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_label_destroy_priv_data(struct emui_tile *t)
+void emui_label_destroy_priv_data(EMTILE *t)
 {
 	struct label *d = t->priv_data;
 	free(d->txt);
@@ -62,7 +62,7 @@ void emui_label_destroy_priv_data(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile_drv emui_label_drv = {
+struct emtile_drv emui_label_drv = {
 	.draw = emui_label_draw,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
@@ -70,7 +70,7 @@ struct emui_tile_drv emui_label_drv = {
 };
 
 // -----------------------------------------------------------------------
-int emui_label_set_text(struct emui_tile *t, char *txt)
+int emui_label_set_text(EMTILE *t, char *txt)
 {
 	struct label *d = t->priv_data;
 
@@ -81,11 +81,11 @@ int emui_label_set_text(struct emui_tile *t, char *txt)
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_label(struct emui_tile *parent, int x, int y, int w, int align, int style, char *txt)
+EMTILE * emui_label(EMTILE *parent, int x, int y, int w, int align, int style, char *txt)
 {
-	struct emui_tile *t;
+	EMTILE *t;
 
-	t = emui_tile_create(parent, -1, &emui_label_drv, x, y, w, 1, 0, 0, 0, 0, NULL, P_NONE);
+	t = emtile(parent, -1, &emui_label_drv, x, y, w, 1, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->style = style;
 	t->priv_data = calloc(1, sizeof(struct label));

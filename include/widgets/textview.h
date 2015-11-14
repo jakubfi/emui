@@ -18,8 +18,8 @@
 #ifndef EMUI_TEXTVIEW_H
 #define EMUI_TEXTVIEW_H
 
-struct emui_tile * emui_textview(struct emui_tile *parent, int x, int y, int w, int h);
-int emui_textview_append(struct emui_tile *t, int style, char *str);
-void emui_textview_clear(struct emui_tile *t);
+EMTILE * emui_textview(EMTILE *parent, int x, int y, int w, int h);
+int emui_textview_append(EMTILE *t, int style, char *str);
+void emui_textview_clear(EMTILE *t);
 
 #endif

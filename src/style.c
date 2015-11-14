@@ -82,9 +82,9 @@ struct emui_style_def _emui_scheme_default[] = {
 // -----------------------------------------------------------------------
 void emui_style_init(struct emui_style_def *scheme)
 {
-	for (int bg=0 ; bg<8 ; bg++) {
-		for (int fg=0 ; fg<8 ; fg++) {
-			int pair = bg*8 + fg;
+	for (int bg=0 ; bg<EMUI_COLORS ; bg++) {
+		for (int fg=0 ; fg<EMUI_COLORS ; fg++) {
+			int pair = bg*EMUI_COLORS + fg;
 			if (pair == 0) {
 				emui_color[bg][fg] = 0;
 			} else {

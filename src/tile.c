@@ -24,8 +24,10 @@
 #include "focus.h"
 #include "print.h"
 
+static void emtile_child_append(EMTILE *parent, EMTILE *t);
+
 // -----------------------------------------------------------------------
-void emui_tile_update_external_geometry(struct emui_tile *t)
+static void emtile_fit_parent(EMTILE *t)
 {
 	// (1) 'floating' property overrides everything
 	if (t->properties & P_FLOAT) {
@@ -87,7 +89,7 @@ void emui_tile_update_external_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_update_internal_geometry(struct emui_tile *t)
+static void emtile_fit_interior(EMTILE *t)
 {
 	// hide if no space for internal geometry
 	if ((t->e.w <= t->ml+t->mr) || (t->e.h <= t->mt+t->mb)) {
@@ -106,15 +108,15 @@ void emui_tile_update_internal_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_update_geometry(struct emui_tile *t)
+void emtile_fit(EMTILE *t)
 {
 	if (t->parent) {
-		// set external geometry
-		emui_tile_update_external_geometry(t);
+		// fit the tile within parent's geometry
+		emtile_fit_parent(t);
 
 		// if tile is still visible, set internal geometry
 		if (!(t->properties & P_HIDDEN)) {
-			emui_tile_update_internal_geometry(t);
+			emtile_fit_interior(t);
 
 			// if tile is visible, prepare ncurses window
 			if (!(t->properties & P_HIDDEN)) {
@@ -140,33 +142,33 @@ void emui_tile_update_geometry(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_draw(struct emui_tile *t)
+int emtile_draw(EMTILE *t)
 {
 	// tile is hidden or has no canvas, nothing to do
 	if (t->properties & (P_HIDDEN | P_NOCANVAS)) {
 		return 1;
 	}
 
-	// if tile accepts content updates and user specified a handler,
-	// then update content before tile is drawn
-	if (t->accept_updates && t->user_update_handler) {
-		t->user_update_handler(t);
+	// if tile accepts content updates and app specified a handler,
+	// then update content before the tile is drawn
+	if (t->accept_updates && t->update_handler) {
+		t->update_handler(t);
 	}
 
 	// draw the tile
 	if (t->drv->draw) t->drv->draw(t);
 
 	// update ncurses window, but don't output,
-	// we will doupdate() in the main loop
+	// doupdate() is done in the main loop
 	wnoutrefresh(t->ncwin);
 
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emui_tile_drv *drv, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
+EMTILE * emtile(EMTILE *parent, int id, struct emtile_drv *drv, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
 {
-	struct emui_tile *t = calloc(1, sizeof(struct emui_tile));
+	EMTILE *t = calloc(1, sizeof(EMTILE));
 	if (!t) return NULL;
 
 	if (!(parent->properties & P_CONTAINER)) {
@@ -202,15 +204,15 @@ struct emui_tile * emui_tile_create(struct emui_tile *parent, int id, struct emu
 	t->ml = ml;
 	t->mr = mr;
 
-	emui_tile_child_append(parent, t);
+	emtile_child_append(parent, t);
 	emui_focus_group_add(parent, t);
-	emui_tile_update_geometry(t);
+	emtile_fit(t);
 
 	return t;
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_set_geometry_parent(struct emui_tile *t, struct emui_tile *pg, int geom_type)
+void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type)
 {
 	if (geom_type == GEOM_EXTERNAL) {
 		t->pg = &(pg->e);
@@ -220,44 +222,44 @@ void emui_tile_set_geometry_parent(struct emui_tile *t, struct emui_tile *pg, in
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_focus_key(struct emui_tile *t, int key)
+int emtile_set_focus_key(EMTILE *t, int key)
 {
 	t->key = key;
 	return 1;
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_update_handler(struct emui_tile *t, emui_handler_f handler)
+int emtile_set_update_handler(EMTILE *t, emui_int_f handler)
 {
-	t->user_update_handler = handler;
+	t->update_handler = handler;
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_change_handler(struct emui_tile *t, emui_handler_f handler)
+int emtile_set_change_handler(EMTILE *t, emui_int_f handler)
 {
-	t->user_change_handler = handler;
+	t->change_handler = handler;
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_focus_handler(struct emui_tile *t, emui_focus_handler_f handler)
+int emtile_set_focus_handler(EMTILE *t, emui_int_f_int handler)
 {
-	t->user_focus_handler = handler;
+	t->focus_handler = handler;
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_key_handler(struct emui_tile *t, emui_key_handler_f handler)
+int emtile_set_key_handler(EMTILE *t, emui_int_f_int handler)
 {
-	t->user_key_handler = handler;
+	t->key_handler = handler;
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_properties(struct emui_tile *t, unsigned properties)
+int emtile_set_properties(EMTILE *t, unsigned properties)
 {
-	if (properties & ~P_USER_SETTABLE) {
+	if (properties & ~P_APP_SETTABLE) {
 		return -1;
 	}
 
@@ -267,9 +269,9 @@ int emui_tile_set_properties(struct emui_tile *t, unsigned properties)
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_clear_properties(struct emui_tile *t, unsigned properties)
+int emtile_clear_properties(EMTILE *t, unsigned properties)
 {
-	if (properties & ~P_USER_SETTABLE) {
+	if (properties & ~P_APP_SETTABLE) {
 		return -1;
 	}
 
@@ -278,7 +280,7 @@ int emui_tile_clear_properties(struct emui_tile *t, unsigned properties)
 	return 0;
 }
 // -----------------------------------------------------------------------
-int emui_tile_set_name(struct emui_tile *t, char *name)
+int emtile_set_name(EMTILE *t, char *name)
 {
 	free(t->name);
 	t->name = strdup(name);
@@ -287,19 +289,19 @@ int emui_tile_set_name(struct emui_tile *t, char *name)
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_set_style(struct emui_tile *t, int style)
+int emtile_set_style(EMTILE *t, int style)
 {
 	t->style = style;
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t)
+static void emtile_child_append(EMTILE *parent, EMTILE *t)
 {
 	t->parent = parent;
-	t->prev = parent->ch_last;
+	t->ch_prev = parent->ch_last;
 	if (parent->ch_last) {
-		parent->ch_last->next = t;
+		parent->ch_last->ch_next = t;
 	} else {
 		parent->ch_first = t;
 	}
@@ -307,26 +309,26 @@ void emui_tile_child_append(struct emui_tile *parent, struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_child_unlink(struct emui_tile *t)
+static void emtile_child_unlink(EMTILE *t)
 {
 	if (!t->parent) return;
 
-	if (t->prev) {
-		t->prev->next = t->next;
+	if (t->ch_prev) {
+		t->ch_prev->ch_next = t->ch_next;
 	}
-	if (t->next) {
-		t->next->prev = t->prev;
+	if (t->ch_next) {
+		t->ch_next->ch_prev = t->ch_prev;
 	}
 	if (t == t->parent->ch_first) {
-		t->parent->ch_first = t->next;
+		t->parent->ch_first = t->ch_next;
 	}
 	if (t == t->parent->ch_last) {
-		t->parent->ch_last = t->prev;
+		t->parent->ch_last = t->ch_prev;
 	}
 }
 
 // -----------------------------------------------------------------------
-static void emui_tile_free(struct emui_tile *t)
+static void emtile_free(EMTILE *t)
 {
 	if (t->drv->destroy_priv_data) t->drv->destroy_priv_data(t);
 	free(t->name);
@@ -338,30 +340,30 @@ static void emui_tile_free(struct emui_tile *t)
 }
 
 // -----------------------------------------------------------------------
-static void emui_tile_destroy_children(struct emui_tile *t)
+static void emtile_destroy_children(EMTILE *t)
 {
-	struct emui_tile *ch = t->ch_first;
+	EMTILE *ch = t->ch_first;
 	while (ch) {
-		struct emui_tile *next_ch = ch->next;
-		emui_tile_destroy_children(ch);
-		emui_tile_free(ch);
+		EMTILE *next_ch = ch->ch_next;
+		emtile_destroy_children(ch);
+		emtile_free(ch);
 		ch = next_ch;
 	}
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_destroy(struct emui_tile *t)
+void emtile_delete(EMTILE *t)
 {
 	if (!t) return;
 
 	// remove the tile from parent's child list
-	emui_tile_child_unlink(t);
+	emtile_child_unlink(t);
 
 	// remove from focus group
 	emui_focus_group_unlink(t);
 
 	// destroy all child tiles
-	emui_tile_destroy_children(t);
+	emtile_destroy_children(t);
 
 	// remove from focus stack
 	emui_focus_stack_delete_tile(t);
@@ -375,33 +377,33 @@ void emui_tile_destroy(struct emui_tile *t)
 	emui_focus_refocus();
 
 	// delete the tile itself
-	emui_tile_free(t);
+	emtile_free(t);
 }
 
 // -----------------------------------------------------------------------
-static void emui_tree_set_properties(struct emui_tile *t, int property)
+static void emui_tree_set_properties(EMTILE *t, int property)
 {
 	t->properties |= property;
 	t = t->ch_first;
 	while (t) {
 		emui_tree_set_properties(t, property);
-		t = t->next;
+		t = t->ch_next;
 	}
 }
 
 // -----------------------------------------------------------------------
-static void emui_tree_clear_properties(struct emui_tile *t, int property)
+static void emui_tree_clear_properties(EMTILE *t, int property)
 {
 	t->properties &= ~property;
 	t = t->ch_first;
 	while (t) {
 		emui_tree_clear_properties(t, property);
-		t = t->next;
+		t = t->ch_next;
 	}
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_inverse(struct emui_tile *t, int inv)
+void emtile_inverse(EMTILE *t, int inv)
 {
 	if (inv) {
 		emui_tree_set_properties(t, P_INVERSE);
@@ -411,19 +413,19 @@ void emui_tile_inverse(struct emui_tile *t, int inv)
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_set_id(struct emui_tile *t, int id)
+void emtile_set_id(EMTILE *t, int id)
 {
 	t->id = id;
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_get_id(struct emui_tile *t)
+int emtile_get_id(EMTILE *t)
 {
 	return t->id;
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_set_margins(struct emui_tile *t, int mt, int mb, int ml, int mr)
+void emtile_set_margins(EMTILE *t, int mt, int mb, int ml, int mr)
 {
 	t->mr = mr;
 	t->ml = ml;
@@ -432,18 +434,18 @@ void emui_tile_set_margins(struct emui_tile *t, int mt, int mb, int ml, int mr)
 }
 
 // -----------------------------------------------------------------------
-void emui_tile_geometry_changed(struct emui_tile *t)
+void emtile_geometry_changed(EMTILE *t)
 {
 	t->geometry_changed = 1;
 	if (t->properties & P_GEOM_FORCED) {
-		emui_tile_geometry_changed(t->parent);
+		emtile_geometry_changed(t->parent);
 	}
 }
 
 // -----------------------------------------------------------------------
-int emui_tile_changed(struct emui_tile *t)
+int emtile_notify_change(EMTILE *t)
 {
-	if (t->user_change_handler && t->user_change_handler(t)) {
+	if (t->change_handler && t->change_handler(t)) {
 		t->content_invalid = 1;
 	} else {
 		t->content_invalid = 0;
