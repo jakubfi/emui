@@ -130,6 +130,10 @@ void emtile_fit(EMTILE *t)
 						mvwin(t->ncwin, t->e.y, t->e.x);
 					}
 				}
+				// tile is inversed if parent is inversed
+				if (t->parent->properties & P_INVERSE) {
+					t->properties |= P_INVERSE;
+				}
 				emuifillbg(t, t->style);
 			}
 		}
@@ -377,38 +381,6 @@ void emtile_delete(EMTILE *t)
 
 	// delete the tile itself
 	emtile_free(t);
-}
-
-// -----------------------------------------------------------------------
-static void emui_tree_set_properties(EMTILE *t, int property)
-{
-	t->properties |= property;
-	t = t->ch_first;
-	while (t) {
-		emui_tree_set_properties(t, property);
-		t = t->ch_next;
-	}
-}
-
-// -----------------------------------------------------------------------
-static void emui_tree_clear_properties(EMTILE *t, int property)
-{
-	t->properties &= ~property;
-	t = t->ch_first;
-	while (t) {
-		emui_tree_clear_properties(t, property);
-		t = t->ch_next;
-	}
-}
-
-// -----------------------------------------------------------------------
-void emtile_inverse(EMTILE *t, int inv)
-{
-	if (inv) {
-		emui_tree_set_properties(t, P_INVERSE);
-	} else {
-		emui_tree_clear_properties(t, P_INVERSE);
-	}
 }
 
 // -----------------------------------------------------------------------

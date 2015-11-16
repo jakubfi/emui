@@ -110,15 +110,11 @@ int dasm_segment;
 int dasm_follow;
 
 enum app_styles {
-	S_INV = S_FIRST_APP_STYLE,
-	S_INV_BOLD,
-	S_YELLOW,
+	S_INSTRUCTION = S_FIRST_APP_STYLE,
 };
 
 static struct emui_style_def app_scheme[] = {
-	{ S_INV,			COLOR_BLACK,	COLOR_WHITE,	A_NORMAL | A_REVERSE },
-	{ S_INV_BOLD,		COLOR_BLACK,	COLOR_WHITE,	A_BOLD | A_REVERSE },
-	{ S_YELLOW,			COLOR_BLACK,	COLOR_YELLOW,	A_BOLD },
+	{ S_INSTRUCTION,	COLOR_BLACK,	COLOR_YELLOW,	A_BOLD },
 	{ -1, 0, 0, 0 }
 };
 
@@ -137,18 +133,19 @@ int mem_get(int nb, uint16_t addr, uint16_t *dest)
 EMTILE * ui_create_status(EMTILE *parent)
 {
 	EMTILE *split = emui_splitter(parent, AL_LEFT, 1, FIT_FILL, 25);
+	emtile_set_properties(split, P_INVERSE);
 
 	// left side
 	EMTILE *status_left = emui_dummy_cont(split, 0, 0, 1, 1);
-	EMTILE *misc = emui_label(status_left, 0, 0, 50, AL_LEFT, S_INV, "  MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
+	EMTILE *misc = emui_label(status_left, 0, 0, 50, AL_LEFT, S_DEFAULT, "  MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
 	emtile_set_properties(misc, P_MAXIMIZED);
 
 	// right side
 	EMTILE *status_right = emui_dummy_cont(split, 0, 0, 1, 1);
-	EMTILE *lfps = emui_label(status_right, 0, 0, 5, AL_LEFT, S_INV, "FPS: ");
-	EMTILE *fps = emui_fpscounter(status_right, 5, 0, S_INV_BOLD);
-	EMTILE *lframe = emui_label(status_right, 11, 0, 9, AL_LEFT, S_INV, "  Frame: ");
-	EMTILE *frame = emui_framecounter(status_right, 20, 0, S_INV_BOLD);
+	EMTILE *lfps = emui_label(status_right, 0, 0, 5, AL_LEFT, S_TEXT_NN, "FPS: ");
+	EMTILE *fps = emui_fpscounter(status_right, 5, 0, S_EDIT_NN);
+	EMTILE *lframe = emui_label(status_right, 11, 0, 9, AL_LEFT, S_TEXT_NN, "  Frame: ");
+	EMTILE *frame = emui_framecounter(status_right, 20, 0, S_EDIT_NN);
 
 	return split;
 }
@@ -364,7 +361,7 @@ static int dasm_update(EMTILE *t)
 			istyle = S_TEXT_NI;
 			dbuf += 2;
 		} else {
-			istyle = S_YELLOW;
+			istyle = S_INSTRUCTION;
 		}
 
 		sprintf(buf, "0x%04x: ", addr);
@@ -544,7 +541,7 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 
 	EMTILE *mem_status_cont = emui_splitter(mem_status_split, AL_RIGHT, 24, 24, 0);
 	emtile_set_margins(mem_status_cont, 0, 0, 2, 2);
-	emui_label(mem_status_cont, 0, 0, 24, AL_RIGHT, S_DEFAULT, "[ disp:HEX, cols:FIX16 ]");
+	EMTILE *mem_status = emui_label(mem_status_cont, 0, 0, 24, AL_RIGHT, S_DEFAULT, "[ disp:HEX, cols:FIX16 ]");
 
 	emui_label(mem, 1, 0, 6, AL_LEFT, S_DEFAULT, "seg 2");
 

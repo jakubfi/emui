@@ -170,7 +170,6 @@ void * emtile_get_ptr(EMTILE *t);
 void emtile_set_margins(EMTILE *t, int mt, int mb, int ml, int mr);
 void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type);
 
-void emtile_inverse(EMTILE *t, int inv);
 void emtile_geometry_changed(EMTILE *t);
 int emtile_notify_change(EMTILE *t);
 
