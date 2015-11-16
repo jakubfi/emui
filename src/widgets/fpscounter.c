@@ -59,6 +59,7 @@ struct emtile_drv emui_fpscounter_drv = {
 	.draw = emui_fpscounter_draw,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
+	.focus_handler = NULL,
 	.destroy_priv_data = emui_fpscounter_destroy_priv_data,
 };
 

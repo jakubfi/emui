@@ -69,6 +69,7 @@ enum emui_tile_properties {
 	P_FLOAT			= 1 << 4,	// floating tile (detached from parent's geometry)
 	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
 	P_INVERSE		= 1 << 6,	// tile is drawn in inversed colors
+	P_AUTOEDIT		= 1 << 7,	// start editing after getting focus
 	// internal
 	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
 	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
@@ -93,6 +94,7 @@ struct emtile_drv {
 	emui_void_f draw;
 	emui_int_f update_children_geometry;
 	emui_int_f_ev event_handler;
+	emui_int_f_int focus_handler;
 	emui_void_f destroy_priv_data;
 };
 

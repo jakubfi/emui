@@ -66,6 +66,7 @@ struct emtile_drv emui_label_drv = {
 	.draw = emui_label_draw,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
+	.focus_handler = NULL,
 	.destroy_priv_data = emui_label_destroy_priv_data,
 };
 

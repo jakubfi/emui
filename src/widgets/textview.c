@@ -135,6 +135,7 @@ struct emtile_drv emui_textview_drv = {
 	.draw = emui_textview_draw,
 	.update_children_geometry = NULL,
 	.event_handler = emui_textview_event_handler,
+	.focus_handler = NULL,
 	.destroy_priv_data = emui_textview_destroy_priv_data,
 };
 

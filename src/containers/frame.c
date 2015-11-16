@@ -44,6 +44,7 @@ struct emtile_drv emui_frame_drv = {
 	.draw = emui_frame_draw,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
+	.focus_handler = NULL,
 	.destroy_priv_data = NULL,
 };
 

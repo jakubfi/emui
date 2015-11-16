@@ -138,11 +138,6 @@ static int le_handle_edit(EMTILE *t, struct emui_event *ev)
 		case KEY_ENTER:
 		case '\n':
 			emui_lineedit_edit(t, 0);
-			if (emtile_notify_change(t)) {
-				emui_lineedit_edit(t, 1);
-			} else {
-				emui_lineedit_set_pos(t, 0);
-			}
 			break;
 		case 27: // ESC
 			le->in_edit = 0;
@@ -182,6 +177,15 @@ static int le_handle_edit(EMTILE *t, struct emui_event *ev)
 			if (le->pos < strlen(le->editbuf)) {
 				memmove(le->editbuf+le->pos, le->editbuf+le->pos+1, strlen(le->editbuf)-le->pos-1);
 				le->editbuf[strlen(le->editbuf)-1] = '\0';
+			}
+			break;
+		case 9: // TAB
+		case KEY_BTAB:
+		case KEY_UP:
+		case KEY_DOWN:
+			// allow handling focus changes in autoedit mode
+			if (t->properties & P_AUTOEDIT) {
+				return 1;
 			}
 			break;
 		default:
@@ -237,10 +241,26 @@ void emui_lineedit_destroy_priv_data(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
+int emui_lineedit_focus_handler(EMTILE *t, int focus)
+{
+	struct lineedit *le = t->priv_data;
+
+	if (t->properties & P_AUTOEDIT) {
+		if (focus & !(le->in_edit)) {
+			emui_lineedit_edit(t, 1);
+		} else if (le->in_edit) {
+			emui_lineedit_edit(t, 0);
+		}
+	}
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 struct emtile_drv emui_lineedit_drv = {
 	.draw = emui_lineedit_draw,
 	.update_children_geometry = NULL,
 	.event_handler = emui_lineedit_event_handler,
+	.focus_handler = emui_lineedit_focus_handler,
 	.destroy_priv_data = emui_lineedit_destroy_priv_data,
 };
 
@@ -379,6 +399,12 @@ void emui_lineedit_edit(EMTILE *t, int state)
 		free(le->buf);
 		le->buf = calloc(1, le->maxlen + 1);
 		strcpy(le->buf, le->editbuf);
+
+		if (emtile_notify_change(t)) {
+			emui_lineedit_edit(t, 1);
+		} else {
+			emui_lineedit_set_pos(t, 0);
+		}
 	}
 }
 

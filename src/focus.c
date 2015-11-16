@@ -115,6 +115,19 @@ static int _distance(int x1, int y1, int x2, int y2)
 // -----------------------------------------------------------------------
 static void _focus_up(EMTILE *t)
 {
+	static EMTILE *last_focused_widget;
+
+	// call widget focus handlers
+	if (t->properties & P_INTERACTIVE) {
+		if (last_focused_widget && last_focused_widget->drv->focus_handler) {
+			last_focused_widget->drv->focus_handler(last_focused_widget, 0);
+		}
+		if (t->drv->focus_handler) {
+			t->drv->focus_handler(t, 1);
+		}
+		last_focused_widget = t;
+	}
+
 	// set new focus path
 	focus = t;
 	while (t && t->parent) {

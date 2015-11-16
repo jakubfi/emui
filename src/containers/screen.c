@@ -43,6 +43,7 @@ struct emtile_drv emui_screen_drv = {
 	.draw = NULL,
 	.update_children_geometry = emui_screen_update_geometry,
 	.event_handler = NULL,
+	.focus_handler = NULL,
 	.destroy_priv_data = NULL,
 };
 

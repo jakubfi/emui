@@ -24,6 +24,11 @@
 #include "emui.h"
 
 char *help_text = "\
+                 _____  ______ ______\n\
+.-----.--------.|  |  ||      |      |\n\
+|  -__|        ||__    |  --  |  --  |\n\
+|_____|__|__|__|   |__||______|______|\n\
+\n\
 UI shortcuts:\n\
  * m, r, s, a, w, b - switch window\n\
  * h,? - help\n\
@@ -363,7 +368,14 @@ static int dasm_update(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
-int dasm_key_handler(EMTILE *t, int key)
+int gotod_key_handler(EMTILE *t, int key)
+{
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int dasmv_key_handler(EMTILE *t, int key)
 {
 	switch (key) {
 	case KEY_UP:
@@ -413,11 +425,56 @@ int dasm_key_handler(EMTILE *t, int key)
 	case 'f':
 		dasm_follow ^= 1;
 		return 0;
-	case 'g':
-		return 0;
 	case 'i':
 		return 0;
 
+	}
+
+	return 1;
+}
+
+EMTILE *gotod;
+
+typedef int(*dialog_goto_callback)(char *);
+
+// -----------------------------------------------------------------------
+int dialog_goto_close(char *addr)
+{
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int gotoe_changed(EMTILE *t)
+{
+
+	emtile_delete(gotod);
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+EMTILE * dialog_goto(EMTILE *parent, dialog_goto_callback callback)
+{
+	EMTILE *dlg;
+
+	dlg = emui_frame(parent, 0, 0, 24, 3, "Go To", P_NONE | P_CENTER);
+	emtile_set_geometry_parent(dlg, parent, GEOM_INTERNAL);
+	emui_label(dlg, 1, 0, 9, AL_LEFT, S_DEFAULT, "Address: ");
+	EMTILE *gotoe = emui_lineedit(dlg, -1, 10, 0, 10, 10, TT_TEXT, M_INS);
+	emtile_set_properties(gotoe, P_AUTOEDIT);
+	emtile_set_change_handler(gotoe, gotoe_changed);
+
+	emui_focus(dlg);
+
+	return dlg;
+}
+
+// -----------------------------------------------------------------------
+int dasm_key_handler(EMTILE *t, int key)
+{
+	switch (key) {
+	case 'g':
+		gotod = dialog_goto(t, dialog_goto_close);
+		return 0;
 	}
 
 	return 1;
@@ -446,7 +503,8 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	emtile_set_focus_handler(dasm, float_focus);
 	EMTILE *asmv = emui_textview(dasm, 0, 0, 30, 20);
 	emtile_set_properties(asmv, P_MAXIMIZED);
-	emtile_set_key_handler(asmv, dasm_key_handler);
+	emtile_set_key_handler(dasm, dasm_key_handler);
+	emtile_set_key_handler(asmv, dasmv_key_handler);
 	emtile_set_update_handler(asmv, dasm_update);
 
 	// asm status

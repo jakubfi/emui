@@ -57,6 +57,7 @@ struct emtile_drv emui_W_NAME_drv = {
 	.draw = emui_W_NAME_draw,
 	.update_geometry = emui_W_NAME_update_geometry,
 	.event_handler = emui_W_NAME_event_handler,
+	.focus_handler = NULL,
 	.destroy_priv_data = emui_W_NAME_destroy_priv_data,
 };
 
