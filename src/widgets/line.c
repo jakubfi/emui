@@ -69,7 +69,7 @@ EMTILE * emui_line(EMTILE *parent, int align, int x, int y, int len)
 		return NULL;
 	}
 
-	t = emtile(parent, -1, &emui_line_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
+	t = emtile(parent, &emui_line_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->priv_data = calloc(1, sizeof(struct line));
 	struct line *d = t->priv_data;

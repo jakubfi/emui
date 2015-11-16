@@ -87,7 +87,7 @@ struct emtile_drv emui_tabs_drv = {
 // -----------------------------------------------------------------------
 EMTILE * emui_tabs(EMTILE *parent)
 {
-	EMTILE *t = emtile(parent, -1, &emui_tabs_drv, 0, 0, parent->i.w, parent->i.h, 1, 0, 0, 0, "Tabs", P_CONTAINER | P_MAXIMIZED | P_FOCUS_GROUP);
+	EMTILE *t = emtile(parent, &emui_tabs_drv, 0, 0, parent->i.w, parent->i.h, 1, 0, 0, 0, "Tabs", P_CONTAINER | P_MAXIMIZED | P_FOCUS_GROUP);
 
 	t->priv_data = calloc(1, sizeof(struct tabs));
 

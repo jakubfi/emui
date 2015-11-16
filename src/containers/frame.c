@@ -53,7 +53,7 @@ EMTILE * emui_frame(EMTILE *parent, int x, int y, int w, int h, char *name, int 
 {
 	EMTILE *t;
 
-	t = emtile(parent, -1, &emui_frame_drv, x, y, w, h, 1, 1, 1, 1, name, P_CONTAINER | P_FOCUS_GROUP);
+	t = emtile(parent, &emui_frame_drv, x, y, w, h, 1, 1, 1, 1, name, P_CONTAINER | P_FOCUS_GROUP);
 
 	emtile_set_properties(t, properties);
 

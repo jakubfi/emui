@@ -104,7 +104,6 @@ struct emui_geom {
 
 struct emui_tile {
 	// general
-	int id;						// tile id (app may set it to whatever is needed by the application)
 	char *name;					// tile name
 	unsigned properties;		// tile properties
 	int key;					// shortcut key
@@ -142,14 +141,15 @@ struct emui_tile {
 	void *priv_data;
 	struct emtile_drv *drv;
 
-	// app-provided handlers
+	// app-provided data and handlers
+	void *ptr;
 	emui_int_f update_handler;
 	emui_int_f change_handler;
 	emui_int_f_int focus_handler;
 	emui_int_f_int key_handler;
 };
 
-EMTILE * emtile(EMTILE *parent, int id, struct emtile_drv *drv, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
+EMTILE * emtile(EMTILE *parent, struct emtile_drv *drv, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
 void emtile_delete(EMTILE *t);
 
 void emtile_fit(EMTILE *t);
@@ -165,8 +165,8 @@ int emtile_set_properties(EMTILE *t, unsigned properties);
 int emtile_clear_properties(EMTILE *t, unsigned properties);
 int emtile_set_name(EMTILE *t, char *name);
 int emtile_set_style(EMTILE *t, int style);
-void emtile_set_id(EMTILE *t, int id);
-int emtile_get_id(EMTILE *t);
+void emtile_set_ptr(EMTILE *t, void *ptr);
+void * emtile_get_ptr(EMTILE *t);
 void emtile_set_margins(EMTILE *t, int mt, int mb, int ml, int mr);
 void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type);
 

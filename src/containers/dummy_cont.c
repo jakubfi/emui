@@ -34,7 +34,7 @@ EMTILE * emui_dummy_cont(EMTILE *parent, int x, int y, int w, int h)
 {
 	EMTILE *t;
 
-	t = emtile(parent, -1, &emui_dummy_cont_drv, x, y, w, h, 0, 0, 0, 0, "DummyCont", P_CONTAINER);
+	t = emtile(parent, &emui_dummy_cont_drv, x, y, w, h, 0, 0, 0, 0, "DummyCont", P_CONTAINER);
 
 	return t;
 }

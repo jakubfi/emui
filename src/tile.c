@@ -166,7 +166,7 @@ int emtile_draw(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
-EMTILE * emtile(EMTILE *parent, int id, struct emtile_drv *drv, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
+EMTILE * emtile(EMTILE *parent, struct emtile_drv *drv, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties)
 {
 	EMTILE *t = calloc(1, sizeof(EMTILE));
 	if (!t) return NULL;
@@ -186,7 +186,6 @@ EMTILE * emtile(EMTILE *parent, int id, struct emtile_drv *drv, int x, int y, in
 	t->properties = properties;
 	t->drv = drv;
 	t->geometry_changed = 1;
-	t->id = id;
 	t->accept_updates = 1;
 	t->pg = &(parent->i);
 
@@ -413,15 +412,15 @@ void emtile_inverse(EMTILE *t, int inv)
 }
 
 // -----------------------------------------------------------------------
-void emtile_set_id(EMTILE *t, int id)
+void emtile_set_ptr(EMTILE *t, void *ptr)
 {
-	t->id = id;
+	t->ptr = ptr;
 }
 
 // -----------------------------------------------------------------------
-int emtile_get_id(EMTILE *t)
+void * emtile_get_ptr(EMTILE *t)
 {
-	return t->id;
+	return t->ptr;
 }
 
 // -----------------------------------------------------------------------

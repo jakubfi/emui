@@ -23,8 +23,7 @@
 
 #include "emui.h"
 
-char *help_text = "\
-                 _____  ______ ______\n\
+char *help_text = "                 _____  ______ ______\n\
 .-----.--------.|  |  ||      |      |\n\
 |  -__|        ||__    |  --  |  --  |\n\
 |_____|__|__|__|   |__||______|______|\n\
@@ -158,9 +157,10 @@ EMTILE * ui_create_status(EMTILE *parent)
 int reg_2char_update(EMTILE *t)
 {
 	char buf[3];
+	uint16_t *data = emtile_get_ptr(t);
 
-	buf[0] = treg[t->id] >> 8;
-	buf[1] = treg[t->id] & 0xff;
+	buf[0] = *data >> 8;
+	buf[1] = *data & 0xff;
 	buf[2] = '\0';
 	emui_lineedit_set_text(t, buf);
 
@@ -170,9 +170,10 @@ int reg_2char_update(EMTILE *t)
 int reg_2char_changed(EMTILE *t)
 {
 	char *txt;
+	uint16_t *data = emtile_get_ptr(t);
 
 	txt = emui_lineedit_get_text(t);
-	treg[t->id] = *txt ? (*txt << 8) + *(txt+1) : 0;
+	*data = *txt ? (*txt << 8) + *(txt+1) : 0;
 	return 0;
 }
 
@@ -181,8 +182,9 @@ int reg_r40_update(EMTILE *t)
 {
 	char buf[4];
 	uint16_t val;
+	uint16_t *data = emtile_get_ptr(t);
 
-	val = treg[t->id];
+	val = *data;
 	emui_lineedit_set_text(t, r40_to_ascii(&val, 1, buf));
 
 	return 0;
@@ -192,9 +194,10 @@ int reg_r40_update(EMTILE *t)
 int reg_r40_changed(EMTILE *t)
 {
 	uint16_t val;
+	uint16_t *data = emtile_get_ptr(t);
 
 	ascii_to_r40(emui_lineedit_get_text(t), NULL, &val);
-	treg[t->id] = val;
+	*data = val;
 
 	return 0;
 }
@@ -202,7 +205,8 @@ int reg_r40_changed(EMTILE *t)
 // -----------------------------------------------------------------------
 int reg_int_update(EMTILE *t)
 {
-	emui_lineedit_set_int(t, treg[t->id]);
+	uint16_t *data = emtile_get_ptr(t);
+	emui_lineedit_set_int(t, *data);
 	return 0;
 }
 
@@ -212,11 +216,12 @@ int reg_int_changed(EMTILE *t)
 	int val;
 
 	val = emui_lineedit_get_int(t);
+	uint16_t *data = emtile_get_ptr(t);
 
 	if ((val > USHRT_MAX) || (val < SHRT_MIN)) {
 		return 1;
 	} else {
-		treg[t->id] = val;
+		*data = val;
 		return 0;
 	}
 }
@@ -270,27 +275,33 @@ EMTILE * ui_create_ureg(EMTILE *parent)
 		r = emui_lineedit(ureg_hex, i, 0, i+1, 4, 4, TT_HEX, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
+		emtile_set_ptr(r, treg+i);
 		emtile_set_focus_key(r, buf[1]);
 
 		r = emui_lineedit(ureg_dec, i, 0, i+1, 6, 6, TT_INT, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
+		emtile_set_ptr(r, treg+i);
 
 		r = emui_lineedit(ureg_oct, i, 0, i+1, 6, 6, TT_OCT, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
+		emtile_set_ptr(r, treg+i);
 
 		r = emui_lineedit(ureg_bin, i, 0, i+1, 16, 16, TT_BIN, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
+		emtile_set_ptr(r, treg+i);
 
 		r = emui_lineedit(ureg_ch, i, 0, i+1, 2, 2, TT_TEXT, M_OVR);
 		emtile_set_change_handler(r, reg_2char_changed);
 		emtile_set_update_handler(r, reg_2char_update);
+		emtile_set_ptr(r, treg+i);
 
 		r = emui_lineedit(ureg_r40, i, 0, i+1, 3, 3, TT_TEXT, M_OVR);
 		emtile_set_change_handler(r, reg_r40_changed);
 		emtile_set_update_handler(r, reg_r40_update);
+		emtile_set_ptr(r, treg+i);
 	}
 
 	return ureg;

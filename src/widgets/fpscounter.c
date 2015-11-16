@@ -68,7 +68,7 @@ EMTILE * emui_fpscounter(EMTILE *parent, int x, int y, int style)
 {
 	EMTILE *t;
 
-	t = emtile(parent, -1, &emui_fpscounter_drv, x, y, 6, 1, 0, 0, 0, 0, NULL, P_NONE);
+	t = emtile(parent, &emui_fpscounter_drv, x, y, 6, 1, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->style = style;
 	t->priv_data = calloc(1, sizeof(struct fpscounter));

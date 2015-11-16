@@ -80,7 +80,7 @@ EMTILE * emui_justifier(EMTILE *parent)
 {
 	EMTILE *t;
 
-	t = emtile(parent, -1, &emui_justifier_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Justify", P_CONTAINER | P_MAXIMIZED);
+	t = emtile(parent, &emui_justifier_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Justify", P_CONTAINER | P_MAXIMIZED);
 
 	return t;
 }

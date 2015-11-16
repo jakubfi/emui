@@ -44,7 +44,7 @@ EMTILE * emui_framecounter(EMTILE *parent, int x, int y, int style)
 {
 	EMTILE *t;
 
-	t = emtile(parent, -1, &emui_framecounter_drv, x, y, 20, 1, 0, 0, 0, 0, NULL, P_NONE);
+	t = emtile(parent, &emui_framecounter_drv, x, y, 20, 1, 0, 0, 0, 0, NULL, P_NONE);
 
 	t->style = style;
 
