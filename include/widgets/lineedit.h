@@ -18,7 +18,7 @@
 #ifndef EMUI_LINEEDIT_H
 #define EMUI_LINEEDIT_H
 
-EMTILE * emui_lineedit(EMTILE *parent, int id, int x, int y, int w, int maxlen, int type, int mode);
+EMTILE * emui_lineedit(EMTILE *parent, int x, int y, int w, int maxlen, int type, int mode);
 int emui_lineedit_set_text(EMTILE *t, char *text);
 char * emui_lineedit_get_text(EMTILE *t);
 void emui_lineedit_set_int(EMTILE *t, int v);

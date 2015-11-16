@@ -18,6 +18,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 #include <emcrk/r40.h>
 #include <emdas.h>
 
@@ -142,10 +143,10 @@ EMTILE * ui_create_status(EMTILE *parent)
 
 	// right side
 	EMTILE *status_right = emui_dummy_cont(split, 0, 0, 1, 1);
-	EMTILE *lfps = emui_label(status_right, 0, 0, 5, AL_LEFT, S_TEXT_NN, "FPS: ");
-	EMTILE *fps = emui_fpscounter(status_right, 5, 0, S_EDIT_NN);
-	EMTILE *lframe = emui_label(status_right, 11, 0, 9, AL_LEFT, S_TEXT_NN, "  Frame: ");
-	EMTILE *frame = emui_framecounter(status_right, 20, 0, S_EDIT_NN);
+	emui_label(status_right, 0, 0, 5, AL_LEFT, S_TEXT_NN, "FPS: ");
+	emui_fpscounter(status_right, 5, 0, S_EDIT_NN);
+	emui_label(status_right, 11, 0, 9, AL_LEFT, S_TEXT_NN, "  Frame: ");
+	emui_framecounter(status_right, 20, 0, S_EDIT_NN);
 
 	return split;
 }
@@ -269,33 +270,33 @@ EMTILE * ui_create_ureg(EMTILE *parent)
 		emui_label(ureg_r, 0, i+1, 3, AL_RIGHT, S_TEXT_NN, buf);
 		treg[i] = 0;
 
-		r = emui_lineedit(ureg_hex, i, 0, i+1, 4, 4, TT_HEX, M_OVR);
+		r = emui_lineedit(ureg_hex, 0, i+1, 4, 4, TT_HEX, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
 		emtile_set_ptr(r, treg+i);
 		emtile_set_focus_key(r, buf[1]);
 
-		r = emui_lineedit(ureg_dec, i, 0, i+1, 6, 6, TT_INT, M_OVR);
+		r = emui_lineedit(ureg_dec, 0, i+1, 6, 6, TT_INT, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
 		emtile_set_ptr(r, treg+i);
 
-		r = emui_lineedit(ureg_oct, i, 0, i+1, 6, 6, TT_OCT, M_OVR);
+		r = emui_lineedit(ureg_oct, 0, i+1, 6, 6, TT_OCT, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
 		emtile_set_ptr(r, treg+i);
 
-		r = emui_lineedit(ureg_bin, i, 0, i+1, 16, 16, TT_BIN, M_OVR);
+		r = emui_lineedit(ureg_bin, 0, i+1, 16, 16, TT_BIN, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
 		emtile_set_ptr(r, treg+i);
 
-		r = emui_lineedit(ureg_ch, i, 0, i+1, 2, 2, TT_TEXT, M_OVR);
+		r = emui_lineedit(ureg_ch, 0, i+1, 2, 2, TT_TEXT, M_OVR);
 		emtile_set_change_handler(r, reg_2char_changed);
 		emtile_set_update_handler(r, reg_2char_update);
 		emtile_set_ptr(r, treg+i);
 
-		r = emui_lineedit(ureg_r40, i, 0, i+1, 3, 3, TT_TEXT, M_OVR);
+		r = emui_lineedit(ureg_r40, 0, i+1, 3, 3, TT_TEXT, M_OVR);
 		emtile_set_change_handler(r, reg_r40_changed);
 		emtile_set_update_handler(r, reg_r40_update);
 		emtile_set_ptr(r, treg+i);
@@ -311,22 +312,22 @@ EMTILE * ui_create_sreg(EMTILE *parent)
 	emtile_set_focus_handler(sreg, float_focus);
 	emui_label(sreg, 0, 0, 55, AL_LEFT, S_TEXT_NN, "    hex  opcode D A   B   C");
 	emui_label(sreg, 0, 1, 55, AL_LEFT, S_TEXT_NN, "IR:");
-	emui_lineedit(sreg, -1, 4, 1, 4, 4, TT_HEX, M_OVR);
-	emui_lineedit(sreg, -1, 9, 1, 6, 6, TT_BIN, M_OVR);
-	emui_lineedit(sreg, -1, 16, 1, 1, 1, TT_BIN, M_OVR);
-	emui_lineedit(sreg, -1, 18, 1, 3, 3, TT_BIN, M_OVR);
-	emui_lineedit(sreg, -1, 22, 1, 3, 3, TT_BIN, M_OVR);
-	emui_lineedit(sreg, -1, 26, 1, 3, 3, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 4, 1, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, 9, 1, 6, 6, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 16, 1, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 18, 1, 3, 3, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 22, 1, 3, 3, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 26, 1, 3, 3, TT_BIN, M_OVR);
 	emui_label(sreg, 0, 2, 55, AL_LEFT, S_TEXT_NN, "    hex  PMCZs139fS Q s NB");
 	emui_label(sreg, 0, 3, 55, AL_LEFT, S_TEXT_NN, "SR:");
-	emui_lineedit(sreg, -1, 4, 3, 4, 4, TT_HEX, M_OVR);
-	emui_lineedit(sreg, -1, 9, 3, 10, 10, TT_BIN, M_OVR);
-	emui_lineedit(sreg, -1, 20, 3, 1, 1, TT_BIN, M_OVR);
-	emui_lineedit(sreg, -1, 22, 3, 1, 1, TT_BIN, M_OVR);
-	emui_lineedit(sreg, -1, 24, 3, 4, 4, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 4, 3, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, 9, 3, 10, 10, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 20, 3, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 22, 3, 1, 1, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 24, 3, 4, 4, TT_BIN, M_OVR);
 	emui_label(sreg, 0, 4, 55, AL_LEFT, S_TEXT_NN, "KB:");
-	emui_lineedit(sreg, -1, 4, 4, 4, 4, TT_HEX, M_OVR);
-	emui_lineedit(sreg, -1, 9, 4, 16, 16, TT_BIN, M_OVR);
+	emui_lineedit(sreg, 4, 4, 4, 4, TT_HEX, M_OVR);
+	emui_lineedit(sreg, 9, 4, 16, 16, TT_BIN, M_OVR);
 
 	emtile_set_focus_key(sreg, 's');
 
@@ -441,35 +442,97 @@ int dasmv_key_handler(EMTILE *t, int key)
 	return 1;
 }
 
-EMTILE *gotod;
-
-typedef int(*dialog_goto_callback)(char *);
+// -----------------------------------------------------------------------
+struct goto_data {
+	int *seg;
+	uint16_t *addr;
+	EMTILE *le;
+};
 
 // -----------------------------------------------------------------------
-int dialog_goto_close(char *addr)
+int str_to_segaddr(char *str, int *xseg, uint16_t *xaddr)
 {
+	char *buf = strdup(str);
+	int segi, addri;
+	char *endptr;
+	char *seg = buf;
+	char *addr = strchr(seg, ':');
+
+	if (addr) {
+		*addr = '\0';
+		addr++;
+	} else {
+		addr = buf;
+		seg = NULL;
+	}
+
+	if (addr && *addr) {
+		addri = strtol(addr, &endptr, 0);
+		if (*endptr != '\0') {
+			free(buf);
+			return 1;
+		} else {
+			*xaddr = addri;
+		}
+	}
+
+	if (seg && *seg) {
+		segi = strtol(seg, &endptr, 0);
+		if (*endptr != '\0') {
+			free(buf);
+			return 1;
+		} else {
+			*xseg = segi;
+		}
+	}
+
+	free(buf);
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-int gotoe_changed(EMTILE *t)
+int goto_changed(EMTILE *t)
 {
+	struct goto_data *dat = emtile_get_ptr(t);
+	char *str = emui_lineedit_get_text(dat->le);
 
-	emtile_delete(gotod);
-	return 0;
+	if (str_to_segaddr(str, dat->seg, dat->addr) == 0) {
+		free(dat);
+		emtile_delete(t);
+		return 0;
+	}
+
+	return 1;
 }
 
 // -----------------------------------------------------------------------
-EMTILE * dialog_goto(EMTILE *parent, dialog_goto_callback callback)
+int goto_key_handler(EMTILE *t, int key)
 {
-	EMTILE *dlg;
+	switch (key) {
+	case 27: // ESC
+		emtile_delete(t);
+		return 0;
+	}
+	return 1;
+}
 
-	dlg = emui_frame(parent, 0, 0, 24, 3, "Go To", P_NONE | P_CENTER);
+// -----------------------------------------------------------------------
+EMTILE * dialog_goto(EMTILE *parent, int *seg, uint16_t *addr)
+{
+	struct goto_data *dat = malloc(sizeof(struct goto_data));
+	dat->seg = seg;
+	dat->addr = addr;
+
+	EMTILE *dlg = emui_frame(parent, 0, 0, 24, 3, "GoTo", P_NONE | P_CENTER);
 	emtile_set_geometry_parent(dlg, parent, GEOM_INTERNAL);
+
 	emui_label(dlg, 1, 0, 9, AL_LEFT, S_DEFAULT, "Address: ");
-	EMTILE *gotoe = emui_lineedit(dlg, -1, 10, 0, 10, 10, TT_TEXT, M_INS);
-	emtile_set_properties(gotoe, P_AUTOEDIT);
-	emtile_set_change_handler(gotoe, gotoe_changed);
+	dat->le = emui_lineedit(dlg, 10, 0, 10, 10, TT_TEXT, M_INS);
+	emtile_set_properties(dat->le, P_AUTOEDIT);
+
+	emtile_set_ptr(dlg, dat);
+	emtile_set_change_handler(dlg, goto_changed);
+	emtile_set_key_handler(dlg, goto_key_handler);
 
 	emui_focus(dlg);
 
@@ -481,7 +544,7 @@ int dasm_key_handler(EMTILE *t, int key)
 {
 	switch (key) {
 	case 'g':
-		gotod = dialog_goto(t, dialog_goto_close);
+		dialog_goto(t, &dasm_segment, &dasm_start);
 		return 0;
 	}
 
@@ -550,8 +613,8 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 		sprintf(buf, "%x", i);
 		emui_label(mem, 9+i*5, 0, 4, AL_LEFT, S_DEFAULT, buf);
 	}
-	EMTILE *mem_hline = emui_line(mem, AL_HORIZONTAL, 0, 1, 1000);
-	EMTILE *mem_vline = emui_line(mem, AL_VERTICAL, 8, 0, 1000);
+	emui_line(mem, AL_HORIZONTAL, 0, 1, 1000);
+	emui_line(mem, AL_VERTICAL, 8, 0, 1000);
 
 	for (int i=2 ; i<50 ; i++) {
 		emui_label(mem, 0, i, 7, AL_LEFT, S_DEFAULT, "addr");
@@ -562,7 +625,7 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 
 	for (int i=0 ; i<1000 ; i++) {
 		sprintf(buf, "%x", i);
-		EMTILE *l = emui_lineedit(memv, -1, 0, 0, 4, 4, TT_HEX, M_OVR);
+		EMTILE *l = emui_lineedit(memv, 0, 0, 4, 4, TT_HEX, M_OVR);
 		emui_lineedit_set_text(l, buf);
 	}
 
@@ -648,7 +711,7 @@ int main(int argc, char **argv)
 
 	// status
 	EMTILE *status_split = emui_splitter(layout, AL_BOTTOM, 1, 1, FIT_FILL);
-	EMTILE *status = ui_create_status(status_split);
+	ui_create_status(status_split);
 
 	// tabs
 	tabs = emui_tabs(status_split);

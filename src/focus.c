@@ -30,6 +30,7 @@ struct focus_item {
 
 struct focus_item *focus_stack;
 static EMTILE *focus;
+static EMTILE *last_focused_widget;
 
 // -----------------------------------------------------------------------
 static void _focus_stack_put(EMTILE *t)
@@ -55,6 +56,7 @@ static void _focus_stack_put(EMTILE *t)
 	if (!nfi) {
 		nfi = malloc(sizeof(struct focus_item));
 		nfi->t = t;
+		nfi->prev = NULL;
 	}
 
 	// put on stack
@@ -115,8 +117,6 @@ static int _distance(int x1, int y1, int x2, int y2)
 // -----------------------------------------------------------------------
 static void _focus_up(EMTILE *t)
 {
-	static EMTILE *last_focused_widget;
-
 	// call widget focus handlers
 	if (t->properties & P_INTERACTIVE) {
 		if (last_focused_widget && last_focused_widget->drv->focus_handler) {
@@ -292,6 +292,7 @@ void emui_focus(EMTILE *t)
 // -----------------------------------------------------------------------
 void emui_focus_refocus()
 {
+	last_focused_widget = NULL;
 	if (focus_stack) {
 		emui_focus(focus_stack->t);
 	}

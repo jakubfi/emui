@@ -76,6 +76,7 @@ enum emui_tile_properties {
 	P_INTERACTIVE	= 1 << 18,	// user can interact with the tile (thus it can be focused)
 	P_NOCANVAS		= 1 << 19,	// tile has no canvas to draw on
 	P_CONTAINER		= 1 << 20,	// other tiles can be placed within this tile
+	P_DELETED		= 1 << 21,	// delete the tile with next emui_draw()
 };
 
 #define P_APP_SETTABLE 0xffff
@@ -151,6 +152,7 @@ struct emui_tile {
 
 EMTILE * emtile(EMTILE *parent, struct emtile_drv *drv, int x, int y, int w, int h, int mt, int mb, int ml, int mr, char *name, int properties);
 void emtile_delete(EMTILE *t);
+void _emtile_really_delete(EMTILE *t);
 
 void emtile_fit(EMTILE *t);
 int emtile_draw(EMTILE *t);

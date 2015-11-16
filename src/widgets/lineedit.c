@@ -140,6 +140,9 @@ static int le_handle_edit(EMTILE *t, struct emui_event *ev)
 			emui_lineedit_edit(t, 0);
 			break;
 		case 27: // ESC
+			if (t->properties & P_AUTOEDIT) {
+				return 1;
+			}
 			le->in_edit = 0;
 			t->accept_updates = 1;
 			curs_set(0);
@@ -235,6 +238,7 @@ int emui_lineedit_event_handler(EMTILE *t, struct emui_event *ev)
 void emui_lineedit_destroy_priv_data(EMTILE *t)
 {
 	struct lineedit *le = t->priv_data;
+	curs_set(0);
 	free(le->buf);
 	free(le->editbuf);
 	free(le);
@@ -265,7 +269,7 @@ struct emtile_drv emui_lineedit_drv = {
 };
 
 // -----------------------------------------------------------------------
-EMTILE * emui_lineedit(EMTILE *parent, int id, int x, int y, int w, int maxlen, int type, int mode)
+EMTILE * emui_lineedit(EMTILE *parent, int x, int y, int w, int maxlen, int type, int mode)
 {
 	EMTILE *t;
 

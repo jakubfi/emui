@@ -92,7 +92,7 @@ EMTILE * emui_init(unsigned fps)
 // -----------------------------------------------------------------------
 void emui_destroy()
 {
-	emtile_delete(layout);
+	_emtile_really_delete(layout);
 	endwin();
 	//_nc_free_and_exit();
 	delscreen(s);
@@ -138,6 +138,12 @@ static int emui_evq_update(struct timeval *tv)
 static void emui_draw(EMTILE *t)
 {
 	EMTILE *focused_child = NULL;
+
+	// physically delete tile marked P_DELETED
+	if (t->properties & P_DELETED) {
+		_emtile_really_delete(t);
+		return;
+	}
 
 	// update tile geometry
 	int geometry_changed = t->geometry_changed;
@@ -273,6 +279,7 @@ static int emui_process_event(struct emui_event *ev)
 		return 0;
 	}
 
+	// try upper tiles for handling the key
 	EMTILE *p = t->parent;
 	while (p) {
 		if ((ev->type == EV_KEY) && p->key_handler && !p->key_handler(p, ev->sender)) {
@@ -310,12 +317,12 @@ static void emui_update_screen(struct timeval *ft, unsigned fps)
 	emui_frame_no++;
 
 	// set frametime
-	long resolution = 1000000L;
-	long ft_requested = resolution / fps;
-	ft->tv_sec = 0;
-	ft->tv_usec = ft_requested;
-
 	if (ft) {
+		long resolution = 1000000L;
+		long ft_requested = resolution / fps;
+		ft->tv_sec = 0;
+		ft->tv_usec = ft_requested;
+
 		gettimeofday(&work_end, NULL);
 
 		long ft_work = resolution * (work_end.tv_sec - work_start.tv_sec);

@@ -331,56 +331,47 @@ static void emtile_child_unlink(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
-static void emtile_free(EMTILE *t)
-{
-	if (t->drv->destroy_priv_data) t->drv->destroy_priv_data(t);
-	free(t->name);
-
-	// free ncurses windows
-	delwin(t->ncwin);
-
-	free(t);
-}
-
-// -----------------------------------------------------------------------
-static void emtile_destroy_children(EMTILE *t)
-{
-	EMTILE *ch = t->ch_first;
-	while (ch) {
-		EMTILE *next_ch = ch->ch_next;
-		emtile_destroy_children(ch);
-		emtile_free(ch);
-		ch = next_ch;
-	}
-}
-
-// -----------------------------------------------------------------------
 void emtile_delete(EMTILE *t)
+{
+	t->properties |= P_DELETED;
+}
+
+// -----------------------------------------------------------------------
+void _emtile_really_delete(EMTILE *t)
 {
 	if (!t) return;
 
-	// remove the tile from parent's child list
-	emtile_child_unlink(t);
-
-	// remove from focus group
-	emui_focus_group_unlink(t);
-
-	// destroy all child tiles
-	emtile_destroy_children(t);
-
-	// remove from focus stack
-	emui_focus_stack_delete_tile(t);
+	// delete all children first
+	EMTILE *next_ch;
+	EMTILE *ch = t->ch_first;
+	while (ch) {
+		next_ch = ch->ch_next;
+		_emtile_really_delete(ch);
+		ch = next_ch;
+	}
 
 	// remove from focus path
 	if (t->parent && (t->parent->focus == t)) {
 		t->parent->focus = NULL;
 	}
 
-	// refocus (there may be a deleted tile on focus path)
-	emui_focus_refocus();
+	// remove from focus group
+	emui_focus_group_unlink(t);
+
+	// remove from focus stack
+	emui_focus_stack_delete_tile(t);
+
+	// remove the tile from parent's child list
+	emtile_child_unlink(t);
 
 	// delete the tile itself
-	emtile_free(t);
+	delwin(t->ncwin);
+	free(t->name);
+	if (t->drv->destroy_priv_data) t->drv->destroy_priv_data(t);
+	free(t);
+
+	// refocus (there may be a deleted tile on focus path)
+	emui_focus_refocus();
 }
 
 // -----------------------------------------------------------------------
@@ -416,10 +407,15 @@ void emtile_geometry_changed(EMTILE *t)
 // -----------------------------------------------------------------------
 int emtile_notify_change(EMTILE *t)
 {
-	if (t->change_handler && t->change_handler(t)) {
-		t->content_invalid = 1;
-	} else {
-		t->content_invalid = 0;
+	t->content_invalid = 0;
+
+	EMTILE *notified_tile = t;
+	while (notified_tile) {
+		if (notified_tile->change_handler) {
+			t->content_invalid = notified_tile->change_handler(notified_tile);
+			break;
+		}
+		notified_tile = notified_tile->parent;
 	}
 
 	return t->content_invalid;
