@@ -21,12 +21,14 @@
 enum event_types {
 	EV_QUIT,		// exit the main UI loop
 	EV_KEY,			// key pressed
+	EV_MOUSE,		// mouse event
 	EV_ERROR,		// error
 };
 
 struct emui_event {
 	int type;		// event type
 	int sender;		// event sender (key, error)
+	int x, y;
 };
 
 struct emui_event * emui_evq_get();

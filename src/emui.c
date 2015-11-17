@@ -72,6 +72,8 @@ EMTILE * emui_init(unsigned fps)
 	set_escdelay(100);
 	start_color();
 	emui_style_init(NULL);
+	mousemask(BUTTON1_CLICKED, NULL);
+	mouseinterval(0);
 
 	// initialize emui
 	if (fps > EMUI_FPS_CAP) {
@@ -106,6 +108,7 @@ static int emui_evq_update(struct timeval *tv)
 	int retval;
 	int ch;
 	struct emui_event *ev = NULL;
+	MEVENT mevent;
 
 	FD_ZERO(&rfds);
 	FD_SET(0, &rfds);
@@ -121,8 +124,16 @@ static int emui_evq_update(struct timeval *tv)
 	// we have a keypress
 	if (retval > 0) {
 		ch = getch();
-		ev->type = EV_KEY;
-		ev->sender = ch;
+		if (ch == KEY_MOUSE) {
+			getmouse(&mevent);
+			ev->type = EV_MOUSE;
+			ev->sender = mevent.id;
+			ev->x = mevent.x;
+			ev->y = mevent.y;
+		} else {
+			ev->type = EV_KEY;
+			ev->sender = ch;
+		}
 	// error
 	} else {
 		ev->type = EV_ERROR;
@@ -260,6 +271,30 @@ static int emui_handle_focus(EMTILE *t, int key)
 }
 
 // -----------------------------------------------------------------------
+static int emui_handle_mouse_focus(EMTILE *nt, int x, int y)
+{
+	if (!nt) return 1;
+
+	EMTILE *t = layout->ch_first;
+	EMTILE *best = NULL;
+
+	while (t) {
+		if (!(t->properties & P_HIDDEN)
+		&& (x >= t->e.x) && (x < t->e.x + t->e.w)
+		&& (y >= t->e.y) && (y < t->e.y + t->e.h)
+		) {
+			best = t;
+			t = t->ch_first;
+		} else {
+			t = t->ch_next;
+		}
+	}
+
+	emui_focus(best);
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 static int emui_process_event(struct emui_event *ev)
 {
 	EMTILE *t = emui_focus_get();
@@ -276,6 +311,11 @@ static int emui_process_event(struct emui_event *ev)
 
 	// try the key to change focus
 	if ((ev->type == EV_KEY) && !emui_handle_focus(t, ev->sender)) {
+		return 0;
+	}
+
+	// try the key to change mouse focus
+	if ((ev->type == EV_MOUSE) && !emui_handle_mouse_focus(t, ev->x, ev->y)) {
 		return 0;
 	}
 
