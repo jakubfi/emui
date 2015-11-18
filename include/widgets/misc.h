@@ -18,8 +18,6 @@
 #ifndef EMUI_FCOUNTERS_H
 #define EMUI_FCOUNTERS_H
 
-EMTILE * emui_framecounter(EMTILE *parent, int x, int y, int style);
-EMTILE * emui_fpscounter(EMTILE *parent, int x, int y, int style);
 EMTILE * emui_line(EMTILE *parent, int align, int x, int y, int len);
 
 #endif

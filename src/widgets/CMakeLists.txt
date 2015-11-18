@@ -1,6 +1,4 @@
 add_library(widgets
-	framecounter.c
-	fpscounter.c
 	lineedit.c
 	label.c
 	textview.c

@@ -27,8 +27,9 @@ void emui_destroy();
 EMTILE * emui_init(unsigned fps);
 void emui_loop();
 
-unsigned emui_get_fps();
-unsigned long emui_get_frame();
+unsigned emui_get_target_fps();
+float emui_get_current_fps();
+unsigned long emui_get_current_frame();
 
 #endif
 

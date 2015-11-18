@@ -35,8 +35,10 @@
 static SCREEN *s;
 static EMTILE *layout;
 
-static int emui_fps;
-static unsigned long emui_frame_no;
+static int fps_target;
+static int fps_frame_mod;
+static float fps_current;
+static unsigned long frame_current;
 static volatile int terminal_resized;
 
 // -----------------------------------------------------------------------
@@ -77,11 +79,16 @@ EMTILE * emui_init(unsigned fps)
 
 	// initialize emui
 	if (fps > EMUI_FPS_CAP) {
-		emui_fps = EMUI_FPS_CAP;
+		fps_target = EMUI_FPS_CAP;
 	} else {
-		emui_fps = fps;
+		fps_target = fps;
 	}
 
+	// modulo for fps counter
+	fps_frame_mod = fps_target / 4;
+	if (fps_frame_mod <= 0) {
+		fps_frame_mod = 1;
+	}
 	layout = emui_screen();
 
 	if (signal(SIGWINCH, _emui_sigwinch_handler) == SIG_ERR) {
@@ -343,22 +350,31 @@ static int emui_process_event(struct emui_event *ev)
 static void emui_update_screen(struct timeval *ft, unsigned fps)
 {
 	struct timeval work_start, work_end;
+	static struct timeval work_start_old;
+	const long resolution = 1000000L;
 
 	if (ft) {
 		gettimeofday(&work_start, NULL);
+		// calculate the real fps
+		if (frame_current % fps_frame_mod == 0) {
+			long frame_time = resolution * (work_start.tv_sec - work_start_old.tv_sec);
+			frame_time += work_start.tv_usec - work_start_old.tv_usec;
+			fps_current = (float) fps_frame_mod * resolution / frame_time;
+			work_start_old = work_start;
+		}
 	}
 
 	if (terminal_resized) {
 		terminal_resized = 0;
 		layout->geometry_changed = 1;
 	}
+
 	emui_draw(layout);
 	doupdate();
-	emui_frame_no++;
+	frame_current++;
 
 	// set frametime
 	if (ft) {
-		long resolution = 1000000L;
 		long ft_requested = resolution / fps;
 		ft->tv_sec = 0;
 		ft->tv_usec = ft_requested;
@@ -386,12 +402,12 @@ void emui_loop()
 	emui_focus(layout);
 
 	// init frametime
-	if (emui_fps > 0) {
+	if (fps_target > 0) {
 		ft = calloc(1, sizeof(struct timeval));
 	}
 
 	while (1) {
-		emui_update_screen(ft, emui_fps);
+		emui_update_screen(ft, fps_target);
 
 process_event:
 		ev = emui_evq_get();
@@ -419,15 +435,21 @@ process_event:
 }
 
 // -----------------------------------------------------------------------
-unsigned emui_get_fps()
+unsigned emui_get_target_fps()
 {
-	return emui_fps;
+	return fps_target;
 }
 
 // -----------------------------------------------------------------------
-unsigned long emui_get_frame()
+float emui_get_current_fps()
 {
-	return emui_frame_no;
+	return fps_current;
+}
+
+// -----------------------------------------------------------------------
+unsigned long emui_get_current_frame()
+{
+	return frame_current;
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent

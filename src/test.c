@@ -131,6 +131,15 @@ int mem_get(int nb, uint16_t addr, uint16_t *dest)
 }
 
 // -----------------------------------------------------------------------
+int status_update(EMTILE *t)
+{
+	char buf[32];
+	sprintf(buf, "FPS: %2.2f  FRAME: %lu", emui_get_current_fps(), emui_get_current_frame());
+	emui_label_set_text(t, buf);
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 EMTILE * ui_create_status(EMTILE *parent)
 {
 	EMTILE *split = emui_splitter(parent, AL_LEFT, 1, FIT_FILL, 25);
@@ -143,10 +152,8 @@ EMTILE * ui_create_status(EMTILE *parent)
 
 	// right side
 	EMTILE *status_right = emui_dummy_cont(split, 0, 0, 1, 1);
-	emui_label(status_right, 0, 0, 5, AL_LEFT, S_TEXT_NN, "FPS: ");
-	emui_fpscounter(status_right, 5, 0, S_EDIT_NN);
-	emui_label(status_right, 11, 0, 9, AL_LEFT, S_TEXT_NN, "  Frame: ");
-	emui_framecounter(status_right, 20, 0, S_EDIT_NN);
+	EMTILE *st = emui_label(status_right, 0, 0, 32, AL_LEFT, S_TEXT_NN, "??");
+	emtile_set_update_handler(st, status_update);
 
 	return split;
 }
