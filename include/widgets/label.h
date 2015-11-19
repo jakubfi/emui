@@ -18,7 +18,9 @@
 #ifndef EMUI_LABEL_H
 #define EMUI_LABEL_H
 
-EMTILE * emui_label(EMTILE *parent, int x, int y, int w, int align, int style, char *txt);
-int emui_label_set_text(EMTILE *t, char *txt);
+#include "text.h"
+
+EMTILE * emui_label(EMTILE *parent, int x, int y, int w, int style, char *str);
+EMTEXT * emui_label_get_emtext(EMTILE *t);
 
 #endif

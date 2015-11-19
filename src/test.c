@@ -112,10 +112,12 @@ int dasm_follow;
 
 enum app_styles {
 	S_INSTRUCTION = S_FIRST_APP_STYLE,
+	S_IC,
 };
 
 static struct emui_style_def app_scheme[] = {
 	{ S_INSTRUCTION,	COLOR_BLACK,	COLOR_YELLOW,	A_BOLD },
+	{ S_IC,				COLOR_BLUE,		COLOR_GREEN,	A_BOLD },
 	{ -1, 0, 0, 0 }
 };
 
@@ -131,29 +133,29 @@ int mem_get(int nb, uint16_t addr, uint16_t *dest)
 }
 
 // -----------------------------------------------------------------------
-int status_update(EMTILE *t)
+int status_right_update(EMTILE *t)
 {
-	char buf[32];
-	sprintf(buf, "FPS: %2.2f  FRAME: %lu", emui_get_current_fps(), emui_get_current_frame());
-	emui_label_set_text(t, buf);
+	EMTEXT *txt = emui_label_get_emtext(t);
+	emtext_clear(txt);
+	emtext_append_str(txt, S_TEXT_NN, "FPS: ");
+	emtext_append_str(txt, S_EDIT_NN, "%2.2f ", emui_get_current_fps());
+	emtext_append_str(txt, S_TEXT_NN, " FRAME: ");
+	emtext_append_str(txt, S_EDIT_NN, "%i", emui_get_current_frame());
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-EMTILE * ui_create_status(EMTILE *parent)
+EMTILE * ui_create_statusbar(EMTILE *parent)
 {
 	EMTILE *split = emui_splitter(parent, AL_LEFT, 1, FIT_FILL, 25);
 	emtile_set_properties(split, P_INVERSE);
 
 	// left side
-	EMTILE *status_left = emui_dummy_cont(split, 0, 0, 1, 1);
-	EMTILE *misc = emui_label(status_left, 0, 0, 50, AL_LEFT, S_DEFAULT, "  MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
-	emtile_set_properties(misc, P_MAXIMIZED);
+	EMTILE *status_left = emui_label(split, 0, 0, 50, S_DEFAULT, "  MIPS: 22.4  STOP  ALARM  CLOCK  IRQ  Q  MC  P");
 
 	// right side
-	EMTILE *status_right = emui_dummy_cont(split, 0, 0, 1, 1);
-	EMTILE *st = emui_label(status_right, 0, 0, 32, AL_LEFT, S_TEXT_NN, "??");
-	emtile_set_update_handler(st, status_update);
+	EMTILE *status_right = emui_label(split, 0, 0, 32, S_TEXT_NN, "??");
+	emtile_set_update_handler(status_right, status_right_update);
 
 	return split;
 }
@@ -261,20 +263,20 @@ EMTILE * ui_create_ureg(EMTILE *parent)
 	EMTILE *ureg_bin = emui_dummy_cont(ureg_just, 32, 0, 16, 11);
 	EMTILE *ureg_ch = emui_dummy_cont(ureg_just, 40, 0, 2, 11);
 	EMTILE *ureg_r40 = emui_dummy_cont(ureg_just, 42, 0, 3, 11);
-	emui_label(ureg_r, 0, 0, 4, AL_LEFT, S_TEXT_NN, "");
-	emui_label(ureg_hex, 0, 0, 4, AL_LEFT, S_TEXT_NN, "hex");
-	emui_label(ureg_dec, 0, 0, 6, AL_LEFT, S_TEXT_NN, "dec");
-	emui_label(ureg_oct, 0, 0, 6, AL_LEFT, S_TEXT_NN, "oct");
-	emui_label(ureg_bin, 0, 0, 16, AL_LEFT, S_TEXT_NN, "ZMVCLEGYX1234567");
-	emui_label(ureg_ch, 0, 0, 2, AL_LEFT, S_TEXT_NN, "ch");
-	emui_label(ureg_r40, 0, 0, 3, AL_LEFT, S_TEXT_NN, "R40");
+	emui_label(ureg_r, 0, 0, 4, S_TEXT_NN, "");
+	emui_label(ureg_hex, 0, 0, 4, S_TEXT_NN, "hex");
+	emui_label(ureg_dec, 0, 0, 6, S_TEXT_NN, "dec");
+	emui_label(ureg_oct, 0, 0, 6, S_TEXT_NN, "oct");
+	emui_label(ureg_bin, 0, 0, 16, S_TEXT_NN, "ZMVCLEGYX1234567");
+	emui_label(ureg_ch, 0, 0, 2, S_TEXT_NN, "ch");
+	emui_label(ureg_r40, 0, 0, 3, S_TEXT_NN, "R40");
 
 	char buf[] = "R_:";
 	EMTILE *r;
 
 	for (int i=0 ; i<8 ; i++) {
 		buf[1] = '0' + i;
-		emui_label(ureg_r, 0, i+1, 3, AL_RIGHT, S_TEXT_NN, buf);
+		emui_label(ureg_r, 0, i+1, 3, S_TEXT_NN, buf);
 		treg[i] = 0;
 
 		r = emui_lineedit(ureg_hex, 0, i+1, 4, 4, TT_HEX, M_OVR);
@@ -317,22 +319,22 @@ EMTILE * ui_create_sreg(EMTILE *parent)
 {
 	EMTILE *sreg = emui_frame(parent, 0, 0, 55, 11, "Sys Registers", P_CENTER);
 	emtile_set_focus_handler(sreg, float_focus);
-	emui_label(sreg, 0, 0, 55, AL_LEFT, S_TEXT_NN, "    hex  opcode D A   B   C");
-	emui_label(sreg, 0, 1, 55, AL_LEFT, S_TEXT_NN, "IR:");
+	emui_label(sreg, 0, 0, 55, S_TEXT_NN, "    hex  opcode D A   B   C");
+	emui_label(sreg, 0, 1, 55, S_TEXT_NN, "IR:");
 	emui_lineedit(sreg, 4, 1, 4, 4, TT_HEX, M_OVR);
 	emui_lineedit(sreg, 9, 1, 6, 6, TT_BIN, M_OVR);
 	emui_lineedit(sreg, 16, 1, 1, 1, TT_BIN, M_OVR);
 	emui_lineedit(sreg, 18, 1, 3, 3, TT_BIN, M_OVR);
 	emui_lineedit(sreg, 22, 1, 3, 3, TT_BIN, M_OVR);
 	emui_lineedit(sreg, 26, 1, 3, 3, TT_BIN, M_OVR);
-	emui_label(sreg, 0, 2, 55, AL_LEFT, S_TEXT_NN, "    hex  PMCZs139fS Q s NB");
-	emui_label(sreg, 0, 3, 55, AL_LEFT, S_TEXT_NN, "SR:");
+	emui_label(sreg, 0, 2, 55, S_TEXT_NN, "    hex  PMCZs139fS Q s NB");
+	emui_label(sreg, 0, 3, 55, S_TEXT_NN, "SR:");
 	emui_lineedit(sreg, 4, 3, 4, 4, TT_HEX, M_OVR);
 	emui_lineedit(sreg, 9, 3, 10, 10, TT_BIN, M_OVR);
 	emui_lineedit(sreg, 20, 3, 1, 1, TT_BIN, M_OVR);
 	emui_lineedit(sreg, 22, 3, 1, 1, TT_BIN, M_OVR);
 	emui_lineedit(sreg, 24, 3, 4, 4, TT_BIN, M_OVR);
-	emui_label(sreg, 0, 4, 55, AL_LEFT, S_TEXT_NN, "KB:");
+	emui_label(sreg, 0, 4, 55, S_TEXT_NN, "KB:");
 	emui_lineedit(sreg, 4, 4, 4, 4, TT_HEX, M_OVR);
 	emui_lineedit(sreg, 9, 4, 16, 16, TT_BIN, M_OVR);
 
@@ -350,8 +352,9 @@ static int dasm_update(EMTILE *t)
 	uint16_t addr;
 	int astyle;
 	int istyle;
+	EMTEXT *txt = emui_textview_get_emtext(t);
 
-	emui_textview_clear(t);
+	emtext_clear(txt);
 
 	while (pos < t->i.h) {
 		addr = dasm_start + pos;
@@ -361,8 +364,8 @@ static int dasm_update(EMTILE *t)
 		astyle = S_DEFAULT;
 
 		if (addr == 16) {
-			istyle = S_TEXT_FN;
-			astyle = S_TEXT_FN;
+			istyle = S_IC;
+			astyle = S_IC;
 		} else if (*dbuf == '.') {
 			istyle = S_EDIT_NN;
 		} else if (*dbuf == ';') {
@@ -372,21 +375,12 @@ static int dasm_update(EMTILE *t)
 			istyle = S_INSTRUCTION;
 		}
 
-		sprintf(buf, "0x%04x: ", addr);
-		emui_textview_append(t, astyle, buf);
-		sprintf(buf, "%-*s", t->i.w-8, dbuf);
-		emui_textview_append(t, istyle, buf);
+		emtext_append_str(txt, astyle, "0x%04x: ", addr);
+		emtext_append_str(txt, istyle, "%-*s", t->i.w-8, dbuf);
 
 		pos++;
 	}
 	free(buf);
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int gotod_key_handler(EMTILE *t, int key)
-{
-
 	return 0;
 }
 
@@ -533,7 +527,7 @@ EMTILE * dialog_goto(EMTILE *parent, int *seg, uint16_t *addr)
 	EMTILE *dlg = emui_frame(parent, 0, 0, 24, 3, "GoTo", P_NONE | P_CENTER);
 	emtile_set_geometry_parent(dlg, parent, GEOM_INTERNAL);
 
-	emui_label(dlg, 1, 0, 9, AL_LEFT, S_DEFAULT, "Address: ");
+	emui_label(dlg, 1, 0, 9, S_DEFAULT, "Address: ");
 	dat->le = emui_lineedit(dlg, 10, 0, 10, 10, TT_TEXT, M_INS);
 	emtile_set_properties(dat->le, P_AUTOEDIT);
 
@@ -561,9 +555,9 @@ int dasm_key_handler(EMTILE *t, int key)
 // -----------------------------------------------------------------------
 static int dasm_status_update(EMTILE *t)
 {
-	char buf[32];
-	sprintf(buf, "[ IC follow:%s seg:%-2i ]", dasm_follow ? "ON " : "OFF", dasm_segment);
-	emui_label_set_text(t, buf);
+	EMTEXT *txt = emui_label_get_emtext(t);
+	emtext_clear(txt);
+	emtext_append_str(txt, S_TEXT_NN, "[ IC follow:%s seg:%-2i ]", dasm_follow ? "ON " : "OFF", dasm_segment);
 
 	return 1;
 }
@@ -590,7 +584,7 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	emtile_set_geometry_parent(dasm_status_split, dasm_status_split->parent, GEOM_EXTERNAL);
 	EMTILE *dasm_status_cont = emui_splitter(dasm_status_split, AL_RIGHT, 24, 24, 0);
 	emtile_set_margins(dasm_status_cont, 0, 0, 2, 2);
-	EMTILE *dasm_status = emui_label(dasm_status_cont, 0, 0, 24, AL_RIGHT, S_DEFAULT, "");
+	EMTILE *dasm_status = emui_label(dasm_status_cont, 0, 0, 24, S_DEFAULT, "");
 	emtile_set_update_handler(dasm_status, dasm_status_update);
 
 	// registers
@@ -611,20 +605,20 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 
 	EMTILE *mem_status_cont = emui_splitter(mem_status_split, AL_RIGHT, 24, 24, 0);
 	emtile_set_margins(mem_status_cont, 0, 0, 2, 2);
-	EMTILE *mem_status = emui_label(mem_status_cont, 0, 0, 24, AL_RIGHT, S_DEFAULT, "[ disp:HEX, cols:FIX16 ]");
+	EMTILE *mem_status = emui_label(mem_status_cont, 0, 0, 24, S_DEFAULT, "[ disp:HEX, cols:FIX16 ]");
 
-	emui_label(mem, 1, 0, 6, AL_LEFT, S_DEFAULT, "seg 2");
+	emui_label(mem, 1, 0, 6, S_DEFAULT, "seg 2");
 
 	char buf[5];
 	for (int i=0 ; i<32 ; i++) {
 		sprintf(buf, "%x", i);
-		emui_label(mem, 9+i*5, 0, 4, AL_LEFT, S_DEFAULT, buf);
+		emui_label(mem, 9+i*5, 0, 4, S_DEFAULT, buf);
 	}
 	emui_line(mem, AL_HORIZONTAL, 0, 1, 1000);
 	emui_line(mem, AL_VERTICAL, 8, 0, 1000);
 
 	for (int i=2 ; i<50 ; i++) {
-		emui_label(mem, 0, i, 7, AL_LEFT, S_DEFAULT, "addr");
+		emui_label(mem, 0, i, 7, S_DEFAULT, "addr");
 	}
 
 	EMTILE *memv_cont = emui_dummy_cont(mem, 9, 2, 1000, 1000);
@@ -679,7 +673,7 @@ int top_key_handler(EMTILE *t, int key)
 		emtile_set_key_handler(help, help_key_handler);
 		help_tv = emui_textview(help, 0, 0, 10, 10);
 		emtile_set_properties(help_tv, P_MAXIMIZED);
-		emui_textview_append(help_tv, S_DEFAULT, help_text);
+		emtext_append_str(emui_textview_get_emtext(help_tv), S_DEFAULT, "%s", help_text);
 
 		emui_focus(help);
 		return 0;
@@ -718,7 +712,7 @@ int main(int argc, char **argv)
 
 	// status
 	EMTILE *status_split = emui_splitter(layout, AL_BOTTOM, 1, 1, FIT_FILL);
-	ui_create_status(status_split);
+	ui_create_statusbar(status_split);
 
 	// tabs
 	tabs = emui_tabs(status_split);

@@ -18,8 +18,10 @@
 #ifndef EMUI_TEXTVIEW_H
 #define EMUI_TEXTVIEW_H
 
+#include "text.h"
+
 EMTILE * emui_textview(EMTILE *parent, int x, int y, int w, int h);
-int emui_textview_append(EMTILE *t, int style, char *str);
+EMTEXT * emui_textview_get_emtext(EMTILE *t);
 void emui_textview_clear(EMTILE *t);
 
 #endif

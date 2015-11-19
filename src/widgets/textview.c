@@ -23,96 +23,45 @@
 #include "event.h"
 #include "style.h"
 #include "print.h"
-
-struct tchunk {
-	int style;
-	char *txt;
-	struct tchunk *next, *prev;
-	int lines;
-};
+#include "text.h"
 
 struct textview {
-	struct tchunk *beg, *end, *cur;
+	EMTEXT *txt;
 };
 
 // -----------------------------------------------------------------------
 void emui_textview_draw(EMTILE *t)
 {
 	struct textview *d = t->priv_data;
-	struct tchunk *c = d->cur;
 
-	int lines = 0;
 	emuixy(t, 0, 0);
-
-	while (c && lines < t->i.h) {
-		lines += c->lines;
-		emuiprt(t, c->style, "%s", c->txt);
-		c = c->next;
-	}
+	emtext_print(d->txt, t);
 }
 
 // -----------------------------------------------------------------------
 int emui_textview_event_handler(EMTILE *t, struct emui_event *ev)
 {
 	struct textview *d = t->priv_data;
-	struct tchunk *c = d->cur;
-	int lines = 0;
 
 	if (ev->type == EV_KEY) {
 		switch (ev->sender) {
 			case KEY_UP:
-				if (c) {
-					c = c->prev;
-					while (c && !c->lines) {
-						c = c->prev;
-					}
-					if (c) {
-						d->cur = c;
-					}
-				}
+				emtext_line_skip(d->txt, -1);
 				return 0;
 			case KEY_DOWN:
-				if (c) {
-					c = c->next;
-					while (c && !c->lines) {
-						c = c->next;
-					}
-					if (c) {
-						d->cur = c;
-					}
-				}
+				emtext_line_skip(d->txt, 1);
 				return 0;
 			case KEY_HOME:
-				d->cur = d->beg;
+				emtext_line_first(d->txt);
 				return 0;
 			case KEY_END:
-				d->cur = d->end;
+				emtext_line_skipto(d->txt, -t->i.h);
 				return 0;
 			case KEY_PPAGE:
-				if (c) {
-					while (c && (lines < t->i.h-1)) {
-						lines += c->lines;
-						c = c->prev;
-					}
-					if (c) {
-						d->cur = c;
-					} else {
-						d->cur = d->beg;
-					}
-				}
+				emtext_line_skip(d->txt, -t->i.h);
 				return 0;
 			case KEY_NPAGE:
-				if (c) {
-					while (c && (lines < t->i.h-1)) {
-						lines += c->lines;
-						c = c->next;
-					}
-					if (c) {
-						d->cur = c;
-					} else {
-						d->cur = d->end;
-					}
-				}
+				emtext_line_skip(d->txt, t->i.h);
 				return 0;
 			default:
 				break;
@@ -126,7 +75,8 @@ int emui_textview_event_handler(EMTILE *t, struct emui_event *ev)
 // -----------------------------------------------------------------------
 void emui_textview_destroy_priv_data(EMTILE *t)
 {
-	emui_textview_clear(t);
+	struct textview *d = t->priv_data;
+	emtext_delete(d->txt);
 	free(t->priv_data);
 }
 
@@ -148,82 +98,17 @@ EMTILE * emui_textview(EMTILE *parent, int x, int y, int w, int h)
 
 	t->priv_data = calloc(1, sizeof(struct textview));
 
+	struct textview *d = t->priv_data;
+	d->txt = emtext();
+
 	return t;
 }
 
 // -----------------------------------------------------------------------
-static void _chunk_free(struct tchunk *c)
-{
-	if (!c) return;
-	free(c->txt);
-	free(c);
-}
-
-// -----------------------------------------------------------------------
-static void _chunks_destroy(struct tchunk *c)
-{
-	struct tchunk *next;
-	while (c) {
-		next = c->next;
-		_chunk_free(c);
-		c = next;
-	}
-}
-
-// -----------------------------------------------------------------------
-void emui_textview_clear(EMTILE *t)
+EMTEXT * emui_textview_get_emtext(EMTILE *t)
 {
 	struct textview *d = t->priv_data;
-	_chunks_destroy(d->beg);
-	d->beg = d->end = d->cur = NULL;
-}
-
-// -----------------------------------------------------------------------
-static void _tv_append(struct textview *d, struct tchunk *chunk)
-{
-	if (d->end) {
-		d->end->next = chunk;
-	}
-	chunk->prev = d->end;
-	chunk->next = NULL;
-	d->end = chunk;
-
-	if (!d->beg) {
-		d->beg = chunk;
-		d->cur = chunk;
-	}
-}
-
-// -----------------------------------------------------------------------
-int emui_textview_append(EMTILE *t, int style, char *str)
-{
-	struct textview *d = t->priv_data;
-	struct tchunk *chunk;
-	char *nl;
-
-	nl = strchr(str, '\n');
-	while (nl) {
-		int size = nl-str+1;
-		chunk = malloc(sizeof(struct tchunk));
-		chunk->style = style;
-		chunk->lines = 1;
-		chunk->txt = malloc(size+1);
-		chunk->txt[size] = '\0';
-		strncpy(chunk->txt, str, size);
-		_tv_append(d, chunk);
-		str = nl+1;
-		nl = strchr(str, '\n');
-	}
-
-	if (*str) {
-		chunk = malloc(sizeof(struct tchunk));
-		chunk->style = style;
-		chunk->lines = 0;
-		chunk->txt = strdup(str);
-		_tv_append(d, chunk);
-	}
-
-	return 0;
+	return d->txt;
 }
 
 // vim: tabstop=4 shiftwidth=4 autoindent

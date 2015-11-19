@@ -22,11 +22,11 @@
 #include "event.h"
 #include "style.h"
 #include "print.h"
+#include "text.h"
 #include "focus.h"
 
 struct label {
-	char *txt;
-	int align;
+	EMTEXT *txt;
 };
 
 // -----------------------------------------------------------------------
@@ -34,30 +34,14 @@ void emui_label_draw(EMTILE *t)
 {
 	struct label *d = t->priv_data;
 
-	int loc_offset = 0;
-	int txt_offset = 0;
-
-	if (d->align == AL_RIGHT) {
-		loc_offset = t->i.w - strlen(d->txt);
-	} else if (d->align == AL_CENTER) {
-		loc_offset = (t->i.w - strlen(d->txt)) / 2;
-	} else { // AL_LEFT and unknown aligns
-		// nothing
-	}
-
-	if (loc_offset < 0) {
-		txt_offset = -loc_offset;
-		loc_offset = 0;
-	}
-
-	emuixyprt(t, 0 + loc_offset, 0, t->style, "%-*s", t->i.w, d->txt + txt_offset);
+	emtext_print(d->txt, t);
 }
 
 // -----------------------------------------------------------------------
 void emui_label_destroy_priv_data(EMTILE *t)
 {
 	struct label *d = t->priv_data;
-	free(d->txt);
+	emtext_delete(d->txt);
 	free(d);
 }
 
@@ -71,28 +55,23 @@ struct emtile_drv emui_label_drv = {
 };
 
 // -----------------------------------------------------------------------
-int emui_label_set_text(EMTILE *t, char *txt)
+EMTEXT * emui_label_get_emtext(EMTILE *t)
 {
 	struct label *d = t->priv_data;
-
-	free(d->txt);
-	d->txt = strdup(txt);
-
-	return 0;
+	return d->txt;
 }
 
 // -----------------------------------------------------------------------
-EMTILE * emui_label(EMTILE *parent, int x, int y, int w, int align, int style, char *txt)
+EMTILE * emui_label(EMTILE *parent, int x, int y, int w, int style, char *str)
 {
 	EMTILE *t;
 
 	t = emtile(parent, &emui_label_drv, x, y, w, 1, 0, 0, 0, 0, NULL, P_NONE);
 
-	t->style = style;
 	t->priv_data = calloc(1, sizeof(struct label));
 	struct label *d = t->priv_data;
-	d->align = align;
-	emui_label_set_text(t, txt);
+	d->txt = emtext();
+	emtext_append_str(d->txt, style, str);
 
 	return t;
 }

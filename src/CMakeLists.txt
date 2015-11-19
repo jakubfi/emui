@@ -6,6 +6,7 @@ add_library(emui-lib SHARED
 	event.c
 	style.c
 	print.c
+	text.c
 	focus.c
 	tile.c
 )

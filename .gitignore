@@ -1,2 +1,8 @@
-build
+/build
 *.swp
+/*.config
+/*.creator
+/*.creator.user
+/*.files
+/*.includes
+
