@@ -42,8 +42,7 @@ int emui_W_NAME_update_geometry(EMTILE *t)
 // -----------------------------------------------------------------------
 int emui_W_NAME_event_handler(EMTILE *t, struct emui_event *ev)
 {
-	// event has not been handled
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------

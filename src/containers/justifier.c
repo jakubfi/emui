@@ -22,7 +22,7 @@
 #include "event.h"
 
 // -----------------------------------------------------------------------
-int emui_justifier_update_geometry(EMTILE *t)
+void emui_justifier_update_geometry(EMTILE *t)
 {
 	int ch_width = -1;
 	int ch_count = 0;
@@ -62,8 +62,6 @@ int emui_justifier_update_geometry(EMTILE *t)
 		offset += ch->r.w + 1 + per_ch;
 		ch = ch->ch_next;
 	}
-
-	return 0;
 }
 
 // -----------------------------------------------------------------------

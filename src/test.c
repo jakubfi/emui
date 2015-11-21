@@ -141,7 +141,8 @@ int status_right_update(EMTILE *t)
 	emtext_append_str(txt, S_EDIT_NN, "%2.2f ", emui_get_current_fps());
 	emtext_append_str(txt, S_TEXT_NN, " FRAME: ");
 	emtext_append_str(txt, S_EDIT_NN, "%i", emui_get_current_frame());
-	return 0;
+
+	return E_UPDATED;
 }
 
 // -----------------------------------------------------------------------
@@ -171,7 +172,7 @@ int reg_2char_update(EMTILE *t)
 	buf[2] = '\0';
 	emui_lineedit_set_text(t, buf);
 
-	return 0;
+	return E_UPDATED;
 }
 // -----------------------------------------------------------------------
 int reg_2char_changed(EMTILE *t)
@@ -181,7 +182,8 @@ int reg_2char_changed(EMTILE *t)
 
 	txt = emui_lineedit_get_text(t);
 	*data = *txt ? (*txt << 8) + *(txt+1) : 0;
-	return 0;
+
+	return E_VALID;
 }
 
 // -----------------------------------------------------------------------
@@ -194,7 +196,7 @@ int reg_r40_update(EMTILE *t)
 	val = *data;
 	emui_lineedit_set_text(t, r40_to_ascii(&val, 1, buf));
 
-	return 0;
+	return E_UPDATED;
 }
 
 // -----------------------------------------------------------------------
@@ -206,7 +208,7 @@ int reg_r40_changed(EMTILE *t)
 	ascii_to_r40(emui_lineedit_get_text(t), NULL, &val);
 	*data = val;
 
-	return 0;
+	return E_VALID;
 }
 
 // -----------------------------------------------------------------------
@@ -214,7 +216,8 @@ int reg_int_update(EMTILE *t)
 {
 	uint16_t *data = emtile_get_ptr(t);
 	emui_lineedit_set_int(t, *data);
-	return 0;
+
+	return E_UPDATED;
 }
 
 // -----------------------------------------------------------------------
@@ -226,15 +229,15 @@ int reg_int_changed(EMTILE *t)
 	uint16_t *data = emtile_get_ptr(t);
 
 	if ((val > USHRT_MAX) || (val < SHRT_MIN)) {
-		return 1;
+		return E_INVALID;
 	} else {
 		*data = val;
-		return 0;
+		return E_VALID;
 	}
 }
 
 // -----------------------------------------------------------------------
-int float_focus(EMTILE *t, int focus)
+void float_focus(EMTILE *t, int focus)
 {
 	if (focus) {
 		if (t->properties & P_HIDDEN) {
@@ -245,7 +248,6 @@ int float_focus(EMTILE *t, int focus)
 		emtile_set_geometry_parent(t, t->parent, GEOM_INTERNAL);
 		t->properties &= ~P_FLOAT;
 	}
-	return 0;
 }
 
 // -----------------------------------------------------------------------
@@ -380,8 +382,10 @@ static int dasm_update(EMTILE *t)
 
 		pos++;
 	}
+
 	free(buf);
-	return 0;
+
+	return E_UPDATED;
 }
 
 // -----------------------------------------------------------------------
@@ -390,36 +394,36 @@ int dasmv_key_handler(EMTILE *t, int key)
 	switch (key) {
 	case KEY_UP:
 		dasm_start--;
-		return 0;
+		return E_HANDLED;
 	case KEY_DOWN:
 		dasm_start++;
-		return 0;
+		return E_HANDLED;
 	case KEY_PPAGE:
 		dasm_start -= t->i.h;
-		return 0;
+		return E_HANDLED;
 	case KEY_NPAGE:
 		dasm_start += t->i.h;
-		return 0;
+		return E_HANDLED;
 	case KEY_HOME:
 		dasm_start = 0;
-		return 0;
+		return E_HANDLED;
 	case KEY_END:
 		dasm_start = 0x10000 - t->i.h;
-		return 0;
+		return E_HANDLED;
 	case 550: // ctrl-page up
 		dasm_start = (dasm_start & 0xf000) - 0x1000;
-		return 0;
+		return E_HANDLED;
 	case 545: // ctrl-page down
 		dasm_start = (dasm_start & 0xf000) + 0x1000;
-		return 0;
+		return E_HANDLED;
 	case '>':
 	case '.':
 		dasm_segment = (dasm_segment+1) & 0xf;
-		return 0;
+		return E_HANDLED;
 	case '<':
 	case ',':
 		dasm_segment = (dasm_segment-1) & 0xf;
-		return 0;
+		return E_HANDLED;
 	case '0':
 	case '1':
 	case '2':
@@ -431,16 +435,16 @@ int dasmv_key_handler(EMTILE *t, int key)
 	case '8':
 	case '9':
 		dasm_segment = key - '0';
-		return 0;
+		return E_HANDLED;
 	case 'f':
 		dasm_follow ^= 1;
-		return 0;
+		return E_HANDLED;
 	case 'i':
-		return 0;
+		return E_HANDLED;
 
 	}
 
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -488,7 +492,8 @@ int str_to_segaddr(char *str, int *xseg, uint16_t *xaddr)
 	}
 
 	free(buf);
-	return 0;
+
+	return E_OK;
 }
 
 // -----------------------------------------------------------------------
@@ -497,13 +502,13 @@ int goto_changed(EMTILE *t)
 	struct goto_data *dat = emtile_get_ptr(t);
 	char *str = emui_lineedit_get_text(dat->le);
 
-	if (str_to_segaddr(str, dat->seg, dat->addr) == 0) {
+	if (str_to_segaddr(str, dat->seg, dat->addr) == E_OK) {
 		free(dat);
 		emtile_delete(t);
-		return 0;
+		return E_VALID;
 	}
 
-	return 1;
+	return E_INVALID;
 }
 
 // -----------------------------------------------------------------------
@@ -512,9 +517,9 @@ int goto_key_handler(EMTILE *t, int key)
 	switch (key) {
 	case 27: // ESC
 		emtile_delete(t);
-		return 0;
+		return E_HANDLED;
 	}
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -546,10 +551,10 @@ int dasm_key_handler(EMTILE *t, int key)
 	switch (key) {
 	case 'g':
 		dialog_goto(t, &dasm_segment, &dasm_start);
-		return 0;
+		return E_HANDLED;
 	}
 
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -559,7 +564,7 @@ static int dasm_status_update(EMTILE *t)
 	emtext_clear(txt);
 	emtext_append_str(txt, S_TEXT_NN, "[ IC follow:%s seg:%-2i ]", dasm_follow ? "ON " : "OFF", dasm_segment);
 
-	return 1;
+	return E_UPDATED;
 }
 
 // -----------------------------------------------------------------------
@@ -656,7 +661,7 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 int help_key_handler(EMTILE *t, int key)
 {
 	emtile_delete(help);
-	return 0;
+	return E_HANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -676,10 +681,10 @@ int top_key_handler(EMTILE *t, int key)
 		emtext_append_str(emui_textview_get_emtext(help_tv), S_DEFAULT, "%s", help_text);
 
 		emui_focus(help);
-		return 0;
+		return E_HANDLED;
 	}
 
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------

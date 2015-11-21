@@ -140,17 +140,19 @@ void emtile_fit(EMTILE *t)
 	}
 
 	// do tile-specific geometry updates
-	if (t->drv->update_children_geometry) t->drv->update_children_geometry(t);
+	if (t->drv->update_children_geometry) {
+		t->drv->update_children_geometry(t);
+	}
 
 	t->geometry_changed = 0;
 }
 
 // -----------------------------------------------------------------------
-int emtile_draw(EMTILE *t)
+void emtile_draw(EMTILE *t)
 {
 	// tile is hidden or has no canvas, nothing to do
 	if (t->properties & (P_HIDDEN | P_NOCANVAS)) {
-		return 1;
+		return;
 	}
 
 	// if tile accepts content updates and app specified a handler,
@@ -165,8 +167,6 @@ int emtile_draw(EMTILE *t)
 	// update ncurses window, but don't output,
 	// doupdate() is done in the main loop
 	wnoutrefresh(t->ncwin);
-
-	return 0;
 }
 
 // -----------------------------------------------------------------------
@@ -225,38 +225,33 @@ void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type)
 }
 
 // -----------------------------------------------------------------------
-int emtile_set_focus_key(EMTILE *t, int key)
+void emtile_set_focus_key(EMTILE *t, int key)
 {
 	t->key = key;
-	return 1;
 }
 
 // -----------------------------------------------------------------------
-int emtile_set_update_handler(EMTILE *t, emui_int_f handler)
+void emtile_set_update_handler(EMTILE *t, emui_int_f handler)
 {
 	t->update_handler = handler;
-	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emtile_set_change_handler(EMTILE *t, emui_int_f handler)
+void emtile_set_change_handler(EMTILE *t, emui_int_f handler)
 {
 	t->change_handler = handler;
-	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emtile_set_focus_handler(EMTILE *t, emui_int_f_int handler)
+void emtile_set_focus_handler(EMTILE *t, emui_void_f_int handler)
 {
 	t->focus_handler = handler;
-	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emtile_set_key_handler(EMTILE *t, emui_int_f_int handler)
+void emtile_set_key_handler(EMTILE *t, emui_int_f_int handler)
 {
 	t->key_handler = handler;
-	return 0;
 }
 
 // -----------------------------------------------------------------------
@@ -268,7 +263,7 @@ int emtile_set_properties(EMTILE *t, unsigned properties)
 
 	t->properties |= properties;
 
-	return 0;
+	return E_OK;
 }
 
 // -----------------------------------------------------------------------
@@ -280,22 +275,24 @@ int emtile_clear_properties(EMTILE *t, unsigned properties)
 
 	t->properties &= ~properties;
 
-	return 0;
+	return E_OK;
 }
 // -----------------------------------------------------------------------
 int emtile_set_name(EMTILE *t, char *name)
 {
 	free(t->name);
 	t->name = strdup(name);
+	if (!t->name) {
+		return E_ALLOC;
+	}
 
-	return 0;
+	return E_OK;
 }
 
 // -----------------------------------------------------------------------
-int emtile_set_style(EMTILE *t, int style)
+void emtile_set_style(EMTILE *t, int style)
 {
 	t->style = style;
-	return 0;
 }
 
 // -----------------------------------------------------------------------

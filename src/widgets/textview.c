@@ -47,29 +47,28 @@ int emui_textview_event_handler(EMTILE *t, struct emui_event *ev)
 		switch (ev->sender) {
 			case KEY_UP:
 				emtext_line_skip(d->txt, -1);
-				return 0;
+				return E_HANDLED;
 			case KEY_DOWN:
 				emtext_line_skip(d->txt, 1);
-				return 0;
+				return E_HANDLED;
 			case KEY_HOME:
 				emtext_line_first(d->txt);
-				return 0;
+				return E_HANDLED;
 			case KEY_END:
 				emtext_line_skipto(d->txt, -t->i.h);
-				return 0;
+				return E_HANDLED;
 			case KEY_PPAGE:
 				emtext_line_skip(d->txt, -t->i.h);
-				return 0;
+				return E_HANDLED;
 			case KEY_NPAGE:
 				emtext_line_skip(d->txt, t->i.h);
-				return 0;
+				return E_HANDLED;
 			default:
 				break;
 		}
 	}
 
-	// event has not been handled
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------

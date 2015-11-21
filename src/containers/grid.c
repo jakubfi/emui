@@ -29,7 +29,7 @@ struct grid {
 };
 
 // -----------------------------------------------------------------------
-int emui_grid_update_geometry(EMTILE *t)
+void emui_grid_update_geometry(EMTILE *t)
 {
 	struct grid *d = t->priv_data;
 	EMTILE *ch;
@@ -63,8 +63,6 @@ int emui_grid_update_geometry(EMTILE *t)
 			ch = ch->ch_next;
 		}
 	}
-
-	return 0;
 }
 
 // -----------------------------------------------------------------------

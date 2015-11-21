@@ -215,13 +215,12 @@ static int emui_handle_app_focus_keys(EMTILE *fg, int key)
 	while (t) {
 		if (t->key == key) {
 			emui_focus(t);
-			return 0;
+			return E_HANDLED;
 		}
 		t = t->fg_next;
 	}
 
-	// event has not been handled
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -230,47 +229,47 @@ static int emui_handle_neighbour_focus(EMTILE *t, int key)
 	switch (key) {
 		case 9: // TAB
 			emui_focus_list_neighbour(t, FC_NEXT);
-			return 0;
+			return E_HANDLED;
 		case KEY_BTAB:
 			emui_focus_list_neighbour(t, FC_PREV);
-			return 0;
+			return E_HANDLED;
 		case KEY_UP:
 			emui_focus_physical_neighbour(t, FC_UP);
-			return 0;
+			return E_HANDLED;
 		case KEY_DOWN:
 			emui_focus_physical_neighbour(t, FC_DOWN);
-			return 0;
+			return E_HANDLED;
 		case KEY_LEFT:
 			emui_focus_physical_neighbour(t, FC_LEFT);
-			return 0;
+			return E_HANDLED;
 		case KEY_RIGHT:
 			emui_focus_physical_neighbour(t, FC_RIGHT);
-			return 0;
+			return E_HANDLED;
 		default:
-			return 1;
+			return E_UNHANDLED;
 	}
 }
 
 // -----------------------------------------------------------------------
 static int emui_handle_focus(EMTILE *t, int key)
 {
-	if (!t) return 1;
+	if (!t) return E_UNHANDLED;
 
 	// if tile is a top of a focus group, search for app-set focus keys handled by it
 	if (t->properties & P_FOCUS_GROUP) {
-		if (!emui_handle_app_focus_keys(t, key)) {
-			return 0;
+		if (emui_handle_app_focus_keys(t, key) == E_HANDLED) {
+			return E_HANDLED;
 		}
 	// otherwise, search for a neighbour in current focus group
 	} else {
-		if (!emui_handle_neighbour_focus(t, key)) {
-			return 0;
+		if (emui_handle_neighbour_focus(t, key) == E_HANDLED) {
+			return E_HANDLED;
 		}
 	}
 
 	// finally, if above didn't work, propagate the event to the focus group above
-	if (!emui_handle_focus(t->fg, key)) {
-		return 0;
+	if (emui_handle_focus(t->fg, key) == E_HANDLED) {
+		return E_HANDLED;
 	}
 
 	// event has not been handled, bummer
@@ -280,7 +279,7 @@ static int emui_handle_focus(EMTILE *t, int key)
 // -----------------------------------------------------------------------
 static int emui_handle_mouse_focus(EMTILE *nt, int x, int y)
 {
-	if (!nt) return 1;
+	if (!nt) return E_UNHANDLED;
 
 	EMTILE *t = layout->ch_first;
 	EMTILE *best = NULL;
@@ -298,7 +297,7 @@ static int emui_handle_mouse_focus(EMTILE *nt, int x, int y)
 	}
 
 	emui_focus(best);
-	return 0;
+	return E_HANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -307,30 +306,30 @@ static int emui_process_event(struct emui_event *ev)
 	EMTILE *t = emui_focus_get();
 
 	// try running app key handler
-	if ((ev->type == EV_KEY) && t->key_handler && !t->key_handler(t, ev->sender)) {
-		return 0;
+	if ((ev->type == EV_KEY) && t->key_handler && (t->key_handler(t, ev->sender) == E_HANDLED)) {
+		return E_HANDLED;
 	}
 
 	// run tile's own event handler
-	if (t->drv->event_handler && !t->drv->event_handler(t, ev)) {
-		return 0;
+	if (t->drv->event_handler && (t->drv->event_handler(t, ev) == E_HANDLED)) {
+		return E_HANDLED;
 	}
 
 	// try the key to change focus
-	if ((ev->type == EV_KEY) && !emui_handle_focus(t, ev->sender)) {
-		return 0;
+	if ((ev->type == EV_KEY) && (emui_handle_focus(t, ev->sender) == E_HANDLED)) {
+		return E_HANDLED;
 	}
 
 	// try the key to change mouse focus
-	if ((ev->type == EV_MOUSE) && !emui_handle_mouse_focus(t, ev->x, ev->y)) {
-		return 0;
+	if ((ev->type == EV_MOUSE) && (emui_handle_mouse_focus(t, ev->x, ev->y) == E_HANDLED)) {
+		return E_HANDLED;
 	}
 
 	// try upper tiles for handling the key
 	EMTILE *p = t->parent;
 	while (p) {
-		if ((ev->type == EV_KEY) && p->key_handler && !p->key_handler(p, ev->sender)) {
-				return 0;
+		if ((ev->type == EV_KEY) && p->key_handler && (p->key_handler(p, ev->sender) == E_HANDLED)) {
+				return E_HANDLED;
 			}
 		p = p->parent;
 	}
@@ -340,10 +339,10 @@ static int emui_process_event(struct emui_event *ev)
 		struct emui_event *ev = malloc(sizeof(struct emui_event));
 		ev->type = EV_QUIT;
 		emui_evq_prepend(ev);
-		return 0;
+		return E_HANDLED;
 	}
 
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------

@@ -25,7 +25,7 @@
 #include "event.h"
 
 // -----------------------------------------------------------------------
-int emui_screen_update_geometry(EMTILE *t)
+void emui_screen_update_geometry(EMTILE *t)
 {
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -34,8 +34,6 @@ int emui_screen_update_geometry(EMTILE *t)
 	t->i.h = t->r.h = LINES;
 	t->i.w = t->r.w = COLS;
 	t->geometry_changed = 1;
-
-	return 0;
 }
 
 // -----------------------------------------------------------------------

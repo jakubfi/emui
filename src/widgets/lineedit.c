@@ -97,11 +97,10 @@ static int le_handle_non_edit(EMTILE *t, struct emui_event *ev)
 			emui_lineedit_edit(t, 1);
 			break;
 		default:
-			// event has not been handled
-			return 1;
+			return E_UNHANDLED;
 	}
 
-	return 0;
+	return E_HANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -141,7 +140,7 @@ static int le_handle_edit(EMTILE *t, struct emui_event *ev)
 			break;
 		case 27: // ESC
 			if (t->properties & P_AUTOEDIT) {
-				return 1;
+				return E_UNHANDLED;
 			}
 			le->in_edit = 0;
 			t->accept_updates = 1;
@@ -188,7 +187,7 @@ static int le_handle_edit(EMTILE *t, struct emui_event *ev)
 		case KEY_DOWN:
 			// allow handling focus changes in autoedit mode
 			if (t->properties & P_AUTOEDIT) {
-				return 1;
+				return E_UNHANDLED;
 			}
 			break;
 		default:
@@ -214,7 +213,7 @@ static int le_handle_edit(EMTILE *t, struct emui_event *ev)
 	}
 
 	// eat all unhandled events (ignore keypresses invalid for input type)
-	return 0;
+	return E_HANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -230,8 +229,7 @@ int emui_lineedit_event_handler(EMTILE *t, struct emui_event *ev)
 		}
 	}
 
-	// event has not been handled
-	return 1;
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------
@@ -245,7 +243,7 @@ void emui_lineedit_destroy_priv_data(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_lineedit_focus_handler(EMTILE *t, int focus)
+void emui_lineedit_focus_handler(EMTILE *t, int focus)
 {
 	struct lineedit *le = t->priv_data;
 
@@ -256,7 +254,6 @@ int emui_lineedit_focus_handler(EMTILE *t, int focus)
 			emui_lineedit_edit(t, 0);
 		}
 	}
-	return 0;
 }
 
 // -----------------------------------------------------------------------

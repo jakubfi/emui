@@ -57,6 +57,26 @@ enum emui_geometries {
 	GEOM_EXTERNAL
 };
 
+enum emui_return_codes {
+	E_OK = 0,
+	E_ALLOC,
+};
+
+enum emui_handler_results {
+	E_HANDLED = 0,
+	E_UNHANDLED = 1,
+};
+
+enum emui_content_state {
+	E_VALID = 0,
+	E_INVALID = 1,
+};
+
+enum emui_update_results {
+	E_UPDATED = 0,
+	E_UNCHANGED = 1,
+};
+
 enum emui_tile_properties {
 	P_NONE			= 0,
 	// app-settable
@@ -69,7 +89,7 @@ enum emui_tile_properties {
 	P_FLOAT			= 1 << 4,	// floating tile (detached from parent's geometry)
 	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
 	P_INVERSE		= 1 << 6,	// tile is drawn in inversed colors
-	P_AUTOEDIT		= 1 << 7,	// start editing after getting focus
+	P_AUTOEDIT		= 1 << 7,	// enter edit mode when focused
 	// internal
 	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
 	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
@@ -90,12 +110,13 @@ typedef void (*emui_void_f)(EMTILE *t);
 typedef int (*emui_int_f)(EMTILE *t);
 typedef int (*emui_int_f_ev)(EMTILE *t, struct emui_event *ev);
 typedef int (*emui_int_f_int)(EMTILE *t, int arg);
+typedef void (*emui_void_f_int)(EMTILE *t, int arg);
 
 struct emtile_drv {
 	emui_void_f draw;
-	emui_int_f update_children_geometry;
+	emui_void_f update_children_geometry;
 	emui_int_f_ev event_handler;
-	emui_int_f_int focus_handler;
+	emui_void_f_int focus_handler;
 	emui_void_f destroy_priv_data;
 };
 
@@ -110,18 +131,18 @@ struct emui_tile {
 	int key;					// shortcut key
 	int style;					// default style
 	int geometry_changed;		// geometry has changed (and needs to be updated)
-	int accept_updates;			// tile accepts content updates (contents are not being edited)
+	int accept_updates;			// tile currently accepts content updates (contents are not being edited)
 	int content_invalid;		// tile contents are invalid after last edit
 
 	// geometry
 	struct emui_geom *pg;		// geometry used for calculating tile geometry (parent->i by default)
 	unsigned mt, mb, ml, mr;	// tile-requested interior margins
-	struct emui_geom r;			// app-requested tile geometry (relative to parent's internal work area)
+	struct emui_geom r;			// app-requested tile geometry (parent relative)
 	struct emui_geom e;			// actual external tile area
-	struct emui_geom i;			// actual internal tile work area (d* minus m*)
+	struct emui_geom i;			// actual internal tile area (d* minus m*)
 
 	// ncurses data
-	WINDOW *ncwin;				// contents ncurses window
+	WINDOW *ncwin;				// ncurses window
 
 	// UI hierarchical structure
 	EMTILE *parent;		// parent tile
@@ -146,7 +167,7 @@ struct emui_tile {
 	void *ptr;
 	emui_int_f update_handler;
 	emui_int_f change_handler;
-	emui_int_f_int focus_handler;
+	emui_void_f_int focus_handler;
 	emui_int_f_int key_handler;
 };
 
@@ -155,18 +176,18 @@ void emtile_delete(EMTILE *t);
 void _emtile_really_delete(EMTILE *t);
 
 void emtile_fit(EMTILE *t);
-int emtile_draw(EMTILE *t);
+void emtile_draw(EMTILE *t);
 
-int emtile_set_update_handler(EMTILE *t, emui_int_f handler);
-int emtile_set_change_handler(EMTILE *t, emui_int_f handler);
-int emtile_set_focus_handler(EMTILE *t, emui_int_f_int handler);
-int emtile_set_key_handler(EMTILE *t, emui_int_f_int handler);
+void emtile_set_update_handler(EMTILE *t, emui_int_f handler);
+void emtile_set_change_handler(EMTILE *t, emui_int_f handler);
+void emtile_set_focus_handler(EMTILE *t, emui_void_f_int handler);
+void emtile_set_key_handler(EMTILE *t, emui_int_f_int handler);
 
-int emtile_set_focus_key(EMTILE *t, int key);
+void emtile_set_focus_key(EMTILE *t, int key);
 int emtile_set_properties(EMTILE *t, unsigned properties);
 int emtile_clear_properties(EMTILE *t, unsigned properties);
 int emtile_set_name(EMTILE *t, char *name);
-int emtile_set_style(EMTILE *t, int style);
+void emtile_set_style(EMTILE *t, int style);
 void emtile_set_ptr(EMTILE *t, void *ptr);
 void * emtile_get_ptr(EMTILE *t);
 void emtile_set_margins(EMTILE *t, int mt, int mb, int ml, int mr);

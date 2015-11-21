@@ -78,7 +78,7 @@ static inline void geom(EMTILE *ch, int x, int y, int w, int h)
 }
 
 // -----------------------------------------------------------------------
-int emui_splitter_update_geometry(EMTILE *t)
+void emui_splitter_update_geometry(EMTILE *t)
 {
 	struct splitter *d = t->priv_data;
 
@@ -94,7 +94,7 @@ int emui_splitter_update_geometry(EMTILE *t)
 		}
 	} else {
 		// no children, nothing to do
-		return 0;
+		return;
 	}
 
 	// get the available space for align
@@ -109,7 +109,7 @@ int emui_splitter_update_geometry(EMTILE *t)
 			break;
 		default:
 			// unknown/unhandled alignment
-			return 0;
+			return;
 	}
 
 	// fit children in the container's space
@@ -134,8 +134,6 @@ int emui_splitter_update_geometry(EMTILE *t)
 			geom(ch2, t->i.x, t->i.y,                  t->i.w, size2);
 			break;
 	}
-
-	return 0;
 }
 
 // -----------------------------------------------------------------------

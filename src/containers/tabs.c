@@ -43,7 +43,7 @@ void emui_tabs_draw(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
-int emui_tabs_update_geometry(EMTILE *t)
+void emui_tabs_update_geometry(EMTILE *t)
 {
 	struct tabs *d = t->priv_data;
 	int tab_selected = 0;
@@ -66,7 +66,6 @@ int emui_tabs_update_geometry(EMTILE *t)
 	if (!tab_selected && d && d->last_selected) {
 		d->last_selected->properties &= ~P_HIDDEN;
 	}
-	return 0;
 }
 
 // -----------------------------------------------------------------------
