@@ -25,6 +25,30 @@
 #include "focus.h"
 
 // -----------------------------------------------------------------------
+static char * _make_title(char *title, int width)
+{
+	// case: +-----+
+	if (width <= 5) {
+		return NULL;
+	}
+
+	int twidth = strlen(title) + 4;
+	char *otitle = malloc(twidth+1);
+
+	// case: +[ Tit~ ]+
+	if (width < twidth) {
+		sprintf(otitle, "[ %s", title);
+		sprintf(otitle+width-3, "~ ]");
+		return otitle;
+	}
+
+	// case: +[ Title ]---+
+	sprintf(otitle, "[ %s ]", title);
+
+	return otitle;
+}
+
+// -----------------------------------------------------------------------
 void emui_frame_draw(EMTILE *t)
 {
 	int title_style = S_TITLE_NN;
@@ -36,7 +60,11 @@ void emui_frame_draw(EMTILE *t)
 	}
 
 	emuibox(t, frame_style);
-	emuixyprt(t, 2, 0, title_style, "[ %s ]", t->name);
+	char *title = _make_title(t->name, t->e.w - 2);
+	if (title) {
+		emuixyprt(t, 1, 0, title_style, "%s", title);
+	}
+	free(title);
 }
 
 // -----------------------------------------------------------------------
