@@ -20,6 +20,8 @@
 
 #include <ncurses.h>
 
+#include "event.h"
+
 enum emui_text_types {
 	TT_TEXT,
 	TT_INT,
@@ -177,6 +179,7 @@ void _emtile_really_delete(EMTILE *t);
 
 void emtile_fit(EMTILE *t);
 void emtile_draw(EMTILE *t);
+int emtile_event(EMTILE *t, struct emui_event *ev);
 
 void emtile_set_update_handler(EMTILE *t, emui_int_f handler);
 void emtile_set_change_handler(EMTILE *t, emui_int_f handler);

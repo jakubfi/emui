@@ -20,6 +20,7 @@
 #include <ncurses.h>
 
 #include "tile.h"
+#include "event.h"
 #include "style.h"
 #include "focus.h"
 #include "print.h"
@@ -167,6 +168,106 @@ void emtile_draw(EMTILE *t)
 	// update ncurses window, but don't output,
 	// doupdate() is done in the main loop
 	wnoutrefresh(t->ncwin);
+}
+
+// -----------------------------------------------------------------------
+static int emtile_focus_keys(EMTILE *fg, int key)
+{
+	EMTILE *t = fg->fg_first;
+
+	while (t) {
+		if (t->key == key) {
+			emui_focus(t);
+			return E_HANDLED;
+		}
+		t = t->fg_next;
+	}
+
+	return E_UNHANDLED;
+}
+
+// -----------------------------------------------------------------------
+static int emtile_neighbour_focus(EMTILE *fg, int key)
+{
+	switch (key) {
+		case 9: // TAB
+			emui_focus_list_neighbour(fg, FC_NEXT);
+			return E_HANDLED;
+		case KEY_BTAB:
+			emui_focus_list_neighbour(fg, FC_PREV);
+			return E_HANDLED;
+		case KEY_UP:
+			emui_focus_physical_neighbour(fg, FC_ABOVE);
+			return E_HANDLED;
+		case KEY_DOWN:
+			emui_focus_physical_neighbour(fg, FC_BELOW);
+			return E_HANDLED;
+		case KEY_LEFT:
+			emui_focus_physical_neighbour(fg, FC_LEFT);
+			return E_HANDLED;
+		case KEY_RIGHT:
+			emui_focus_physical_neighbour(fg, FC_RIGHT);
+			return E_HANDLED;
+	}
+
+	return E_UNHANDLED;
+}
+
+EMTILE * emui_get_layout();
+
+// -----------------------------------------------------------------------
+static int emtile_mouse_focus(EMTILE *nt, int x, int y)
+{
+	if (!nt) return E_UNHANDLED;
+
+	EMTILE *t = emui_get_layout()->ch_first;
+	EMTILE *best = NULL;
+
+	while (t) {
+		if (!(t->properties & P_HIDDEN)
+		&& (x >= t->e.x) && (x < t->e.x + t->e.w)
+		&& (y >= t->e.y) && (y < t->e.y + t->e.h)
+		) {
+			best = t;
+			t = t->ch_first;
+		} else {
+			t = t->ch_next;
+		}
+	}
+
+	emui_focus(best);
+	return E_HANDLED;
+}
+
+// -----------------------------------------------------------------------
+int emtile_event(EMTILE *t, struct emui_event *ev)
+{
+	// try running app key handler
+	if ((ev->type == EV_KEY) && t->key_handler && (t->key_handler(t, ev->sender) == E_HANDLED)) {
+		return E_HANDLED;
+	}
+
+	// run tile's own event handler
+	if (t->drv->event_handler && (t->drv->event_handler(t, ev) == E_HANDLED)) {
+		return E_HANDLED;
+	}
+
+	// try focus keys for focus groups
+	if ((t->properties & P_FOCUS_GROUP) && (ev->type == EV_KEY)) {
+		if (emtile_focus_keys(t, ev->sender) == E_HANDLED) {
+			return E_HANDLED;
+		}
+		if (emtile_neighbour_focus(t, ev->sender) == E_HANDLED) {
+			return E_HANDLED;
+		}
+	}
+
+	// try the key to change mouse focus
+	if ((ev->type == EV_MOUSE) && (emtile_mouse_focus(t, ev->x, ev->y) == E_HANDLED)) {
+		return E_HANDLED;
+	}
+
+	return E_UNHANDLED;
 }
 
 // -----------------------------------------------------------------------

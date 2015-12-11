@@ -540,7 +540,7 @@ EMTILE * dialog_goto(EMTILE *parent, int *seg, uint16_t *addr)
 	emtile_set_change_handler(dlg, goto_changed);
 	emtile_set_key_handler(dlg, goto_key_handler);
 
-	emui_focus(dlg);
+	emui_focus(dat->le);
 
 	return dlg;
 }

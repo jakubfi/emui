@@ -20,15 +20,15 @@
 
 #include "tile.h"
 
-enum focus_change_direction {
-	FC_BEG,
-	FC_END,
+enum focus_direction {
+	FC_FIRST,
+	FC_LAST,
 	FC_NEXT,
 	FC_PREV,
 	FC_LEFT,
 	FC_RIGHT,
-	FC_UP,
-	FC_DOWN
+	FC_ABOVE,
+	FC_BELOW
 };
 
 void emui_focus(EMTILE *t);

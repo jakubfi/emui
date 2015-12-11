@@ -30,7 +30,6 @@ struct focus_item {
 
 struct focus_item *focus_stack;
 static EMTILE *focus;
-static EMTILE *last_focused_widget;
 
 // -----------------------------------------------------------------------
 static void _focus_stack_put(EMTILE *t)
@@ -105,6 +104,8 @@ static int _overlap(int b1, int e1, int b2, int e2)
 #define MIN(a, b) ((a) < (b) ? a : b)
 #define MAX(a, b) ((a) > (b) ? a : b)
 	return MIN(e1, e2) - MAX(b1, b2);
+#undef MIN
+#undef MAX
 }
 
 // -----------------------------------------------------------------------
@@ -115,31 +116,15 @@ static int _distance(int x1, int y1, int x2, int y2)
 }
 
 // -----------------------------------------------------------------------
-static void _focus_up(EMTILE *t)
+int emui_focus_physical_neighbour(EMTILE *fg, int dir)
 {
-	// call widget focus handlers
-	if (t->properties & P_INTERACTIVE) {
-		if (last_focused_widget && last_focused_widget->drv->focus_handler) {
-			last_focused_widget->drv->focus_handler(last_focused_widget, 0);
-		}
-		if (t->drv->focus_handler) {
-			t->drv->focus_handler(t, 1);
-		}
-		last_focused_widget = t;
+	// get current focus
+	EMTILE *t = fg;
+	while (t->focus) {
+		t = t->focus;
 	}
 
-	// set new focus path
-	focus = t;
-	while (t && t->parent) {
-		t->parent->focus = t;
-		t = t->parent;
-	}
-}
-
-// -----------------------------------------------------------------------
-int emui_focus_physical_neighbour(EMTILE *t, int dir)
-{
-	EMTILE *f = t->fg->fg_first;
+	EMTILE *f = fg->fg_first;
 	EMTILE *match = t;
 
 	int dd; // directional distance (distance in the move direction)
@@ -152,11 +137,11 @@ int emui_focus_physical_neighbour(EMTILE *t, int dir)
 			dist = _distance(t->i.x+t->i.w/2, t->i.y+t->i.h/2, f->i.x+f->i.w/2, f->i.y+f->i.h/2);
 
 			switch (dir) {
-				case FC_UP:
+				case FC_ABOVE:
 					dd = t->i.y - f->i.y - f->i.h;
 					ovrl = _overlap(t->i.x, t->i.x + t->i.w, f->i.x, f->i.x + f->i.w);
 					break;
-				case FC_DOWN:
+				case FC_BELOW:
 					dd = f->i.y - t->i.y - t->i.h;
 					ovrl = _overlap(t->i.x, t->i.x + t->i.w, f->i.x, f->i.x + f->i.w);
 					break;
@@ -191,22 +176,29 @@ int emui_focus_physical_neighbour(EMTILE *t, int dir)
 		f = f->fg_next;
 	}
 
-	if (match != t) _focus_up(match);
+	if (match != t) emui_focus(match);
 
 	return 0;
 }
 
 // -----------------------------------------------------------------------
-int emui_focus_list_neighbour(EMTILE *t, int dir)
+int emui_focus_list_neighbour(EMTILE *fg, int dir)
 {
+	// get current focus
+	EMTILE *t = fg;
+	while (t->focus) {
+		t = t->focus;
+	}
+
 	EMTILE *next = t;
+
 	// for cases when we start searching at t = t->fg->fg_first
 	int first_item = 1;
 
 	while (1) {
 		switch (dir) {
-			case FC_BEG: next = t->fg->fg_first; dir = FC_NEXT; break;
-			case FC_END: next = t->fg->fg_last; dir = FC_PREV; break;
+			case FC_FIRST: next = fg->fg_first; dir = FC_NEXT; break;
+			case FC_LAST: next = fg->fg_last; dir = FC_PREV; break;
 			case FC_NEXT: next = next->fg_next; break;
 			case FC_PREV: next = next->fg_prev; break;
 			default: return 0; // unknown or incompatibile direction
@@ -215,7 +207,7 @@ int emui_focus_list_neighbour(EMTILE *t, int dir)
 		if (next) {
 			if (IS_INTERACTIVE(next)) {
 				// got a tile that can be focused
-				_focus_up(next);
+				emui_focus(next);
 				break;
 			} else if (next == t) {
 				if (first_item) {
@@ -227,7 +219,7 @@ int emui_focus_list_neighbour(EMTILE *t, int dir)
 			}
 		} else {
 			// hit the boundary, start from the other end
-			dir = (dir == FC_NEXT) ? FC_BEG : FC_END;
+			dir = (dir == FC_NEXT) ? FC_FIRST : FC_LAST;
 		}
 	}
 
@@ -262,6 +254,17 @@ static EMTILE * _focus_down(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
+static void _focus_up(EMTILE *t)
+{
+	// set new focus path
+	focus = t;
+	while (t && t->parent) {
+		t->parent->focus = t;
+		t = t->parent;
+	}
+}
+
+// -----------------------------------------------------------------------
 void emui_focus(EMTILE *t)
 {
 	if (!t) return;
@@ -272,14 +275,22 @@ void emui_focus(EMTILE *t)
 	EMTILE *f = _focus_down(t);
 	// fill the focus path to the root
 	_focus_up(f);
-	_focus_stack_put(t);
+	if (!IS_INTERACTIVE(t)) {
+		_focus_stack_put(t);
+	}
 
 	// call focus handlers
 	if (last_focus && last_focus->focus_handler) {
 		last_focus->focus_handler(last_focus, 0);
 	}
+	if (last_focus && last_focus->drv->focus_handler) {
+		last_focus->drv->focus_handler(last_focus, 0);
+	}
 	if (t->focus_handler) {
 		t->focus_handler(t, 1);
+	}
+	if (t->drv->focus_handler) {
+		t->drv->focus_handler(t, 1);
 	}
 
 	// getting focus may change tile's geometry (P_FLOAT)
@@ -292,7 +303,6 @@ void emui_focus(EMTILE *t)
 // -----------------------------------------------------------------------
 void emui_focus_refocus()
 {
-	last_focused_widget = NULL;
 	if (focus_stack) {
 		emui_focus(focus_stack->t);
 	}

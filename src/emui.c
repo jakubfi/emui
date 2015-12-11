@@ -167,20 +167,20 @@ static void emui_draw(EMTILE *t)
 	int geometry_changed = t->geometry_changed;
 	if (geometry_changed) {
 		emtile_fit(t);
-	}
 
-	// if the focused tile is hidden after geometry change,
-	// search for a new unhidden tile:
-	// go up, then left, then from the beggining of focus group
-	EMTILE *f = emui_focus_get();
-	if (f->properties & P_HIDDEN) {
-		emui_focus_physical_neighbour(f, FC_UP);
-		f = emui_focus_get();
+		// if the focused tile is hidden after geometry change,
+		// search for a new unhidden tile:
+		// go up, then left, then from the beggining of focus group
+		EMTILE *f = emui_focus_get();
 		if (f->properties & P_HIDDEN) {
-			emui_focus_physical_neighbour(f, FC_LEFT);
+			emui_focus_physical_neighbour(f->fg, FC_ABOVE);
 			f = emui_focus_get();
 			if (f->properties & P_HIDDEN) {
-				emui_focus_list_neighbour(f, FC_BEG);
+				emui_focus_physical_neighbour(f->fg, FC_LEFT);
+				f = emui_focus_get();
+				if (f->properties & P_HIDDEN) {
+					emui_focus_list_neighbour(f->fg, FC_FIRST);
+				}
 			}
 		}
 	}
@@ -208,130 +208,15 @@ static void emui_draw(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
-static int emui_handle_app_focus_keys(EMTILE *fg, int key)
-{
-	EMTILE *t = fg->fg_first;
-
-	while (t) {
-		if (t->key == key) {
-			emui_focus(t);
-			return E_HANDLED;
-		}
-		t = t->fg_next;
-	}
-
-	return E_UNHANDLED;
-}
-
-// -----------------------------------------------------------------------
-static int emui_handle_neighbour_focus(EMTILE *t, int key)
-{
-	switch (key) {
-		case 9: // TAB
-			emui_focus_list_neighbour(t, FC_NEXT);
-			return E_HANDLED;
-		case KEY_BTAB:
-			emui_focus_list_neighbour(t, FC_PREV);
-			return E_HANDLED;
-		case KEY_UP:
-			emui_focus_physical_neighbour(t, FC_UP);
-			return E_HANDLED;
-		case KEY_DOWN:
-			emui_focus_physical_neighbour(t, FC_DOWN);
-			return E_HANDLED;
-		case KEY_LEFT:
-			emui_focus_physical_neighbour(t, FC_LEFT);
-			return E_HANDLED;
-		case KEY_RIGHT:
-			emui_focus_physical_neighbour(t, FC_RIGHT);
-			return E_HANDLED;
-		default:
-			return E_UNHANDLED;
-	}
-}
-
-// -----------------------------------------------------------------------
-static int emui_handle_focus(EMTILE *t, int key)
-{
-	if (!t) return E_UNHANDLED;
-
-	// if tile is a top of a focus group, search for app-set focus keys handled by it
-	if (t->properties & P_FOCUS_GROUP) {
-		if (emui_handle_app_focus_keys(t, key) == E_HANDLED) {
-			return E_HANDLED;
-		}
-	// otherwise, search for a neighbour in current focus group
-	} else {
-		if (emui_handle_neighbour_focus(t, key) == E_HANDLED) {
-			return E_HANDLED;
-		}
-	}
-
-	// finally, if above didn't work, propagate the event to the focus group above
-	if (emui_handle_focus(t->fg, key) == E_HANDLED) {
-		return E_HANDLED;
-	}
-
-	// event has not been handled, bummer
-	return 1;
-}
-
-// -----------------------------------------------------------------------
-static int emui_handle_mouse_focus(EMTILE *nt, int x, int y)
-{
-	if (!nt) return E_UNHANDLED;
-
-	EMTILE *t = layout->ch_first;
-	EMTILE *best = NULL;
-
-	while (t) {
-		if (!(t->properties & P_HIDDEN)
-		&& (x >= t->e.x) && (x < t->e.x + t->e.w)
-		&& (y >= t->e.y) && (y < t->e.y + t->e.h)
-		) {
-			best = t;
-			t = t->ch_first;
-		} else {
-			t = t->ch_next;
-		}
-	}
-
-	emui_focus(best);
-	return E_HANDLED;
-}
-
-// -----------------------------------------------------------------------
 static int emui_process_event(struct emui_event *ev)
 {
 	EMTILE *t = emui_focus_get();
 
-	// try running app key handler
-	if ((ev->type == EV_KEY) && t->key_handler && (t->key_handler(t, ev->sender) == E_HANDLED)) {
-		return E_HANDLED;
-	}
-
-	// run tile's own event handler
-	if (t->drv->event_handler && (t->drv->event_handler(t, ev) == E_HANDLED)) {
-		return E_HANDLED;
-	}
-
-	// try the key to change focus
-	if ((ev->type == EV_KEY) && (emui_handle_focus(t, ev->sender) == E_HANDLED)) {
-		return E_HANDLED;
-	}
-
-	// try the key to change mouse focus
-	if ((ev->type == EV_MOUSE) && (emui_handle_mouse_focus(t, ev->x, ev->y) == E_HANDLED)) {
-		return E_HANDLED;
-	}
-
-	// try upper tiles for handling the key
-	EMTILE *p = t->parent;
-	while (p) {
-		if ((ev->type == EV_KEY) && p->key_handler && (p->key_handler(p, ev->sender) == E_HANDLED)) {
-				return E_HANDLED;
-			}
-		p = p->parent;
+	while (t) {
+		if (emtile_event(t, ev) == E_HANDLED) {
+			return E_HANDLED;
+		}
+		t = t->parent;
 	}
 
 	// TODO: temporary
@@ -431,6 +316,12 @@ process_event:
 	}
 
 	free(ft);
+}
+
+// -----------------------------------------------------------------------
+EMTILE * emui_get_layout()
+{
+	return layout;
 }
 
 // -----------------------------------------------------------------------
