@@ -74,8 +74,6 @@ EMTILE * emui_init(unsigned fps)
 	set_escdelay(100);
 	start_color();
 	emui_style_init(NULL);
-	mousemask(BUTTON1_CLICKED, NULL);
-	mouseinterval(0);
 
 	// initialize emui
 	if (fps > EMUI_FPS_CAP) {
@@ -115,7 +113,6 @@ static int emui_evq_update(struct timeval *tv)
 	int retval;
 	int ch;
 	struct emui_event *ev = NULL;
-	MEVENT mevent;
 
 	FD_ZERO(&rfds);
 	FD_SET(0, &rfds);
@@ -131,16 +128,8 @@ static int emui_evq_update(struct timeval *tv)
 	// we have a keypress
 	if (retval > 0) {
 		ch = getch();
-		if (ch == KEY_MOUSE) {
-			getmouse(&mevent);
-			ev->type = EV_MOUSE;
-			ev->sender = mevent.id;
-			ev->x = mevent.x;
-			ev->y = mevent.y;
-		} else {
-			ev->type = EV_KEY;
-			ev->sender = ch;
-		}
+		ev->type = EV_KEY;
+		ev->sender = ch;
 	// error
 	} else {
 		ev->type = EV_ERROR;

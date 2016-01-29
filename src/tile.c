@@ -213,32 +213,6 @@ static int emtile_neighbour_focus(EMTILE *fg, int key)
 	return E_UNHANDLED;
 }
 
-EMTILE * emui_get_layout();
-
-// -----------------------------------------------------------------------
-static int emtile_mouse_focus(EMTILE *nt, int x, int y)
-{
-	if (!nt) return E_UNHANDLED;
-
-	EMTILE *t = emui_get_layout()->ch_first;
-	EMTILE *best = NULL;
-
-	while (t) {
-		if (!(t->properties & P_HIDDEN)
-		&& (x >= t->e.x) && (x < t->e.x + t->e.w)
-		&& (y >= t->e.y) && (y < t->e.y + t->e.h)
-		) {
-			best = t;
-			t = t->ch_first;
-		} else {
-			t = t->ch_next;
-		}
-	}
-
-	emui_focus(best);
-	return E_HANDLED;
-}
-
 // -----------------------------------------------------------------------
 int emtile_event(EMTILE *t, struct emui_event *ev)
 {
@@ -260,11 +234,6 @@ int emtile_event(EMTILE *t, struct emui_event *ev)
 		if (emtile_neighbour_focus(t, ev->sender) == E_HANDLED) {
 			return E_HANDLED;
 		}
-	}
-
-	// try the key to change mouse focus
-	if ((ev->type == EV_MOUSE) && (emtile_mouse_focus(t, ev->x, ev->y) == E_HANDLED)) {
-		return E_HANDLED;
 	}
 
 	return E_UNHANDLED;
