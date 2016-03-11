@@ -160,7 +160,7 @@ EMTILE * emui_splitter(EMTILE *parent, int edge, int min1, int max1, int min2)
 		return NULL;
 	}
 
-	t = emtile(parent, &emui_splitter_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Splitter", P_CONTAINER | P_MAXIMIZED);
+	t = emtile(parent, &emui_splitter_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Splitter", P_CONTAINER | P_MAXIMIZE);
 
 	if (!t) return NULL;
 

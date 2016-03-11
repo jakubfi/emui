@@ -85,7 +85,7 @@ EMTILE * emui_grid(EMTILE *parent, int cols, int rows, int col_width, int row_he
 {
 	EMTILE *t;
 
-	t = emtile(parent, &emui_grid_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Grid", P_CONTAINER | P_MAXIMIZED);
+	t = emtile(parent, &emui_grid_drv, 0, 0, parent->i.w, parent->i.h, 0, 0, 0, 0, "Grid", P_CONTAINER | P_MAXIMIZE);
 
 	t->priv_data = calloc(1, sizeof(struct grid));
 

@@ -63,12 +63,20 @@ static void emtile_fit_parent(EMTILE *t)
 		}
 	}
 
+	// respect fill
+	if (t->properties & P_HFILL) {
+		t->e.w = t->pg->w - t->e.x;
+	}
+	if (t->properties & P_VFILL) {
+		t->e.h = t->pg->h - t->e.y;
+	}
+
 	// respect maximization
-	if (t->properties & P_HMAXIMIZED) {
+	if (t->properties & P_HMAXIMIZE) {
 		t->e.x = t->pg->x;
 		t->e.w = t->pg->w;
 	}
-	if (t->properties & P_VMAXIMIZED) {
+	if (t->properties & P_VMAXIMIZE) {
 		t->e.y = t->pg->y;
 		t->e.h = t->pg->h;
 	}
@@ -81,6 +89,7 @@ static void emtile_fit_parent(EMTILE *t)
 	if (t->e.h + t->e.y > t->pg->h + t->pg->y) {
 		t->e.h = t->pg->h - (t->e.y - t->pg->y);
 	}
+
 	// hide tile if outside parent's area
 	if ((t->e.x >= t->pg->x + t->pg->w) || (t->e.y >= t->pg->y + t->pg->h)) {
 		t->properties |= P_HIDDEN;

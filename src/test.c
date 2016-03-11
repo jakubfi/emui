@@ -575,11 +575,11 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	emtile_set_properties(dasm_split, P_FOCUS_GROUP);
 	emtile_set_name(dasm_split, "Debugger");
 	emtile_set_focus_key(dasm_split, KEY_F(12));
-	EMTILE *dasm = emui_frame(dasm_split, 0, 0, 30, 20, "ASM", P_HCENTER|P_VMAXIMIZED);
+	EMTILE *dasm = emui_frame(dasm_split, 0, 0, 30, 20, "ASM", P_HCENTER|P_VMAXIMIZE);
 	emtile_set_focus_key(dasm, 'a');
 	emtile_set_focus_handler(dasm, float_focus);
 	EMTILE *asmv = emui_textview(dasm, 0, 0, 30, 20);
-	emtile_set_properties(asmv, P_MAXIMIZED);
+	emtile_set_properties(asmv, P_MAXIMIZE);
 	emtile_set_key_handler(dasm, dasm_key_handler);
 	emtile_set_key_handler(asmv, dasmv_key_handler);
 	emtile_set_update_handler(asmv, dasm_update);
@@ -600,7 +600,7 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 
 	// memory
 	EMTILE *mem_split = emui_splitter(reg_split, AL_TOP, 10, FIT_DIV2, 6);
-	EMTILE *mem = emui_frame(mem_split, 0, 0, 80, 20, "Memory", P_MAXIMIZED);
+	EMTILE *mem = emui_frame(mem_split, 0, 0, 80, 20, "Memory", P_MAXIMIZE);
 	emtile_set_focus_key(mem, 'm');
 	emtile_set_focus_handler(mem, float_focus);
 
@@ -637,7 +637,7 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 
 	// eval
 	EMTILE *eval_split = emui_splitter(mem_split, AL_BOTTOM, 3, 3, 10);
-	EMTILE *eval = emui_frame(eval_split, 0, 0, 80, 3, "Evaluator", P_VCENTER|P_HMAXIMIZED);
+	EMTILE *eval = emui_frame(eval_split, 0, 0, 80, 3, "Evaluator", P_VCENTER|P_HMAXIMIZE);
 	emtile_set_focus_key(eval, 'e');
 	emtile_set_focus_handler(eval, float_focus);
 
@@ -673,11 +673,11 @@ int top_key_handler(EMTILE *t, int key)
 	case 'h':
 	case '?':
 	case 'H':
-		help = emui_frame(t, 1, 1, 60, 20, "Help", P_VMAXIMIZED | P_HCENTER);
+		help = emui_frame(t, 1, 1, 60, 20, "Help", P_VMAXIMIZE | P_HCENTER);
 		emtile_set_geometry_parent(help, tabs, GEOM_INTERNAL);
 		emtile_set_key_handler(help, help_key_handler);
 		help_tv = emui_textview(help, 0, 0, 10, 10);
-		emtile_set_properties(help_tv, P_MAXIMIZED);
+		emtile_set_properties(help_tv, P_MAXIMIZE);
 		emtext_append_str(emui_textview_get_emtext(help_tv), S_DEFAULT, "%s", help_text);
 
 		emui_focus(help);
@@ -723,17 +723,17 @@ int main(int argc, char **argv)
 	tabs = emui_tabs(status_split);
 
 	// terminal windows
-	EMTILE *term1 = emui_frame(tabs, 0, 0, 80, 25, "Term 1", P_MAXIMIZED);
+	EMTILE *term1 = emui_frame(tabs, 0, 0, 80, 25, "Term 1", P_MAXIMIZE);
 	emtile_set_focus_key(term1, KEY_F(1));
-	EMTILE *term2 = emui_frame(tabs, 0, 0, 80, 25, "Term 2", P_MAXIMIZED);
+	EMTILE *term2 = emui_frame(tabs, 0, 0, 80, 25, "Term 2", P_MAXIMIZE);
 	emtile_set_focus_key(term2, KEY_F(2));
-	EMTILE *term3 = emui_frame(tabs, 0, 0, 80, 25, "Term 3", P_MAXIMIZED);
+	EMTILE *term3 = emui_frame(tabs, 0, 0, 80, 25, "Term 3", P_MAXIMIZE);
 	emtile_set_focus_key(term3, KEY_F(3));
-	EMTILE *term4 = emui_frame(tabs, 0, 0, 80, 25, "Term 4", P_MAXIMIZED);
+	EMTILE *term4 = emui_frame(tabs, 0, 0, 80, 25, "Term 4", P_MAXIMIZE);
 	emtile_set_focus_key(term4, KEY_F(4));
 
 	// device manager
-	EMTILE *devmgr = emui_frame(tabs, 0, 0, 80, 25, "DevManager", P_MAXIMIZED);
+	EMTILE *devmgr = emui_frame(tabs, 0, 0, 80, 25, "DevManager", P_MAXIMIZE);
 	emtile_set_focus_key(devmgr, KEY_F(11));
 
 	// debugger

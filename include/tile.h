@@ -82,16 +82,18 @@ enum emui_update_results {
 enum emui_tile_properties {
 	P_NONE			= 0,
 	// app-settable
-	P_HMAXIMIZED	= 1 << 0,	// tile is maximized horizontally
-	P_VMAXIMIZED	= 1 << 1,	// tile is maximized vertically
-	P_MAXIMIZED		= P_HMAXIMIZED | P_VMAXIMIZED, // tile is maximized
+	P_HMAXIMIZE		= 1 << 0,	// tile is maximized horizontally
+	P_VMAXIMIZE		= 1 << 1,	// tile is maximized vertically
+	P_MAXIMIZE		= P_HMAXIMIZE | P_VMAXIMIZE, // tile is maximized
 	P_VCENTER		= 1 << 2,	// tile is centered vertically
 	P_HCENTER		= 1 << 3,	// tile is centered horizontally
 	P_CENTER		= P_HCENTER | P_VCENTER, // tile is centered
-	P_FLOAT			= 1 << 4,	// floating tile (detached from parent's geometry)
-	P_FOCUS_GROUP	= 1 << 5,	// tile is a root of focus group
-	P_INVERSE		= 1 << 6,	// tile is drawn in inversed colors
-	P_AUTOEDIT		= 1 << 7,	// enter edit mode when focused
+	P_HFILL			= 1 << 4,	// tile fills the parent horizontaly (to the right edge)
+	P_VFILL			= 1 << 5,	// file fills the parent vertically (to the bottom edge)
+	P_FLOAT			= 1 << 6,	// floating tile (detached from parent's geometry)
+	P_FOCUS_GROUP	= 1 << 7,	// tile is a root of focus group
+	P_INVERSE		= 1 << 8,	// tile is drawn in inversed colors
+	P_AUTOEDIT		= 1 << 9,	// enter edit mode when focused
 	// internal
 	P_HIDDEN		= 1 << 16,	// tile is hidden due to geometry constraints
 	P_GEOM_FORCED	= 1 << 17,	// tile geometry is forced by the parent
