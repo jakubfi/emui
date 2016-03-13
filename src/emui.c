@@ -162,13 +162,13 @@ static void emui_draw(EMTILE *t)
 		// go up, then left, then from the beggining of focus group
 		EMTILE *f = emui_focus_get();
 		if (f->properties & P_HIDDEN) {
-			emui_focus_physical_neighbour(f->fg, FC_ABOVE);
+			emtile_focus_physical_neighbour(f->fg, FC_ABOVE);
 			f = emui_focus_get();
 			if (f->properties & P_HIDDEN) {
-				emui_focus_physical_neighbour(f->fg, FC_LEFT);
+				emtile_focus_physical_neighbour(f->fg, FC_LEFT);
 				f = emui_focus_get();
 				if (f->properties & P_HIDDEN) {
-					emui_focus_list_neighbour(f->fg, FC_FIRST);
+					emtile_focus_list_neighbour(f->fg, FC_FIRST);
 				}
 			}
 		}

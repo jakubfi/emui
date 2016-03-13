@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
+#include <limits.h>
 
 #include "tile.h"
 #include "event.h"
@@ -196,26 +197,154 @@ static int emtile_focus_keys(EMTILE *fg, int key)
 }
 
 // -----------------------------------------------------------------------
+static int _overlap(int b1, int e1, int b2, int e2)
+{
+#define MIN(a, b) ((a) < (b) ? a : b)
+#define MAX(a, b) ((a) > (b) ? a : b)
+	return MIN(e1, e2) - MAX(b1, b2);
+#undef MIN
+#undef MAX
+}
+
+// -----------------------------------------------------------------------
+static int _distance(int x1, int y1, int x2, int y2)
+{
+	int distance = (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2);
+	return distance;
+}
+
+// -----------------------------------------------------------------------
+int emtile_focus_physical_neighbour(EMTILE *fg, int dir)
+{
+	// get current focus
+	EMTILE *t = fg;
+	while (t->focus) {
+		t = t->focus;
+	}
+
+	EMTILE *f = fg->fg_first;
+	EMTILE *match = t;
+
+	int dd; // directional distance (distance in the move direction)
+	int ovrl, ovrl_max = 0; // overlap region
+	int dist, dist_min = INT_MAX;
+
+	while (f) {
+		if (IS_INTERACTIVE(f)) {
+
+			dist = _distance(t->i.x+t->i.w/2, t->i.y+t->i.h/2, f->i.x+f->i.w/2, f->i.y+f->i.h/2);
+
+			switch (dir) {
+				case FC_ABOVE:
+					dd = t->i.y - f->i.y - f->i.h;
+					ovrl = _overlap(t->i.x, t->i.x + t->i.w, f->i.x, f->i.x + f->i.w);
+					break;
+				case FC_BELOW:
+					dd = f->i.y - t->i.y - t->i.h;
+					ovrl = _overlap(t->i.x, t->i.x + t->i.w, f->i.x, f->i.x + f->i.w);
+					break;
+				case FC_LEFT:
+					dd = t->i.x - f->i.x - f->i.w;
+					ovrl = _overlap(t->i.y, t->i.y + t->i.h, f->i.y, f->i.y + f->i.h);
+					break;
+				case FC_RIGHT:
+					dd = f->i.x - t->i.x - t->i.w;
+					ovrl = _overlap(t->i.y, t->i.y + t->i.h, f->i.y, f->i.y + f->i.h);
+					break;
+				default:
+					return 0; // unknown or incompatibile direction
+			}
+
+			// tile has to be:
+			//  * other than the current tile
+			//  * further in the move direction
+			//  * "overlapping" with current tile in axis perpendicural to movement
+			if ((f != t) && (dd >= 0) && (ovrl > 0)) {
+				// we search for the closest tile
+				if (dist <= dist_min) {
+					// we search for a tile that "overlaps" the most with the current one
+					if (ovrl >= ovrl_max) {
+						ovrl_max = ovrl/2; // /2 = less impact on decision
+						dist_min = dist;
+						match = f;
+					}
+				}
+			}
+		}
+		f = f->fg_next;
+	}
+
+	if (match != t) emui_focus(match);
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int emtile_focus_list_neighbour(EMTILE *fg, int dir)
+{
+	// get current focus
+	EMTILE *t = fg;
+	while (t->focus) {
+		t = t->focus;
+	}
+
+	EMTILE *next = t;
+
+	// for cases when we start searching at t = t->fg->fg_first
+	int first_item = 1;
+
+	while (1) {
+		switch (dir) {
+			case FC_FIRST: next = fg->fg_first; dir = FC_NEXT; break;
+			case FC_LAST: next = fg->fg_last; dir = FC_PREV; break;
+			case FC_NEXT: next = next->fg_next; break;
+			case FC_PREV: next = next->fg_prev; break;
+			default: return 0; // unknown or incompatibile direction
+		}
+
+		if (next) {
+			if (IS_INTERACTIVE(next)) {
+				// got a tile that can be focused
+				emui_focus(next);
+				break;
+			} else if (next == t) {
+				if (first_item) {
+					first_item = 0;
+				} else {
+					// we've looped over, nothing to do
+					break;
+				}
+			}
+		} else {
+			// hit the boundary, start from the other end
+			dir = (dir == FC_NEXT) ? FC_FIRST : FC_LAST;
+		}
+	}
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 static int emtile_neighbour_focus(EMTILE *fg, int key)
 {
 	switch (key) {
 		case 9: // TAB
-			emui_focus_list_neighbour(fg, FC_NEXT);
+			emtile_focus_list_neighbour(fg, FC_NEXT);
 			return E_HANDLED;
 		case KEY_BTAB:
-			emui_focus_list_neighbour(fg, FC_PREV);
+			emtile_focus_list_neighbour(fg, FC_PREV);
 			return E_HANDLED;
 		case KEY_UP:
-			emui_focus_physical_neighbour(fg, FC_ABOVE);
+			emtile_focus_physical_neighbour(fg, FC_ABOVE);
 			return E_HANDLED;
 		case KEY_DOWN:
-			emui_focus_physical_neighbour(fg, FC_BELOW);
+			emtile_focus_physical_neighbour(fg, FC_BELOW);
 			return E_HANDLED;
 		case KEY_LEFT:
-			emui_focus_physical_neighbour(fg, FC_LEFT);
+			emtile_focus_physical_neighbour(fg, FC_LEFT);
 			return E_HANDLED;
 		case KEY_RIGHT:
-			emui_focus_physical_neighbour(fg, FC_RIGHT);
+			emtile_focus_physical_neighbour(fg, FC_RIGHT);
 			return E_HANDLED;
 	}
 

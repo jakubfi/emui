@@ -35,8 +35,6 @@ void emui_focus(EMTILE *t);
 int emui_has_focus(EMTILE *t);
 int emui_is_focused(EMTILE *t);
 EMTILE * emui_focus_get();
-int emui_focus_list_neighbour(EMTILE *t, int dir);
-int emui_focus_physical_neighbour(EMTILE *t, int dir);
 int emui_focus_group_add(EMTILE *parent, EMTILE *t);
 void emui_focus_group_unlink(EMTILE *t);
 void emui_focus_stack_delete_tile(EMTILE *t);

@@ -201,6 +201,9 @@ void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type);
 void emtile_geometry_changed(EMTILE *t);
 int emtile_notify_change(EMTILE *t);
 
+int emtile_focus_list_neighbour(EMTILE *t, int dir);
+int emtile_focus_physical_neighbour(EMTILE *t, int dir);
+
 #endif
 
 // vim: tabstop=4 shiftwidth=4 autoindent
