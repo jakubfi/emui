@@ -214,7 +214,7 @@ static int _distance(int x1, int y1, int x2, int y2)
 }
 
 // -----------------------------------------------------------------------
-int emtile_focus_physical_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
+EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
 {
 	// get current focus
 	EMTILE *t = fg;
@@ -252,7 +252,7 @@ int emtile_focus_physical_neighbour(EMTILE *fg, int dir, int prop_match, int pro
 					ovrl = _overlap(t->i.y, t->i.y + t->i.h, f->i.y, f->i.y + f->i.h);
 					break;
 				default:
-					return 0; // unknown or incompatibile direction
+					return t; // unknown or incompatibile direction
 			}
 
 			// tile has to be:
@@ -274,13 +274,11 @@ int emtile_focus_physical_neighbour(EMTILE *fg, int dir, int prop_match, int pro
 		f = f->fg_next;
 	}
 
-	if (match != t) emui_focus(match);
-
-	return 0;
+	return match;
 }
 
 // -----------------------------------------------------------------------
-int emtile_focus_list_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
+EMTILE * emtile_get_list_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
 {
 	// get current focus
 	EMTILE *t = fg;
@@ -295,18 +293,28 @@ int emtile_focus_list_neighbour(EMTILE *fg, int dir, int prop_match, int prop_no
 
 	while (1) {
 		switch (dir) {
-			case FC_FIRST: next = fg->fg_first; dir = FC_NEXT; break;
-			case FC_LAST: next = fg->fg_last; dir = FC_PREV; break;
-			case FC_NEXT: next = next->fg_next; break;
-			case FC_PREV: next = next->fg_prev; break;
-			default: return 0; // unknown or incompatibile direction
+			case FC_FIRST:
+				next = fg->fg_first;
+				dir = FC_NEXT;
+				break;
+			case FC_LAST:
+				next = fg->fg_last;
+				dir = FC_PREV;
+				break;
+			case FC_NEXT:
+				next = next->fg_next;
+				break;
+			case FC_PREV:
+				next = next->fg_prev;
+				break;
+			default:
+				return t; // unknown or incompatibile direction
 		}
 
 		if (next) {
 			if ((next->properties & prop_match) && !(next->properties & prop_nomatch)) {
 				// got a tile that can be focused
-				emui_focus(next);
-				break;
+				return next;
 			} else if (next == t) {
 				if (first_item) {
 					first_item = 0;
@@ -321,34 +329,41 @@ int emtile_focus_list_neighbour(EMTILE *fg, int dir, int prop_match, int prop_no
 		}
 	}
 
-	return 0;
+	return t;
 }
 
 // -----------------------------------------------------------------------
 static int emtile_neighbour_focus(EMTILE *fg, int key)
 {
+	EMTILE *focus = NULL;
+	int ret = E_HANDLED;
+
 	switch (key) {
 		case 9: // TAB
-			emtile_focus_list_neighbour(fg, FC_NEXT, P_INTERACTIVE, P_HIDDEN);
-			return E_HANDLED;
+			focus = emtile_get_list_neighbour(fg, FC_NEXT, P_INTERACTIVE, P_HIDDEN);
+			break;
 		case KEY_BTAB:
-			emtile_focus_list_neighbour(fg, FC_PREV, P_INTERACTIVE, P_HIDDEN);
-			return E_HANDLED;
+			focus = emtile_get_list_neighbour(fg, FC_PREV, P_INTERACTIVE, P_HIDDEN);
+			break;
 		case KEY_UP:
-			emtile_focus_physical_neighbour(fg, FC_ABOVE, P_INTERACTIVE, P_HIDDEN);
-			return E_HANDLED;
+			focus = emtile_get_physical_neighbour(fg, FC_ABOVE, P_INTERACTIVE, P_HIDDEN);
+			break;
 		case KEY_DOWN:
-			emtile_focus_physical_neighbour(fg, FC_BELOW, P_INTERACTIVE, P_HIDDEN);
-			return E_HANDLED;
+			focus = emtile_get_physical_neighbour(fg, FC_BELOW, P_INTERACTIVE, P_HIDDEN);
+			break;
 		case KEY_LEFT:
-			emtile_focus_physical_neighbour(fg, FC_LEFT, P_INTERACTIVE, P_HIDDEN);
-			return E_HANDLED;
+			focus = emtile_get_physical_neighbour(fg, FC_LEFT, P_INTERACTIVE, P_HIDDEN);
+			break;
 		case KEY_RIGHT:
-			emtile_focus_physical_neighbour(fg, FC_RIGHT, P_INTERACTIVE, P_HIDDEN);
-			return E_HANDLED;
+			focus = emtile_get_physical_neighbour(fg, FC_RIGHT, P_INTERACTIVE, P_HIDDEN);
+			break;
+		default:
+			ret = E_UNHANDLED;
 	}
 
-	return E_UNHANDLED;
+	emui_focus(focus);
+
+	return ret;
 }
 
 // -----------------------------------------------------------------------
