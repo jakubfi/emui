@@ -214,7 +214,7 @@ static int _distance(int x1, int y1, int x2, int y2)
 }
 
 // -----------------------------------------------------------------------
-int emtile_focus_physical_neighbour(EMTILE *fg, int dir)
+int emtile_focus_physical_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
 {
 	// get current focus
 	EMTILE *t = fg;
@@ -230,7 +230,7 @@ int emtile_focus_physical_neighbour(EMTILE *fg, int dir)
 	int dist, dist_min = INT_MAX;
 
 	while (f) {
-		if (IS_INTERACTIVE(f)) {
+		if ((f->properties & prop_match) && !(f->properties & prop_nomatch)) {
 
 			dist = _distance(t->i.x+t->i.w/2, t->i.y+t->i.h/2, f->i.x+f->i.w/2, f->i.y+f->i.h/2);
 
@@ -280,7 +280,7 @@ int emtile_focus_physical_neighbour(EMTILE *fg, int dir)
 }
 
 // -----------------------------------------------------------------------
-int emtile_focus_list_neighbour(EMTILE *fg, int dir)
+int emtile_focus_list_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
 {
 	// get current focus
 	EMTILE *t = fg;
@@ -303,7 +303,7 @@ int emtile_focus_list_neighbour(EMTILE *fg, int dir)
 		}
 
 		if (next) {
-			if (IS_INTERACTIVE(next)) {
+			if ((next->properties & prop_match) && !(next->properties & prop_nomatch)) {
 				// got a tile that can be focused
 				emui_focus(next);
 				break;
@@ -329,22 +329,22 @@ static int emtile_neighbour_focus(EMTILE *fg, int key)
 {
 	switch (key) {
 		case 9: // TAB
-			emtile_focus_list_neighbour(fg, FC_NEXT);
+			emtile_focus_list_neighbour(fg, FC_NEXT, P_INTERACTIVE, P_HIDDEN);
 			return E_HANDLED;
 		case KEY_BTAB:
-			emtile_focus_list_neighbour(fg, FC_PREV);
+			emtile_focus_list_neighbour(fg, FC_PREV, P_INTERACTIVE, P_HIDDEN);
 			return E_HANDLED;
 		case KEY_UP:
-			emtile_focus_physical_neighbour(fg, FC_ABOVE);
+			emtile_focus_physical_neighbour(fg, FC_ABOVE, P_INTERACTIVE, P_HIDDEN);
 			return E_HANDLED;
 		case KEY_DOWN:
-			emtile_focus_physical_neighbour(fg, FC_BELOW);
+			emtile_focus_physical_neighbour(fg, FC_BELOW, P_INTERACTIVE, P_HIDDEN);
 			return E_HANDLED;
 		case KEY_LEFT:
-			emtile_focus_physical_neighbour(fg, FC_LEFT);
+			emtile_focus_physical_neighbour(fg, FC_LEFT, P_INTERACTIVE, P_HIDDEN);
 			return E_HANDLED;
 		case KEY_RIGHT:
-			emtile_focus_physical_neighbour(fg, FC_RIGHT);
+			emtile_focus_physical_neighbour(fg, FC_RIGHT, P_INTERACTIVE, P_HIDDEN);
 			return E_HANDLED;
 	}
 
