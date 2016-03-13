@@ -216,12 +216,7 @@ static int _distance(int x1, int y1, int x2, int y2)
 // -----------------------------------------------------------------------
 EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
 {
-	// get current focus
-	EMTILE *t = fg;
-	while (t->focus) {
-		t = t->focus;
-	}
-
+	EMTILE *t = emui_subfocus_get(fg);
 	EMTILE *f = fg->fg_first;
 	EMTILE *match = t;
 
@@ -231,8 +226,6 @@ EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int 
 
 	while (f) {
 		if ((f->properties & prop_match) && !(f->properties & prop_nomatch)) {
-
-			dist = _distance(t->i.x+t->i.w/2, t->i.y+t->i.h/2, f->i.x+f->i.w/2, f->i.y+f->i.h/2);
 
 			switch (dir) {
 				case FC_ABOVE:
@@ -254,6 +247,8 @@ EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int 
 				default:
 					return t; // unknown or incompatibile direction
 			}
+
+			dist = _distance(t->i.x+t->i.w/2, t->i.y+t->i.h/2, f->i.x+f->i.w/2, f->i.y+f->i.h/2);
 
 			// tile has to be:
 			//  * other than the current tile
@@ -280,12 +275,7 @@ EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int 
 // -----------------------------------------------------------------------
 EMTILE * emtile_get_list_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
 {
-	// get current focus
-	EMTILE *t = fg;
-	while (t->focus) {
-		t = t->focus;
-	}
-
+	EMTILE *t = emui_subfocus_get(fg);
 	EMTILE *next = t;
 
 	// for cases when we start searching at t = t->fg->fg_first

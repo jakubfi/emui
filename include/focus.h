@@ -34,6 +34,7 @@ enum focus_direction {
 void emui_focus(EMTILE *t);
 int emui_has_focus(EMTILE *t);
 int emui_is_focused(EMTILE *t);
+EMTILE * emui_subfocus_get(EMTILE *t);
 EMTILE * emui_focus_get();
 int emui_focus_group_add(EMTILE *parent, EMTILE *t);
 void emui_focus_group_unlink(EMTILE *t);

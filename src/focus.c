@@ -198,6 +198,15 @@ int emui_has_focus(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
+EMTILE * emui_subfocus_get(EMTILE *t)
+{
+	while (t->focus) {
+		t = t->focus;
+	}
+	return t;
+}
+
+// -----------------------------------------------------------------------
 EMTILE * emui_focus_get()
 {
 	return focus;
