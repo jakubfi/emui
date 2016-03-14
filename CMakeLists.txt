@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(emui C)
 include(appversion.cmake)
-set(DEBUG 1)
 
 set(CURSES_NEED_NCURSES TRUE)
 find_package(Curses REQUIRED)

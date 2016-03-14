@@ -9,6 +9,7 @@ add_library(emui-lib SHARED
 	text.c
 	focus.c
 	tile.c
+	dbg.c
 )
 
 target_link_libraries(emui-lib containers widgets ${CURSES_LIBRARIES})

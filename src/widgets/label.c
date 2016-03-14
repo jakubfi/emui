@@ -66,7 +66,7 @@ EMTILE * emui_label(EMTILE *parent, int x, int y, int w, int style, char *str)
 {
 	EMTILE *t;
 
-	t = emtile(parent, &emui_label_drv, x, y, w, 1, 0, 0, 0, 0, NULL, P_NONE);
+	t = emtile(parent, &emui_label_drv, x, y, w, 1, 0, 0, 0, 0, "Label", P_NONE);
 
 	t->priv_data = calloc(1, sizeof(struct label));
 	struct label *d = t->priv_data;

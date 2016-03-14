@@ -130,6 +130,7 @@ struct emui_geom {
 
 struct emui_tile {
 	// general
+	int __dbg_id;				// for debugging purposes
 	char *name;					// tile name
 	unsigned properties;		// tile properties
 	int key;					// shortcut key

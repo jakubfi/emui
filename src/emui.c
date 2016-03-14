@@ -49,17 +49,6 @@ static void _emui_sigwinch_handler(int signum)
 }
 
 // -----------------------------------------------------------------------
-void edbg(char *format, ...)
-{
-	va_list vl;
-	va_start(vl, format);
-	FILE *f = fopen("/home/amo/emui.log", "a");
-	vfprintf(f, format, vl);
-	fclose(f);
-	va_end(vl);
-}
-
-// -----------------------------------------------------------------------
 EMTILE * emui_init(unsigned fps)
 {
 	// initialize ncurses

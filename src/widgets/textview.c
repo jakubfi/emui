@@ -93,7 +93,7 @@ EMTILE * emui_textview(EMTILE *parent, int x, int y, int w, int h)
 {
 	EMTILE *t;
 
-	t = emtile(parent, &emui_textview_drv, x, y, w, h, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emtile(parent, &emui_textview_drv, x, y, w, h, 0, 0, 0, 0, "TextView", P_INTERACTIVE);
 
 	t->priv_data = calloc(1, sizeof(struct textview));
 

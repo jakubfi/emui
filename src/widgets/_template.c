@@ -65,7 +65,7 @@ EMTILE * emui_W_NAME(EMTILE *parent, int x, int y, int w, int h)
 {
 	EMTILE *t;
 
-	t = emtile(parent, -1, &emui_W_NAME_drv, F_WIDGET, x, y, w, h, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emtile(parent, -1, &emui_W_NAME_drv, F_WIDGET, x, y, w, h, 0, 0, 0, 0, "_W_NAME_", P_INTERACTIVE);
 
 	t->priv_data = calloc(1, sizeof(struct W_NAME));
 	struct W_NAME *d = t->priv_data;

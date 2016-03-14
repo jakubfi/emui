@@ -270,7 +270,7 @@ EMTILE * emui_lineedit(EMTILE *parent, int x, int y, int w, int maxlen, int type
 {
 	EMTILE *t;
 
-	t = emtile(parent, &emui_lineedit_drv, x, y, w, 1, 0, 0, 0, 0, NULL, P_INTERACTIVE);
+	t = emtile(parent, &emui_lineedit_drv, x, y, w, 1, 0, 0, 0, 0, "LineEdit", P_INTERACTIVE);
 	emtile_set_style(t, S_EDIT_NN);
 
 	t->priv_data = calloc(1, sizeof(struct lineedit));
