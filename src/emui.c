@@ -24,6 +24,7 @@
 #include <sys/time.h>
 #include <errno.h>
 
+#include "dbg.h"
 #include "event.h"
 #include "tiles.h"
 #include "style.h"
@@ -144,6 +145,7 @@ static void emui_draw(EMTILE *t)
 	// update tile geometry
 	int geometry_changed = t->geometry_changed;
 	if (geometry_changed) {
+		EDBG(t, 0, "Tile geometry changed");
 		emtile_fit(t);
 
 		// if the focused tile is hidden after geometry change,
@@ -155,6 +157,7 @@ static void emui_draw(EMTILE *t)
 			if (f->fg->drv->scroll_handler) {
 				// TODO: ???
 			} else {
+				EDBG(f, 0, "Tile is hidden after geometry change, moving focus");
 				f = emtile_get_physical_neighbour(f->fg, FC_ABOVE, P_INTERACTIVE, P_HIDDEN);
 				if (f->properties & P_HIDDEN) {
 					f = emtile_get_physical_neighbour(f->fg, FC_LEFT, P_INTERACTIVE, P_HIDDEN);

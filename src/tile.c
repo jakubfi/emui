@@ -20,12 +20,12 @@
 #include <ncurses.h>
 #include <limits.h>
 
+#include "dbg.h"
 #include "tile.h"
 #include "event.h"
 #include "style.h"
 #include "focus.h"
 #include "print.h"
-#include "dbg.h"
 
 static void emtile_child_append(EMTILE *parent, EMTILE *t);
 
@@ -106,7 +106,7 @@ static void emtile_fit_parent(EMTILE *t)
 			t->properties &= ~P_HIDDEN;
 		}
 	}
-	EDBG(t, 2, "post emtile_fit_parent() geometry: req: %i,%i,%i,%i, ext: %i,%i,%i,%i, int: %i,%i,%i,%i", t->r.x, t->r.y, t->r.w, t->r.h, t->e.x, t->e.y, t->e.w, t->e.h, t->i.x, t->i.y, t->i.w, t->i.h);
+	EDBG(t, 2, "post emtile_fit_parent() geometry: req: %i,%i,%i,%i, ext: %i,%i,%i,%i", t->r.x, t->r.y, t->r.w, t->r.h, t->e.x, t->e.y, t->e.w, t->e.h);
 }
 
 // -----------------------------------------------------------------------
@@ -118,7 +118,7 @@ static void emtile_fit_interior(EMTILE *t)
 	t->i.y += t->mt;
 	t->i.w -= t->ml + t->mr;
 	t->i.h -= t->mt + t->mb;
-	EDBG(t, 2, "post emtile_fit_interior() geometry: req: %i,%i,%i,%i, ext: %i,%i,%i,%i, int: %i,%i,%i,%i", t->r.x, t->r.y, t->r.w, t->r.h, t->e.x, t->e.y, t->e.w, t->e.h, t->i.x, t->i.y, t->i.w, t->i.h);
+	EDBG(t, 2, "post emtile_fit_interior() int geometry: %i,%i,%i,%i", t->i.x, t->i.y, t->i.w, t->i.h);
 }
 
 // -----------------------------------------------------------------------
@@ -149,6 +149,8 @@ void emtile_fit(EMTILE *t)
 			emuifillbg(t, t->style);
 		}
 	}
+
+	EDBG(t, 1, "doing tile specific geometry update");
 
 	// do tile-specific geometry updates
 	if (t->drv->update_children_geometry) {
@@ -226,7 +228,7 @@ EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, unsigned prop_match,
 
 	while (f) {
 		if ((f->properties & (prop_match | prop_nomatch)) == prop_match) {
-			EDBG(f, 3, "considering pys. neigh.: %i,%i (%i,%i)", f->i.x, f->i.y, f->i.h, f->i.w);
+			EDBG(f, 3, "considering phys. neigh.: %i,%i (%i,%i)", f->i.x, f->i.y, f->i.h, f->i.w);
 			switch (dir) {
 				case FC_ABOVE:
 					dd = t->i.y - f->i.y - f->i.h;
@@ -441,6 +443,8 @@ EMTILE * emtile(EMTILE *parent, struct emtile_drv *drv, int x, int y, int w, int
 	emui_focus_group_add(parent, t);
 	emtile_fit(t);
 
+	EDBG(t, 0, "Added tile");
+
 	return t;
 }
 
@@ -560,6 +564,7 @@ static void emtile_child_unlink(EMTILE *t)
 // -----------------------------------------------------------------------
 void emtile_delete(EMTILE *t)
 {
+	EDBG(t, 0, "Tile marked for deletion");
 	t->properties |= P_DELETED;
 }
 
@@ -567,6 +572,8 @@ void emtile_delete(EMTILE *t)
 void _emtile_really_delete(EMTILE *t)
 {
 	if (!t) return;
+
+	EDBG(t, 0, "Physically deleting tile");
 
 	// delete all children first
 	EMTILE *next_ch;

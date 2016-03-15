@@ -19,9 +19,9 @@
 #include <string.h>
 #include <ncurses.h>
 
+#include "dbg.h"
 #include "tile.h"
 #include "focus.h"
-#include "dbg.h"
 
 struct focus_item {
 	EMTILE *t;
