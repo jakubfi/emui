@@ -47,9 +47,9 @@ Registers and system registers windows:\n\
  * ENTER - edit register contents\n\
 \n\
 Memory window:\n\
- * arrows, pgup/down - move around\n\
- * ctrl-pgup/-pgdown - skip to previosu/next memory page\n\
- * < > - switch to prev/next memory segment\n\
+ * up/down, pgup/down - scroll\n\
+ * ctrl-pgup/pgdown, </> - skip to prev/next memory page\n\
+ * left/right - switch to prev/next memory segment\n\
  * 0-9 - select memory segment 0-9\n\
  * i - move to current IC location\n\
  * g - go to memory location\n\
@@ -411,17 +411,19 @@ int dasmv_key_handler(EMTILE *t, int key)
 		dasm_start = 0x10000 - t->i.h;
 		return E_HANDLED;
 	case 550: // ctrl-page up
-		dasm_start = (dasm_start & 0xf000) - 0x1000;
-		return E_HANDLED;
-	case 545: // ctrl-page down
-		dasm_start = (dasm_start & 0xf000) + 0x1000;
-		return E_HANDLED;
-	case '>':
-	case '.':
-		dasm_segment = (dasm_segment+1) & 0xf;
-		return E_HANDLED;
 	case '<':
 	case ',':
+		dasm_start = (dasm_start - 0x1000) & 0xffff;
+		return E_HANDLED;
+	case 545: // ctrl-page down
+	case '>':
+	case '.':
+		dasm_start = (dasm_start + 0x1000) & 0xffff;
+		return E_HANDLED;
+	case KEY_RIGHT:
+		dasm_segment = (dasm_segment+1) & 0xf;
+		return E_HANDLED;
+	case KEY_LEFT:
 		dasm_segment = (dasm_segment-1) & 0xf;
 		return E_HANDLED;
 	case '0':
@@ -440,6 +442,7 @@ int dasmv_key_handler(EMTILE *t, int key)
 		dasm_follow ^= 1;
 		return E_HANDLED;
 	case 'i':
+		// TODO: current IC
 		return E_HANDLED;
 
 	}
@@ -648,9 +651,32 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	EMTILE *brk = emui_frame(watch_split, 0, 0, 25, 10, "Breakpoints", P_CENTER);
 	emtile_set_focus_key(brk, 'b');
 	emtile_set_focus_handler(brk, float_focus);
+	EMTILE *brklist = emui_list(brk);
+	for (int i=0 ; i<20 ; i++) {
+		EMTILE *brkc = emui_dummy_cont(brklist, 0, i, 30, 1);
+		emtile_set_properties(brkc, P_HMAXIMIZE);
+		char str[32];
+		sprintf(str, "%3i:", i);
+		emui_label(brkc, 0, 0, 4, S_DEFAULT, str);
+		emui_lineedit(brkc, 4, 0, 100, 100, TT_TEXT, M_INS);
+
+	}
 	EMTILE *watch = emui_frame(watch_split, 0, 0, 30, 10, "Watches", P_CENTER);
 	emtile_set_focus_key(watch, 'w');
 	emtile_set_focus_handler(watch, float_focus);
+	EMTILE *watchlist = emui_list(watch);
+	for (int i=0 ; i<20 ; i++) {
+		EMTILE *wc = emui_dummy_cont(watchlist, 0, i, 30, 1);
+		emtile_set_properties(wc, P_HMAXIMIZE);
+		EMTILE *ws = emui_splitter(wc, AL_RIGHT, 6, 6, FIT_FILL);
+		emui_label(ws, 0, 0, 6, 1, "int");
+		EMTILE *ws2 = emui_splitter(ws, AL_RIGHT, 6, 6, FIT_FILL);
+		emui_label(ws2, 0, 0, 6, 1, "hex");
+		char str[32];
+		sprintf(str, "watch_%i", i);
+		EMTILE *l = emui_lineedit(ws2, 4, 0, 100, 100, TT_TEXT, M_INS);
+		emui_lineedit_set_text(l, str);
+	}
 
 	// memory
 
@@ -712,21 +738,7 @@ int main(int argc, char **argv)
 	emdas_set_tabs(emd, 0, 0, 4, 4);
 
 	EMTILE *layout = emui_init(30);
-///*
-	EMTILE *l = emui_list(layout);
-	for (int i=0 ; i<20 ; i++) {
-		EMTILE *c = emui_dummy_cont(l, 0, i, 20, 1);
-		c->__dbg_id = 10+i;
-		char buf[32];
-		sprintf(buf, "%3i : ", i);
-		emui_label(c, 0, 0, 6, S_DEFAULT, buf);
-		EMTILE *le = emui_lineedit(c, 6, 0, 20, 20, TT_TEXT, M_OVR);
-		le->__dbg_id = 100+i;
-		sprintf(buf, "test_%i", i);
-		emui_lineedit_set_text(le, buf);
-	}
-//*/
-/*
+
 	emui_scheme_set(app_scheme);
 	emtile_set_key_handler(layout, top_key_handler);
 
@@ -755,7 +767,7 @@ int main(int argc, char **argv)
 	EMTILE *debugger = ui_create_debugger(tabs);
 
 	emui_focus(debugger);
-*/
+
 	emui_loop();
 	emui_destroy();
 	emdas_destroy(emd);
