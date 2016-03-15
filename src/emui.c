@@ -147,18 +147,23 @@ static void emui_draw(EMTILE *t)
 		emtile_fit(t);
 
 		// if the focused tile is hidden after geometry change,
+		// and there is no scroll handler in tile's focus group,
 		// search for a new unhidden tile:
 		// go up, then left, then from the beggining of focus group
 		EMTILE *f = emui_focus_get();
 		if (f->properties & P_HIDDEN) {
-			f = emtile_get_physical_neighbour(f->fg, FC_ABOVE, P_INTERACTIVE, P_HIDDEN);
-			if (f->properties & P_HIDDEN) {
-				f = emtile_get_physical_neighbour(f->fg, FC_LEFT, P_INTERACTIVE, P_HIDDEN);
+			if (f->fg->drv->scroll_handler) {
+				// TODO: ???
+			} else {
+				f = emtile_get_physical_neighbour(f->fg, FC_ABOVE, P_INTERACTIVE, P_HIDDEN);
 				if (f->properties & P_HIDDEN) {
-					f = emtile_get_list_neighbour(f->fg, FC_FIRST, P_INTERACTIVE, P_HIDDEN);
+					f = emtile_get_physical_neighbour(f->fg, FC_LEFT, P_INTERACTIVE, P_HIDDEN);
+					if (f->properties & P_HIDDEN) {
+						f = emtile_get_list_neighbour(f->fg, FC_FIRST, P_INTERACTIVE, P_HIDDEN);
+					}
 				}
+				emui_focus(f);
 			}
-			emui_focus(f);
 		}
 	}
 

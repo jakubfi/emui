@@ -121,11 +121,16 @@ int emtext_append_str(EMTEXT *txt, int style, char *format, ...)
 	struct emui_tchunk *chunk;
 	char *nl;
 	char *buf;
+	int ret;
 
 	va_list vl;
 	va_start(vl, format);
-	vasprintf(&buf, format, vl);
+	ret = vasprintf(&buf, format, vl);
 	va_end(vl);
+
+	if (ret < 0) {
+		return -1;
+	}
 
 	char *str = buf;
 	nl = strchr(str, '\n');

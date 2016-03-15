@@ -104,7 +104,6 @@ enum emui_tile_properties {
 };
 
 #define P_APP_SETTABLE 0xffff
-#define IS_INTERACTIVE(t) (((t)->properties & (P_INTERACTIVE | P_HIDDEN)) == P_INTERACTIVE)
 
 struct emui_event;
 struct emui_tile;
@@ -115,6 +114,7 @@ typedef int (*emui_int_f)(EMTILE *t);
 typedef int (*emui_int_f_ev)(EMTILE *t, struct emui_event *ev);
 typedef int (*emui_int_f_int)(EMTILE *t, int arg);
 typedef void (*emui_void_f_int)(EMTILE *t, int arg);
+typedef void (*emui_void_f_emtile)(EMTILE *t, EMTILE *f);
 
 struct emtile_drv {
 	emui_void_f draw;
@@ -122,6 +122,7 @@ struct emtile_drv {
 	emui_int_f_ev event_handler;
 	emui_void_f_int focus_handler;
 	emui_void_f destroy_priv_data;
+	emui_void_f_emtile scroll_handler;
 };
 
 struct emui_geom {
@@ -202,8 +203,8 @@ void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type);
 void emtile_geometry_changed(EMTILE *t);
 int emtile_notify_change(EMTILE *t);
 
-EMTILE *emtile_get_list_neighbour(EMTILE *t, int dir, int prop_match, int prop_nomatch);
-EMTILE *emtile_get_physical_neighbour(EMTILE *t, int dir, int prop_match, int prop_nomatch);
+EMTILE *emtile_get_list_neighbour(EMTILE *t, int dir, unsigned prop_match, unsigned prop_nomatch);
+EMTILE *emtile_get_physical_neighbour(EMTILE *t, int dir, unsigned prop_match, unsigned prop_nomatch);
 
 #endif
 

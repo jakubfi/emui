@@ -21,6 +21,7 @@
 
 #include "tile.h"
 #include "focus.h"
+#include "dbg.h"
 
 struct focus_item {
 	EMTILE *t;
@@ -104,7 +105,7 @@ static EMTILE * _focus_down(EMTILE *t)
 	if (t->focus) {
 		return _focus_down(t->focus);
 	// then go for a first focusable tile
-	} else if (IS_INTERACTIVE(t)) {
+	} else if (t->properties & P_INTERACTIVE) {
 		return t;
 	// then if this is a focus group...
 	} else if (t->properties & P_FOCUS_GROUP) {
@@ -139,14 +140,14 @@ static void _focus_up(EMTILE *t)
 void emui_focus(EMTILE *t)
 {
 	if (!t) return;
-
+	EDBG(t, 1, "focusing");
 	EMTILE *last_focus = focus_stack ? focus_stack->t : NULL;
 
 	// search for a focus path down to the (possibly) interactive tile
 	EMTILE *f = _focus_down(t);
 	// fill the focus path to the root
 	_focus_up(f);
-	if (!IS_INTERACTIVE(t)) {
+	if (!(t->properties & P_INTERACTIVE)) {
 		_focus_stack_put(t);
 	}
 
@@ -169,6 +170,7 @@ void emui_focus(EMTILE *t)
 	if (last_focus) {
 		emtile_geometry_changed(last_focus);
 	}
+	EDBG(focus, 1, "focused");
 }
 
 // -----------------------------------------------------------------------

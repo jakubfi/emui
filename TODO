@@ -1,12 +1,8 @@
 dialog
 switch
 button
-P_SCROLLABLE
-list?
-debug tile
 tile types?
 learn keys
 addch() widget?
 P_LOCKED
-hidden -> disabled?
 handler table + connect()?

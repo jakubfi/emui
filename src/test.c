@@ -712,6 +712,21 @@ int main(int argc, char **argv)
 	emdas_set_tabs(emd, 0, 0, 4, 4);
 
 	EMTILE *layout = emui_init(30);
+///*
+	EMTILE *l = emui_list(layout);
+	for (int i=0 ; i<20 ; i++) {
+		EMTILE *c = emui_dummy_cont(l, 0, i, 20, 1);
+		c->__dbg_id = 10+i;
+		char buf[32];
+		sprintf(buf, "%3i : ", i);
+		emui_label(c, 0, 0, 6, S_DEFAULT, buf);
+		EMTILE *le = emui_lineedit(c, 6, 0, 20, 20, TT_TEXT, M_OVR);
+		le->__dbg_id = 100+i;
+		sprintf(buf, "test_%i", i);
+		emui_lineedit_set_text(le, buf);
+	}
+//*/
+/*
 	emui_scheme_set(app_scheme);
 	emtile_set_key_handler(layout, top_key_handler);
 
@@ -740,7 +755,7 @@ int main(int argc, char **argv)
 	EMTILE *debugger = ui_create_debugger(tabs);
 
 	emui_focus(debugger);
-
+*/
 	emui_loop();
 	emui_destroy();
 	emdas_destroy(emd);

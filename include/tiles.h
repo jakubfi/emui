@@ -33,6 +33,7 @@ EMTILE * emui_tabs(EMTILE *parent);
 EMTILE * emui_frame(EMTILE *parent, int x, int y, int w, int h, char *name, int properties);
 EMTILE * emui_justifier(EMTILE *parent);
 EMTILE * emui_grid(EMTILE *parent, int cols, int rows, int col_width, int row_height, int col_spacing);
+EMTILE * emui_list(EMTILE *parent);
 
 #endif
 

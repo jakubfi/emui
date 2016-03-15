@@ -25,21 +25,24 @@
 #include "style.h"
 #include "focus.h"
 #include "print.h"
+#include "dbg.h"
 
 static void emtile_child_append(EMTILE *parent, EMTILE *t);
 
 // -----------------------------------------------------------------------
 static void emtile_fit_parent(EMTILE *t)
 {
-	// (1) 'floating' property overrides everything
+	// P_FLOAT property overrides everything - unhide, because it should be shown regardles of parent decisions
 	if (t->properties & P_FLOAT) {
+		EDBG(t, 2, "unhidding tile (is floating)");
 		t->properties &= ~P_HIDDEN;
-	// (2) hide the child if parent is hidden
+	// hide the child if parent is hidden, even if parent decides to show the child
 	} else if (t->parent->properties & P_HIDDEN) {
 		t->properties |= P_HIDDEN;
-		return;
-	// (3) respect parent's choice regarding children geometry and visibility
+		EDBG(t, 2, "hiding tile (parent is hidden)");
+	// respect parent's choice regarding children geometry and visibility
 	} else if (t->properties & P_GEOM_FORCED) {
+		EDBG(t, 2, "aborting fit of tile (geometry is forced by the parent)");
 		return;
 	}
 
@@ -94,59 +97,56 @@ static void emtile_fit_parent(EMTILE *t)
 	// hide tile if outside parent's area
 	if ((t->e.x >= t->pg->x + t->pg->w) || (t->e.y >= t->pg->y + t->pg->h)) {
 		t->properties |= P_HIDDEN;
+		EDBG(t, 2, "hidding tile (doesn't fit)");
 	} else {
-		t->properties &= ~P_HIDDEN;
+		if (t->parent->properties & P_HIDDEN) {
+			EDBG(t, 2, "not unhidding tile (parent is hidden)");
+		} else {
+			EDBG(t, 2, "unhidding tile (fits)");
+			t->properties &= ~P_HIDDEN;
+		}
 	}
+	EDBG(t, 2, "post emtile_fit_parent() geometry: req: %i,%i,%i,%i, ext: %i,%i,%i,%i, int: %i,%i,%i,%i", t->r.x, t->r.y, t->r.w, t->r.h, t->e.x, t->e.y, t->e.w, t->e.h, t->i.x, t->i.y, t->i.w, t->i.h);
 }
 
 // -----------------------------------------------------------------------
 static void emtile_fit_interior(EMTILE *t)
 {
-	// hide if no space for internal geometry
-	if ((t->e.w <= t->ml+t->mr) || (t->e.h <= t->mt+t->mb)) {
-		t->properties |= P_HIDDEN;
-		return;
-	} else {
-		t->properties &= ~P_HIDDEN;
-	}
-
 	// set internal tile geometry
 	t->i = t->e;
 	t->i.x += t->ml;
 	t->i.y += t->mt;
 	t->i.w -= t->ml + t->mr;
 	t->i.h -= t->mt + t->mb;
+	EDBG(t, 2, "post emtile_fit_interior() geometry: req: %i,%i,%i,%i, ext: %i,%i,%i,%i, int: %i,%i,%i,%i", t->r.x, t->r.y, t->r.w, t->r.h, t->e.x, t->e.y, t->e.w, t->e.h, t->i.x, t->i.y, t->i.w, t->i.h);
 }
 
 // -----------------------------------------------------------------------
 void emtile_fit(EMTILE *t)
 {
 	if (t->parent) {
-		// fit the tile within parent's geometry
+		EDBG(t, 1, "fitting tile");
+
 		emtile_fit_parent(t);
+		emtile_fit_interior(t);
 
-		// if tile is still visible, set internal geometry
+		// if tile is visible, prepare ncurses window
 		if (!(t->properties & P_HIDDEN)) {
-			emtile_fit_interior(t);
-
-			// if tile is visible, prepare ncurses window
-			if (!(t->properties & P_HIDDEN)) {
-				// prepare ncurses window
-				if (!(t->properties & P_NOCANVAS)) {
-					if (!t->ncwin) {
-						t->ncwin = newwin(t->e.h, t->e.w, t->e.y, t->e.x);
-					} else {
-						werase(t->ncwin);
-						wresize(t->ncwin, t->e.h, t->e.w);
-						mvwin(t->ncwin, t->e.y, t->e.x);
-					}
+			// prepare ncurses window
+			if (!(t->properties & P_NOCANVAS)) {
+				if (!t->ncwin) {
+					t->ncwin = newwin(t->e.h, t->e.w, t->e.y, t->e.x);
+				} else {
+					werase(t->ncwin);
+					wresize(t->ncwin, t->e.h, t->e.w);
+					mvwin(t->ncwin, t->e.y, t->e.x);
 				}
-				// tile is inversed if parent is inversed
-				if (t->parent->properties & P_INVERSE) {
-					t->properties |= P_INVERSE;
-				}
-				emuifillbg(t, t->style);
 			}
+			// tile is inversed if parent is inversed
+			if (t->parent->properties & P_INVERSE) {
+				t->properties |= P_INVERSE;
+			}
+			emuifillbg(t, t->style);
 		}
 	}
 
@@ -214,7 +214,7 @@ static int _distance(int x1, int y1, int x2, int y2)
 }
 
 // -----------------------------------------------------------------------
-EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
+EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, unsigned prop_match, unsigned prop_nomatch)
 {
 	EMTILE *t = emui_subfocus_get(fg);
 	EMTILE *f = fg->fg_first;
@@ -225,8 +225,8 @@ EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int 
 	int dist, dist_min = INT_MAX;
 
 	while (f) {
-		if ((f->properties & prop_match) && !(f->properties & prop_nomatch)) {
-
+		if ((f->properties & (prop_match | prop_nomatch)) == prop_match) {
+			EDBG(f, 3, "considering pys. neigh.: %i,%i (%i,%i)", f->i.x, f->i.y, f->i.h, f->i.w);
 			switch (dir) {
 				case FC_ABOVE:
 					dd = t->i.y - f->i.y - f->i.h;
@@ -259,9 +259,10 @@ EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int 
 				if (dist <= dist_min) {
 					// we search for a tile that "overlaps" the most with the current one
 					if (ovrl >= ovrl_max) {
-						ovrl_max = ovrl/2; // /2 = less impact on decision
+						ovrl_max = ovrl/2; // /2 => less impact on decision
 						dist_min = dist;
 						match = f;
+						EDBG(match, 3, "best so far");
 					}
 				}
 			}
@@ -273,7 +274,7 @@ EMTILE * emtile_get_physical_neighbour(EMTILE *fg, int dir, int prop_match, int 
 }
 
 // -----------------------------------------------------------------------
-EMTILE * emtile_get_list_neighbour(EMTILE *fg, int dir, int prop_match, int prop_nomatch)
+EMTILE * emtile_get_list_neighbour(EMTILE *fg, int dir, unsigned prop_match, unsigned prop_nomatch)
 {
 	EMTILE *t = emui_subfocus_get(fg);
 	EMTILE *next = t;
@@ -302,8 +303,10 @@ EMTILE * emtile_get_list_neighbour(EMTILE *fg, int dir, int prop_match, int prop
 		}
 
 		if (next) {
-			if ((next->properties & prop_match) && !(next->properties & prop_nomatch)) {
+			EDBG(next, 3, "considering list neigh.");
+			if ((next->properties & (prop_match | prop_nomatch)) == prop_match) {
 				// got a tile that can be focused
+				EDBG(next, 3, "using");
 				return next;
 			} else if (next == t) {
 				if (first_item) {
@@ -327,28 +330,42 @@ static int emtile_neighbour_focus(EMTILE *fg, int key)
 {
 	EMTILE *focus = NULL;
 	int ret = E_HANDLED;
+	int param_nomatch = P_HIDDEN;
+
+	if (fg->drv->scroll_handler) {
+		param_nomatch = P_NONE;
+	}
 
 	switch (key) {
 		case 9: // TAB
-			focus = emtile_get_list_neighbour(fg, FC_NEXT, P_INTERACTIVE, P_HIDDEN);
+			focus = emtile_get_list_neighbour(fg, FC_NEXT, P_INTERACTIVE, param_nomatch);
 			break;
 		case KEY_BTAB:
-			focus = emtile_get_list_neighbour(fg, FC_PREV, P_INTERACTIVE, P_HIDDEN);
+			focus = emtile_get_list_neighbour(fg, FC_PREV, P_INTERACTIVE, param_nomatch);
 			break;
 		case KEY_UP:
-			focus = emtile_get_physical_neighbour(fg, FC_ABOVE, P_INTERACTIVE, P_HIDDEN);
+			focus = emtile_get_physical_neighbour(fg, FC_ABOVE, P_INTERACTIVE, param_nomatch);
 			break;
 		case KEY_DOWN:
-			focus = emtile_get_physical_neighbour(fg, FC_BELOW, P_INTERACTIVE, P_HIDDEN);
+			focus = emtile_get_physical_neighbour(fg, FC_BELOW, P_INTERACTIVE, param_nomatch);
 			break;
 		case KEY_LEFT:
-			focus = emtile_get_physical_neighbour(fg, FC_LEFT, P_INTERACTIVE, P_HIDDEN);
+			focus = emtile_get_physical_neighbour(fg, FC_LEFT, P_INTERACTIVE, param_nomatch);
 			break;
 		case KEY_RIGHT:
-			focus = emtile_get_physical_neighbour(fg, FC_RIGHT, P_INTERACTIVE, P_HIDDEN);
+			focus = emtile_get_physical_neighbour(fg, FC_RIGHT, P_INTERACTIVE, param_nomatch);
 			break;
 		default:
 			ret = E_UNHANDLED;
+			break;
+	}
+
+	EDBG(focus, 2, "after neighbour focus");
+
+	// if current focus is hidden and focus group allow scrolling, do it.
+	if (focus && (focus->properties & P_HIDDEN) && fg->drv->scroll_handler) {
+		EDBG(focus, 2, "can scroll to show");
+		fg->drv->scroll_handler(fg, focus);
 	}
 
 	emui_focus(focus);
