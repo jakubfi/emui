@@ -16,7 +16,7 @@ target_link_libraries(emui-lib containers widgets ${CURSES_LIBRARIES})
 
 set_target_properties(emui-lib PROPERTIES
 	OUTPUT_NAME "emui"
-	SOVERSION ${EMUI_VERSION_MAJOR}.${EMUI_VERSION_MINOR}
+	SOVERSION ${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}
 	PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/include/emui.h"
 )
 
@@ -26,11 +26,21 @@ install(TARGETS emui-lib
 )
 
 install(FILES
-	${CMAKE_SOURCE_DIR}/include/emui/iset.h
-	${CMAKE_SOURCE_DIR}/include/emui/buf.h
-	${CMAKE_SOURCE_DIR}/include/emui/dh.h
-	${CMAKE_SOURCE_DIR}/include/emui/errors.h
+	${CMAKE_SOURCE_DIR}/include/tile.h
+	${CMAKE_SOURCE_DIR}/include/tiles.h
+	${CMAKE_SOURCE_DIR}/include/focus.h
+	${CMAKE_SOURCE_DIR}/include/print.h
+	${CMAKE_SOURCE_DIR}/include/style.h
+	${CMAKE_SOURCE_DIR}/include/text.h
 	DESTINATION include/emui
+)
+
+install(FILES
+	${CMAKE_SOURCE_DIR}/include/widgets/label.h
+	${CMAKE_SOURCE_DIR}/include/widgets/lineedit.h
+	${CMAKE_SOURCE_DIR}/include/widgets/misc.h
+	${CMAKE_SOURCE_DIR}/include/widgets/textview.h
+	DESTINATION include/emui/widgets
 )
 
 add_executable(emui
@@ -38,7 +48,5 @@ add_executable(emui
 )
 
 target_link_libraries(emui emui-lib ${EMCRK_LIBRARIES} ${EMDAS_LIBRARIES})
-
-install(TARGETS emui RUNTIME DESTINATION bin)
 
 # vim: tabstop=4
