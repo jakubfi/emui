@@ -284,6 +284,7 @@ process_event:
 		if (ev) {
 			if (ev->type == EV_QUIT) {
 				free(ev);
+				EDBG(layout, 0, "QUIT");
 				break;
 			} else {
 				emui_process_event(ev);

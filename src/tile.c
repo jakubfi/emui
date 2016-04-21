@@ -189,6 +189,7 @@ static int emtile_focus_keys(EMTILE *fg, int key)
 
 	while (t) {
 		if (t->key == key) {
+			EDBG(t, 3, "Focus key %c matches", key);
 			emui_focus(t);
 			return E_HANDLED;
 		}
@@ -456,6 +457,12 @@ void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type)
 	} else {
 		t->pg = &(pg->i);
 	}
+}
+
+// -----------------------------------------------------------------------
+void emtile_set_float_parent(EMTILE *t, EMTILE *p)
+{
+	t->float_parent = p;
 }
 
 // -----------------------------------------------------------------------

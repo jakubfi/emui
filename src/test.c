@@ -237,25 +237,10 @@ int reg_int_changed(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
-void float_focus(EMTILE *t, int focus)
-{
-	if (focus) {
-		if (t->properties & P_HIDDEN) {
-			emtile_set_geometry_parent(t, tabs, GEOM_INTERNAL);
-			t->properties |= P_FLOAT;
-		}
-	} else {
-		emtile_set_geometry_parent(t, t->parent, GEOM_INTERNAL);
-		t->properties &= ~P_FLOAT;
-	}
-}
-
-// -----------------------------------------------------------------------
 EMTILE * ui_create_ureg(EMTILE *parent)
 {
 	EMTILE *ureg = emui_frame(parent, 0, 0, 55, 11, "Registers", P_CENTER);
 	emtile_set_focus_key(ureg, 'r');
-	emtile_set_focus_handler(ureg, float_focus);
 
 	EMTILE *ureg_just = emui_justifier(ureg);
 	EMTILE *ureg_r = emui_dummy_cont(ureg_just, 0, 0, 4, 11);
@@ -320,7 +305,6 @@ EMTILE * ui_create_ureg(EMTILE *parent)
 EMTILE * ui_create_sreg(EMTILE *parent)
 {
 	EMTILE *sreg = emui_frame(parent, 0, 0, 55, 11, "Sys Registers", P_CENTER);
-	emtile_set_focus_handler(sreg, float_focus);
 	emui_label(sreg, 0, 0, 55, S_TEXT_NN, "    hex  opcode D A   B   C");
 	emui_label(sreg, 0, 1, 55, S_TEXT_NN, "IR:");
 	emui_lineedit(sreg, 4, 1, 4, 4, TT_HEX, M_OVR);
@@ -580,7 +564,6 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	emtile_set_focus_key(dasm_split, KEY_F(12));
 	EMTILE *dasm = emui_frame(dasm_split, 0, 0, 30, 20, "ASM", P_HCENTER|P_VMAXIMIZE);
 	emtile_set_focus_key(dasm, 'a');
-	emtile_set_focus_handler(dasm, float_focus);
 	EMTILE *asmv = emui_textview(dasm, 0, 0, 30, 20);
 	emtile_set_properties(asmv, P_MAXIMIZE);
 	emtile_set_key_handler(dasm, dasm_key_handler);
@@ -605,7 +588,6 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	EMTILE *mem_split = emui_splitter(reg_split, AL_TOP, 10, FIT_DIV2, 6);
 	EMTILE *mem = emui_frame(mem_split, 0, 0, 80, 20, "Memory", P_MAXIMIZE);
 	emtile_set_focus_key(mem, 'm');
-	emtile_set_focus_handler(mem, float_focus);
 
 	// memory status
 	EMTILE *mem_status_split = emui_splitter(mem, AL_BOTTOM, 1, 1, 0);
@@ -642,7 +624,6 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	EMTILE *eval_split = emui_splitter(mem_split, AL_BOTTOM, 3, 3, 10);
 	EMTILE *eval = emui_frame(eval_split, 0, 0, 80, 3, "Evaluator", P_VCENTER|P_HMAXIMIZE);
 	emtile_set_focus_key(eval, 'e');
-	emtile_set_focus_handler(eval, float_focus);
 
 	// stack, watch, brk
 	EMTILE *stack_split = emui_splitter(eval_split, AL_LEFT, 18, 18, 20);
@@ -650,7 +631,6 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	EMTILE *watch_split = emui_splitter(stack_split, AL_LEFT, 10, FIT_DIV2, 10);
 	EMTILE *brk = emui_frame(watch_split, 0, 0, 25, 10, "Breakpoints", P_CENTER);
 	emtile_set_focus_key(brk, 'b');
-	emtile_set_focus_handler(brk, float_focus);
 	EMTILE *brklist = emui_list(brk);
 	for (int i=0 ; i<20 ; i++) {
 		EMTILE *brkc = emui_dummy_cont(brklist, 0, i, 30, 1);
@@ -663,7 +643,6 @@ EMTILE * ui_create_debugger(EMTILE *parent)
 	}
 	EMTILE *watch = emui_frame(watch_split, 0, 0, 30, 10, "Watches", P_CENTER);
 	emtile_set_focus_key(watch, 'w');
-	emtile_set_focus_handler(watch, float_focus);
 	EMTILE *watchlist = emui_list(watch);
 	for (int i=0 ; i<20 ; i++) {
 		EMTILE *wc = emui_dummy_cont(watchlist, 0, i, 30, 1);

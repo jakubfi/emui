@@ -142,6 +142,7 @@ struct emui_tile {
 
 	// geometry
 	struct emui_geom *pg;		// geometry used for calculating tile geometry (parent->i by default)
+	EMTILE *float_parent;		// parent for a tile when it's floating
 	unsigned mt, mb, ml, mr;	// tile-requested interior margins
 	struct emui_geom r;			// app-requested tile geometry (parent relative)
 	struct emui_geom e;			// actual external tile area
@@ -199,6 +200,7 @@ void emtile_set_ptr(EMTILE *t, void *ptr);
 void * emtile_get_ptr(EMTILE *t);
 void emtile_set_margins(EMTILE *t, int mt, int mb, int ml, int mr);
 void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type);
+void emtile_set_float_parent(EMTILE *t, EMTILE *p);
 
 void emtile_geometry_changed(EMTILE *t);
 int emtile_notify_change(EMTILE *t);

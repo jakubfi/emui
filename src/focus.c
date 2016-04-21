@@ -136,41 +136,55 @@ static void _focus_up(EMTILE *t)
 	}
 }
 
+EMTILE * emui_get_layout();
+
 // -----------------------------------------------------------------------
 void emui_focus(EMTILE *t)
 {
 	if (!t) return;
+
+	static EMTILE *last_float;
+
 	EDBG(t, 1, "focusing");
-	EMTILE *last_focus = focus_stack ? focus_stack->t : NULL;
 
 	// search for a focus path down to the (possibly) interactive tile
 	EMTILE *f = _focus_down(t);
 	// fill the focus path to the root
 	_focus_up(f);
-	if (!(t->properties & P_INTERACTIVE)) {
+// TODO - potrzebne?
+emtile_geometry_changed(t);
+	// focusing a focus group?
+	if (t->properties & P_FOCUS_GROUP) {
+		// unfloat previously floating tile
+		if (last_float) {
+			last_float->properties &= ~P_FLOAT;
+			emtile_set_geometry_parent(last_float, last_float->parent, GEOM_INTERNAL);
+			emtile_geometry_changed(last_float);
+		}
+		// float hidden tile
+		if (t->properties & P_HIDDEN) {
+			t->properties |= P_FLOAT;
+			emtile_set_geometry_parent(t, emui_get_layout(), GEOM_INTERNAL);
+			emtile_geometry_changed(t);
+			last_float = t;
+		}
+		// remember focused focus groups
 		_focus_stack_put(t);
 	}
 
-	// call focus handlers
-	if (last_focus && last_focus->focus_handler) {
-		last_focus->focus_handler(last_focus, 0);
-	}
-	if (last_focus && last_focus->drv->focus_handler) {
-		last_focus->drv->focus_handler(last_focus, 0);
-	}
-	if (t->focus_handler) {
-		t->focus_handler(t, 1);
-	}
+	// TODO: driver focus handler (temp. for lineedit autofocus)
 	if (t->drv->focus_handler) {
 		t->drv->focus_handler(t, 1);
 	}
-
-	// getting focus may change tile's geometry (P_FLOAT)
-	emtile_geometry_changed(t);
-	if (last_focus) {
-		emtile_geometry_changed(last_focus);
+	EMTILE *last_focus = focus_stack ? focus_stack->t : NULL;
+// TODO
+emtile_geometry_changed(last_focus);
+	if (last_focus && last_focus->drv->focus_handler) {
+		last_focus->drv->focus_handler(last_focus, 0);
 	}
-	EDBG(focus, 1, "focused");
+
+	EDBG(t, 1, "after focusing");
+	EDBG(focus, 1, "got final focus");
 }
 
 // -----------------------------------------------------------------------
