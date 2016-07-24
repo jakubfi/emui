@@ -25,7 +25,6 @@ struct emtile_drv emui_dummy_cont_drv = {
 	.draw = NULL,
 	.update_children_geometry = NULL,
 	.event_handler = NULL,
-	.focus_handler = NULL,
 	.destroy_priv_data = NULL,
 };
 

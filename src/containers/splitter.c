@@ -147,7 +147,6 @@ struct emtile_drv emui_splitter_drv = {
 	.draw = NULL,
 	.update_children_geometry = emui_splitter_update_geometry,
 	.event_handler = NULL,
-	.focus_handler = NULL,
 	.destroy_priv_data = emui_splitter_destroy_priv_data,
 };
 

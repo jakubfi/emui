@@ -79,7 +79,6 @@ struct emtile_drv emui_tabs_drv = {
 	.draw = emui_tabs_draw,
 	.update_children_geometry = emui_tabs_update_geometry,
 	.event_handler = NULL,
-	.focus_handler = NULL,
 	.destroy_priv_data = emui_tabs_destroy_priv_data,
 };
 

@@ -151,8 +151,7 @@ void emui_focus(EMTILE *t)
 	EMTILE *f = _focus_down(t);
 	// fill the focus path to the root
 	_focus_up(f);
-// TODO - potrzebne?
-emtile_geometry_changed(t);
+
 	// focusing a focus group?
 	if (t->properties & P_FOCUS_GROUP) {
 		// unfloat previously floating tile
@@ -170,17 +169,6 @@ emtile_geometry_changed(t);
 		}
 		// remember focused focus groups
 		_focus_stack_put(t);
-	}
-
-	// TODO: driver focus handler (temp. for lineedit autofocus)
-	if (t->drv->focus_handler) {
-		t->drv->focus_handler(t, 1);
-	}
-	EMTILE *last_focus = focus_stack ? focus_stack->t : NULL;
-// TODO
-emtile_geometry_changed(last_focus);
-	if (last_focus && last_focus->drv->focus_handler) {
-		last_focus->drv->focus_handler(last_focus, 0);
 	}
 
 	EDBG(t, 1, "after focusing");

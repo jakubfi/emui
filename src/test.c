@@ -276,6 +276,7 @@ EMTILE * ui_create_ureg(EMTILE *parent)
 		emtile_set_change_handler(r, reg_int_changed);
 		emtile_set_update_handler(r, reg_int_update);
 		emtile_set_ptr(r, treg+i);
+		emtile_set_properties(r, P_AUTOEDIT);
 
 		r = emui_lineedit(ureg_oct, 0, i+1, 6, 6, TT_OCT, M_OVR);
 		emtile_set_change_handler(r, reg_int_changed);
@@ -516,7 +517,7 @@ EMTILE * dialog_goto(EMTILE *parent, int *seg, uint16_t *addr)
 	dat->seg = seg;
 	dat->addr = addr;
 
-	EMTILE *dlg = emui_frame(parent, 0, 0, 24, 3, "GoTo", P_NONE | P_CENTER);
+	EMTILE *dlg = emui_frame(parent, 0, 0, 24, 3, "GoTo", P_CENTER);
 	emtile_set_geometry_parent(dlg, parent, GEOM_INTERNAL);
 
 	emui_label(dlg, 1, 0, 9, S_DEFAULT, "Address: ");

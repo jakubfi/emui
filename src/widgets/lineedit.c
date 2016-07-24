@@ -39,11 +39,25 @@ struct lineedit {
 };
 
 // -----------------------------------------------------------------------
+void emui_lineedit_focus_handler(EMTILE *t)
+{
+	int focus = emui_has_focus(t);
+	struct lineedit *le = t->priv_data;
+
+	if (t->properties & P_AUTOEDIT) {
+		if (focus & !(le->in_edit)) {
+			emui_lineedit_edit(t, 1);
+		} else if (le->in_edit) {
+			emui_lineedit_edit(t, 0);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------
 void emui_lineedit_draw(EMTILE *t)
 {
 	struct lineedit *le = t->priv_data;
 	char *cbuf;
-
 	int style = t->style;
 
 	if (le->in_edit) {
@@ -55,7 +69,7 @@ void emui_lineedit_draw(EMTILE *t)
 		}
 	} else {
 		cbuf = le->buf;
-		if (emui_has_focus(t) ) {
+		if (emui_has_focus(t)) {
 			if (t->content_invalid) {
 				style = S_TEXT_FI;
 			} else {
@@ -243,25 +257,10 @@ void emui_lineedit_destroy_priv_data(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
-void emui_lineedit_focus_handler(EMTILE *t, int focus)
-{
-	struct lineedit *le = t->priv_data;
-
-	if (t->properties & P_AUTOEDIT) {
-		if (focus & !(le->in_edit)) {
-			emui_lineedit_edit(t, 1);
-		} else if (le->in_edit) {
-			emui_lineedit_edit(t, 0);
-		}
-	}
-}
-
-// -----------------------------------------------------------------------
 struct emtile_drv emui_lineedit_drv = {
 	.draw = emui_lineedit_draw,
 	.update_children_geometry = NULL,
 	.event_handler = emui_lineedit_event_handler,
-	.focus_handler = emui_lineedit_focus_handler,
 	.destroy_priv_data = emui_lineedit_destroy_priv_data,
 };
 

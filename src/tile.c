@@ -457,6 +457,8 @@ void emtile_set_geometry_parent(EMTILE *t, EMTILE *pg, int geom_type)
 	} else {
 		t->pg = &(pg->i);
 	}
+	// changing geometry parent requires recalculating geometry
+	emtile_geometry_changed(t);
 }
 
 // -----------------------------------------------------------------------
@@ -481,12 +483,6 @@ void emtile_set_update_handler(EMTILE *t, emui_int_f handler)
 void emtile_set_change_handler(EMTILE *t, emui_int_f handler)
 {
 	t->change_handler = handler;
-}
-
-// -----------------------------------------------------------------------
-void emtile_set_focus_handler(EMTILE *t, emui_void_f_int handler)
-{
-	t->focus_handler = handler;
 }
 
 // -----------------------------------------------------------------------

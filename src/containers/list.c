@@ -78,7 +78,6 @@ struct emtile_drv emui_list_drv = {
 	.draw = NULL,
 	.update_children_geometry = emui_list_update_geometry,
 	.event_handler = NULL,
-	.focus_handler = NULL,
 	.destroy_priv_data = emui_list_destroy_priv_data,
 	.scroll_handler = emui_list_scroll,
 };

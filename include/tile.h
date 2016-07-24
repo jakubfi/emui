@@ -120,7 +120,6 @@ struct emtile_drv {
 	emui_void_f draw;
 	emui_void_f update_children_geometry;
 	emui_int_f_ev event_handler;
-	emui_void_f_int focus_handler;
 	emui_void_f destroy_priv_data;
 	emui_void_f_emtile scroll_handler;
 };
@@ -174,7 +173,6 @@ struct emui_tile {
 	void *ptr;
 	emui_int_f update_handler;
 	emui_int_f change_handler;
-	emui_void_f_int focus_handler;
 	emui_int_f_int key_handler;
 };
 
@@ -188,7 +186,6 @@ int emtile_event(EMTILE *t, struct emui_event *ev);
 
 void emtile_set_update_handler(EMTILE *t, emui_int_f handler);
 void emtile_set_change_handler(EMTILE *t, emui_int_f handler);
-void emtile_set_focus_handler(EMTILE *t, emui_void_f_int handler);
 void emtile_set_key_handler(EMTILE *t, emui_int_f_int handler);
 
 void emtile_set_focus_key(EMTILE *t, int key);

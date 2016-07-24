@@ -76,7 +76,6 @@ struct emtile_drv emui_grid_drv = {
 	.draw = NULL,
 	.update_children_geometry = emui_grid_update_geometry,
 	.event_handler = NULL,
-	.focus_handler = NULL,
 	.destroy_priv_data = emui_grid_destroy_priv_data,
 };
 
