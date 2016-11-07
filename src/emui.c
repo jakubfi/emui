@@ -30,13 +30,12 @@
 #include "style.h"
 #include "focus.h"
 
-#define EMUI_FPS_CAP 1000
-#define EMUI_WORK_COEFFICIENT 1.1
+#define EMUI_FPS_CAP 60
 
 static SCREEN *s;
 static EMTILE *layout;
 
-static int fps_target;
+static int fps_min;
 static int fps_frame_mod;
 static float fps_current;
 static unsigned long frame_current;
@@ -45,7 +44,9 @@ static volatile int terminal_resized;
 // -----------------------------------------------------------------------
 static void _emui_sigwinch_handler(int signum)
 {
-	terminal_resized = 1;
+	if (signum == SIGWINCH) {
+		terminal_resized = 1;
+	}
 	while (signal(SIGWINCH, _emui_sigwinch_handler));
 }
 
@@ -67,13 +68,13 @@ EMTILE * emui_init(unsigned fps)
 
 	// initialize emui
 	if (fps > EMUI_FPS_CAP) {
-		fps_target = EMUI_FPS_CAP;
+		fps_min = EMUI_FPS_CAP;
 	} else {
-		fps_target = fps;
+		fps_min = fps;
 	}
 
 	// modulo for fps counter
-	fps_frame_mod = fps_target / 4;
+	fps_frame_mod = fps_min / 4;
 	if (fps_frame_mod <= 0) {
 		fps_frame_mod = 1;
 	}
@@ -94,41 +95,6 @@ void emui_destroy()
 	//_nc_free_and_exit();
 	delscreen(s);
 	emui_evq_clear();
-}
-
-// -----------------------------------------------------------------------
-static int emui_evq_update(struct timeval *tv)
-{
-	static fd_set rfds;
-	int retval;
-	int ch;
-	struct emui_event *ev = NULL;
-
-	FD_ZERO(&rfds);
-	FD_SET(0, &rfds);
-
-	retval = select(1, &rfds, NULL, NULL, tv);
-
-	if (retval == 0) {
-		return 0;
-	}
-
-	ev = calloc(1, sizeof(struct emui_event));
-
-	// we have a keypress
-	if (retval > 0) {
-		ch = getch();
-		ev->type = EV_KEY;
-		ev->sender = ch;
-	// error
-	} else {
-		ev->type = EV_ERROR;
-		ev->sender = errno;
-	}
-
-	emui_evq_append(ev);
-
-	return 1;
 }
 
 // -----------------------------------------------------------------------
@@ -193,6 +159,32 @@ static void emui_draw(EMTILE *t)
 }
 
 // -----------------------------------------------------------------------
+static void emui_update_screen()
+{
+	struct timeval work_start;
+	static struct timeval work_start_old;
+	const long resolution = 1000000L;
+
+	// calculate the real fps
+	gettimeofday(&work_start, NULL);
+	if (frame_current % fps_frame_mod == 0) {
+		long frame_time = resolution * (work_start.tv_sec - work_start_old.tv_sec);
+		frame_time += work_start.tv_usec - work_start_old.tv_usec;
+		fps_current = (float) fps_frame_mod * resolution / frame_time;
+		work_start_old = work_start;
+	}
+
+	if (terminal_resized > 0) {
+		terminal_resized = 0;
+		layout->geometry_changed = 1;
+	}
+
+	emui_draw(layout);
+	doupdate();
+	frame_current++;
+}
+
+// -----------------------------------------------------------------------
 static int emui_process_event(struct emui_event *ev)
 {
 	EMTILE *t = emui_focus_get();
@@ -216,92 +208,97 @@ static int emui_process_event(struct emui_event *ev)
 }
 
 // -----------------------------------------------------------------------
-static void emui_update_screen(struct timeval *ft, unsigned fps)
+static int emui_process_queue()
 {
+	struct emui_event *ev;
+
+	while ((ev = emui_evq_get())) {
+		if (ev->type != EV_QUIT) {
+			emui_process_event(ev);
+			free(ev);
+		} else {
+			free(ev);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+static int emui_do_events(int fps)
+{
+	static fd_set rfds;
+	int retval;
+	int ch;
+	struct emui_event *ev = NULL;
+
 	struct timeval work_start, work_end;
-	static struct timeval work_start_old;
-	const long resolution = 1000000L;
 
-	if (ft) {
+	// wait up to 1000000/fps usec for an event
+	struct timeval tv;
+	int ftime = 1000000/fps;
+	tv.tv_sec = 0;
+	tv.tv_usec = ftime;
+
+	// respond to evens in 1000000/61 usec max...
+	while (1000000L*tv.tv_sec + tv.tv_usec > (ftime-(1000000L/61))) {
+
+		FD_ZERO(&rfds);
+		FD_SET(0, &rfds);
+
+		// ...but wait up to 1000000/fps usec for an event
+		retval = select(1, &rfds, NULL, NULL, &tv);
+
+		// nothing to do (timeout)
+		if (retval == 0) {
+			continue;
+		}
+
 		gettimeofday(&work_start, NULL);
-		// calculate the real fps
-		if (frame_current % fps_frame_mod == 0) {
-			long frame_time = resolution * (work_start.tv_sec - work_start_old.tv_sec);
-			frame_time += work_start.tv_usec - work_start_old.tv_usec;
-			fps_current = (float) fps_frame_mod * resolution / frame_time;
-			work_start_old = work_start;
+
+		ev = calloc(1, sizeof(struct emui_event));
+
+		// we have a keypress
+		if (retval > 0) {
+			ch = getch();
+			ev->type = EV_KEY;
+			ev->sender = ch;
+		// error
+		} else {
+			ev->type = EV_ERROR;
+			ev->sender = errno;
 		}
-	}
 
-	if (terminal_resized) {
-		terminal_resized = 0;
-		layout->geometry_changed = 1;
-	}
+		// append the event
+		emui_evq_append(ev);
 
-	emui_draw(layout);
-	doupdate();
-	frame_current++;
+		// process all events (processing an event may cause enqueuing another event)
+		if (emui_process_queue()) {
+			return -1;
+		}
 
-	// set frametime
-	if (ft) {
-		long ft_requested = resolution / fps;
-		ft->tv_sec = 0;
-		ft->tv_usec = ft_requested;
-
+		// subtract time wasted on processing
 		gettimeofday(&work_end, NULL);
-
-		long ft_work = resolution * (work_end.tv_sec - work_start.tv_sec);
-		ft_work += work_end.tv_usec - work_start.tv_usec;
-		ft_work *= EMUI_WORK_COEFFICIENT;
-
-		// adjust frametime
-		if (ft_work < ft_requested) {
-			ft->tv_usec -= ft_work;
-		}
+		long work_time = 1000000L * (work_end.tv_usec - work_start.tv_usec) + work_end.tv_usec - work_start.tv_usec;
+		tv.tv_usec -= work_time;
 	}
+	return 0;
 }
 
 // -----------------------------------------------------------------------
 void emui_loop()
 {
-	struct timeval *ft = NULL;
-	struct emui_event *ev;
-
-	// init focus
 	emui_focus(layout);
 
-	// init frametime
-	if (fps_target > 0) {
-		ft = calloc(1, sizeof(struct timeval));
-	}
-
 	while (1) {
-		emui_update_screen(ft, fps_target);
-
-process_event:
-		ev = emui_evq_get();
-
-		if (ev) {
-			if (ev->type == EV_QUIT) {
-				free(ev);
-				EDBG(layout, 0, "QUIT");
-				break;
-			} else {
-				emui_process_event(ev);
-				free(ev);
-			}
-		} else {
-			// get another event (or wait ft.tv_usec)
-			if (emui_evq_update(ft)) {
-				// if there is an event waiting:
-				//  * we want to process it as soon as possible
-				//  * we want to process it before screen update in case of FPS=0
-				goto process_event;
-			}
+		emui_update_screen();
+		if (emui_do_events(fps_min)) {
+			break;
 		}
 	}
 
-	free(ft);
+	EDBG(layout, 0, "QUIT");
 }
 
 // -----------------------------------------------------------------------
@@ -313,7 +310,7 @@ EMTILE * emui_get_layout()
 // -----------------------------------------------------------------------
 unsigned emui_get_target_fps()
 {
-	return fps_target;
+	return fps_min;
 }
 
 // -----------------------------------------------------------------------
