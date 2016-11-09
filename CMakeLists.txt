@@ -19,6 +19,7 @@ else(DEBUG)
 endif(DEBUG)
 
 add_subdirectory(src)
+add_subdirectory(uitest)
 
 configure_file(
 	emui-config.cmake.in

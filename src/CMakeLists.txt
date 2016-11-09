@@ -43,10 +43,4 @@ install(FILES
 	DESTINATION include/emui/widgets
 )
 
-add_executable(emui
-	test.c
-)
-
-target_link_libraries(emui emui-lib ${EMCRK_LIBRARIES} ${EMDAS_LIBRARIES})
-
 # vim: tabstop=4
