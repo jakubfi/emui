@@ -10,7 +10,7 @@ include_directories(SYSTEM ${CURSES_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-add_definitions(-Wall -std=c99 -D_XOPEN_SOURCE=700 -DEMUI_VERSION="${APP_VERSION}")
+add_definitions(-Wall -std=c99 -D__BSD_VISIBLE -D_XOPEN_SOURCE=700 -DEMUI_VERSION="${APP_VERSION}")
 
 if(DEBUG)
 	add_definitions(-DDEBUG -g -O0)
