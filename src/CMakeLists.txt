@@ -12,7 +12,8 @@ add_library(emui-lib SHARED
 	dbg.c
 )
 
-target_link_libraries(emui-lib containers widgets ${CURSES_LIBRARIES})
+include_directories(${EMCRK_INCLUDE_DIRS} ${EMDAS_INCLUDE_DIRS})
+target_link_libraries(emui-lib containers widgets ${CURSES_LIBRARIES} ${EMCRK_LIBRARIES} ${EMDAS_LIBRARIES})
 
 set_target_properties(emui-lib PROPERTIES
 	OUTPUT_NAME "emui"
