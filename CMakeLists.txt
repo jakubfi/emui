@@ -4,6 +4,8 @@ include(appversion.cmake)
 
 set(CURSES_NEED_NCURSES TRUE)
 find_package(Curses REQUIRED)
+find_package(emawp REQUIRED)
+find_package(emelf REQUIRED)
 find_package(emcrk REQUIRED)
 find_package(emdas REQUIRED)
 include_directories(SYSTEM ${CURSES_INCLUDE_DIR})
