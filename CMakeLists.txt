@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(emui C)
+
+include(GNUInstallDirs)
 include(appversion.cmake)
 
 set(CURSES_NEED_NCURSES TRUE)
@@ -38,7 +40,7 @@ configure_file(
 install(FILES
 	${PROJECT_BINARY_DIR}/emui-config.cmake
 	${PROJECT_BINARY_DIR}/emui-config-version.cmake
-	DESTINATION lib/emui
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/emui
 	COMPONENT dev
 )
 

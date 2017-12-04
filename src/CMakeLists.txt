@@ -22,8 +22,8 @@ set_target_properties(emui-lib PROPERTIES
 )
 
 install(TARGETS emui-lib
-	LIBRARY DESTINATION lib
-	PUBLIC_HEADER DESTINATION include
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(FILES
@@ -33,7 +33,7 @@ install(FILES
 	${CMAKE_SOURCE_DIR}/include/print.h
 	${CMAKE_SOURCE_DIR}/include/style.h
 	${CMAKE_SOURCE_DIR}/include/text.h
-	DESTINATION include/emui
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/emui
 )
 
 install(FILES
@@ -41,7 +41,7 @@ install(FILES
 	${CMAKE_SOURCE_DIR}/include/widgets/lineedit.h
 	${CMAKE_SOURCE_DIR}/include/widgets/misc.h
 	${CMAKE_SOURCE_DIR}/include/widgets/textview.h
-	DESTINATION include/emui/widgets
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/emui/widgets
 )
 
 # vim: tabstop=4
